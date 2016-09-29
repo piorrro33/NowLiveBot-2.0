@@ -5,10 +5,12 @@
  */
 package platform.discord.listener;
 
+import net.dv8tion.jda.hooks.ListenerAdapter;
+
 /**
  *
  * @author keesh
  */
-public class DiscordListener {
+public class DiscordListener extends ListenerAdapter {
     
 }

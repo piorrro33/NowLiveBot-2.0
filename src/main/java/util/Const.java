@@ -7,8 +7,14 @@ package util;
 
 /**
  *
- * @author keesh
+ * @author Veteran Software
+ * @version 1.0
+ * @since 09/28/2016
+ *
+ * Common variables used throughout.
  */
 public class Const {
-    
+
+    public static final String DISCORD_BOT_TOKEN = "";
+    public static final String TWITCH_CLIENT_ID = "";
 }

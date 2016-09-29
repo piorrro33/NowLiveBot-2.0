@@ -60,6 +60,7 @@ artifacts {
 repositories {
     mavenCentral()
     jcenter()
+    maven { url "https://jitpack.io" }
 }
 
 dependencies {
@@ -69,4 +70,5 @@ dependencies {
     compile group: 'net.dv8tion', name: 'JDA', version: '2.2.1_353'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.3'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.8.3'
+    compile group: 'com.github.avluis', name: 'Java-Twitch-Api-Wrapper', version: 'bb5b9ff8e6'
 }

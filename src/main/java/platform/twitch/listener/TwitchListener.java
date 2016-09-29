@@ -10,5 +10,11 @@ package platform.twitch.listener;
  * @author keesh
  */
 public class TwitchListener {
-    
+
+    public TwitchListener(String clientID) {
+        final String twitchClientId = clientID;
+        
+        // Begin adding API calls here
+    }
+
 }

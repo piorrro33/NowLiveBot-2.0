@@ -1,0 +1,72 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.1'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+mainClassName = 'core.Main'
+
+def appName = 'NowLive'
+group 'com.nowlivebot'
+version '0.1-VS-PreRelease'
+
+task copyExtra {
+    outputs.file new File("$buildDir/LICENSE")
+    doLast {
+        copy {
+            from "LICENSE"
+            into "$buildDir"
+        }
+    }
+    outputs.file new File("$buildDir/Dockerfile")
+    doLast {
+        copy {
+            from "Dockerfile"
+            into "$buildDir"
+        }
+    }
+}
+
+applicationDistribution.from(copyExtra) {
+    into ""
+}
+
+task fatJar(type: Jar) {
+    baseName rootProject.name
+    manifest {
+        attributes('Implementation-Title': appName, 'Implementation-Version': version)
+        attributes('Main-Class': mainClassName)
+    }
+    classifier = 'all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+    with jar
+}
+
+artifacts {
+    archives fatJar
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    // Compile any included libraries
+    //compile fileTree(include: ['*jar'], dir: 'libs')
+    testCompile group: 'junit', name: 'junit', version: '4.10'
+    compile group: 'net.dv8tion', name: 'JDA', version: '2.2.1_353'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.3'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.8.3'
+}

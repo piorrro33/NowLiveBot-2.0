@@ -15,6 +15,9 @@ package util;
  */
 public class Const {
 
-    public static final String DISCORD_BOT_TOKEN = "";
-    public static final String TWITCH_CLIENT_ID = "";
+    public static final String DISCORD_BOT_TOKEN = "MjI4NTgzODExMDI4NDg0MDk4.Cs_YDg.O6oyssWJYFBRwcZUIq4-Me26xXQ";
+    public static final String TWITCH_CLIENT_ID = "7713uzjnh50pdd9v2v0apto553xeo67";
+    public static final String COMMAND = "!nowlive";
+    
+    public static final Integer COMMAND_LENGTH = COMMAND.length();
 }

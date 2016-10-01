@@ -7,34 +7,31 @@ package commands;
 
 import core.Command;
 import java.util.logging.Logger;
-import static langs.En.PING_HELP;
+import static langs.En.*;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 /**
  *
  * @author keesh
  */
-public class CommandPing implements Command {
-    private static final Logger LOG = Logger.getLogger(CommandPing.class.getName());
+public class CommandInvite implements Command {
 
-    /**
-     * Help message for CommandPing
-     */
-    public final String HELP = PING_HELP;
+    private static final Logger LOG = Logger.getLogger(CommandInvite.class.getName());
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
+        // TODO: #help arguement
         return true;
     }
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        event.getTextChannel().sendMessage("Pong!");
+        event.getTextChannel().sendMessage(INVITE);
     }
 
     @Override
     public void help(MessageReceivedEvent event) {
-        event.getTextChannel().sendMessage(HELP);
+        event.getTextChannel().sendMessage(INVITE_HELP);
     }
 
     @Override

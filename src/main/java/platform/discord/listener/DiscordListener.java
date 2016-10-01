@@ -29,7 +29,7 @@ public class DiscordListener extends ListenerAdapter {
      */
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-        System.out.println("On Message Receive Event");
+        System.out.println("--On Message Receive Event");
         // Log message to console
         if (event.isPrivate()) {
             // PM's are not Guild specific, so don't request Guild and/or channel specific info
@@ -45,32 +45,32 @@ public class DiscordListener extends ListenerAdapter {
                     event.getMessage().getContent());
         }
 
-        System.out.println("Event Message Content: " + event.getMessage().getContent());
-        System.out.println("Event Message Author ID: " + event.getMessage().getAuthor().getId());
-        System.out.println("Event.getJDA ID: " + event.getJDA().getSelfInfo().getId());
-
-        if (event.getMessage().getContent().startsWith(Const.COMMAND_PREFIX) &&
-                !event.getMessage().getAuthor().getId().equals(event.getJDA().getSelfInfo().getId())) {
+        //System.out.println("Event Message Content: " + event.getMessage().getContent());
+        //System.out.println("Event Message Author ID: " + event.getMessage().getAuthor().getId());
+        //System.out.println("Event.getJDA ID: " + event.getJDA().getSelfInfo().getId());
+        if (event.getMessage().getContent().startsWith(Const.COMMAND_PREFIX) && !event.getMessage().getAuthor().getId().equals(event.getJDA().getSelfInfo().getId())) {
+            // DEBUG STATEMENT: Remove in production
             System.out.println("Passed filters!!");
-            Main.handleCommand(Main.parser.parse(event.getMessage().getContent().toLowerCase(), event));
-        }
-        if (event.getMessage().getContent().length() >= Const.COMMAND_LENGTH &&
-                event.getMessage().getContent().toLowerCase(Locale.getDefault())
-                        .substring(0, Const.COMMAND_LENGTH).equals(Const.COMMAND)) {
-            // For debugging purposes, output all messages to the console
-            System.out.printf("[%s][%s] : %s said a command.\n",
-                    event.getGuild().getName(),
-                    event.getTextChannel().getName(),
-                    event.getAuthor().getUsername());
-            // For debugging purposes, output a message from the bot to the Guild channel
-            try {
-                Message builder = new MessageBuilder().appendString("Someone said a command.").build();
-
-            } catch (Exception e) {
-                System.out.printf("[%s][%s] : Failed to write to Discord.\n",
-                        event.getGuild().getName(),
-                        event.getTextChannel().getName());
+            if (event.getMessage().getContent().toLowerCase().startsWith(Const.COMMAND_PREFIX + Const.COMMAND)) {
+                // Make sure at least COMMMAND is present (including COMMAND_PREFIX and a trailing space)
+                if (event.getMessage().getContent().length() >= Const.COMMAND_LENGTH + 2) {
+                    // Strip out the COMMAND, COMMAND_PREFIX and the trailing space
+                    String strippedMessage = event.getMessage().getContent().toLowerCase().substring(Const.COMMAND_LENGTH + 2);
+                    // null check (maybe unecessary at this point)
+                    if (!strippedMessage.isEmpty()) {
+                        Main.handleCommand(Main.parser.parse(strippedMessage.toLowerCase(), event));
+                    }
+                } else {
+                    // If COMMAND_PREFIX + COMMAND is invoked with no command
+                    event.getTextChannel().sendMessage(langs.En.EMPTY_COMMAND);
+                }
+                // Ping is the only command that doesn't use COMMAND_PREFIX + COMMAND, so send it
+            } else if (event.getMessage().getContent().toLowerCase().startsWith(Const.COMMAND_PREFIX + "ping")) {
+                Main.handleCommand(Main.parser.parse(event.getMessage().getContent().toLowerCase(), event));
+            } else {
+                // TODO: Make database call to update message count.
             }
+
         }
     }
 }

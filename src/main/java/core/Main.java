@@ -6,17 +6,17 @@
 package core;
 
 import com.mb3364.twitch.api.Twitch;
-import commands.CommandPing;
+import commands.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.security.auth.login.LoginException;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.JDABuilder;
 import platform.discord.listener.DiscordListener;
 import util.CommandParser;
 import util.Const;
-
-import javax.security.auth.login.LoginException;
-import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Veteran Software
@@ -31,7 +31,12 @@ public class Main {
 
     public static void main(String[] args) {
 
+        /**
+         * Register commands with the bot
+         */
         commands.put("ping", new CommandPing());
+        commands.put("invite", new CommandInvite());
+        commands.put("add", new CommandAdd());
 
         /**
          * Instantiate the JDA Object This 'try' block keeps the bot in the Guild.
@@ -49,6 +54,8 @@ public class Main {
                     .addListener(discordListener)
                     //.addListener(twitchListener)
                     .buildBlocking();
+            jda.getAccountManager().setGame("#ReckingCrew4Life");// Set the 'Playing...'
+            jda.getAccountManager().update();// Must call '.update()' in order for this to work.
         } catch (LoginException | IllegalArgumentException | InterruptedException ex) {
             java.util.logging.Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -75,8 +82,18 @@ public class Main {
         if (getCommands().containsKey(cmd.invoke)) {
             boolean safe = getCommands().get(cmd.invoke).called(cmd.args, cmd.event);
             if (safe) {
-                getCommands().get(cmd.invoke).action(cmd.args, cmd.event);
-                getCommands().get(cmd.invoke).executed(safe, cmd.event);
+                // TODO: Move help check to CommandXxxxx#called
+                // DEBUG STATEMENT: Remove in production
+                System.out.println("Boolean 'safe' is true.\n");
+                System.out.println("cmd.args as a string: " + Arrays.toString(cmd.args) + "\n");
+                if (Arrays.toString(cmd.args).equals("[help]")) {
+                    // DEBUG STATEMENT: Remove in production
+                    System.out.println("Asked for help with the command: " + cmd.invoke + "\n");
+                    getCommands().get(cmd.invoke).help(cmd.event);
+                } else {
+                    getCommands().get(cmd.invoke).action(cmd.args, cmd.event);
+                    getCommands().get(cmd.invoke).executed(safe, cmd.event);
+                }
             } else {
                 getCommands().get(cmd.invoke).executed(safe, cmd.event);
             }

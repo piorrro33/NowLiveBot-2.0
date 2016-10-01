@@ -14,17 +14,17 @@ import net.dv8tion.jda.events.message.MessageReceivedEvent;
 public interface Command {
 
     /**
-     * Called once determined if command exists
-     * Returns boolean if all arguments are met
+     * Used to determine if appropriate arguments exist
      *
      * @param args
      * @param event
-     * @return boolean
+     * @return boolean true if criteria is met, false if criteria not met
      */
     public boolean called(String[] args, MessageReceivedEvent event);
     
     /**
-     * Action taken when the command is called
+     * Action taken after the command is verified
+     * 
      * @param args
      * @param event 
      */
@@ -32,13 +32,15 @@ public interface Command {
     
     /**
      * Returns help info for the command
-     * @return 
+     * 
+     * @param event 
      */
-    public String help();
+    public void help(MessageReceivedEvent event);
     
     /**
+     * Runs specified scripts which are determined by {success}
      * 
-     * @param success
+     * @param success [boolean] 
      * @param event 
      */
     public void executed(boolean success, MessageReceivedEvent event);

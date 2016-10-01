@@ -40,7 +40,8 @@ public class CommandParser {
         public final String[] args;
         public final MessageReceivedEvent event;
 
-        public CommandContainer(String rw, String beheaded, String[] splitBeheaded, String invoke, String[] args, MessageReceivedEvent event) {
+        public CommandContainer(String rw, String beheaded, String[] splitBeheaded, String invoke, String[] args,
+                                MessageReceivedEvent event) {
             this.raw = rw;
             this.beheaded = beheaded;
             this.splitBeheaded = splitBeheaded;

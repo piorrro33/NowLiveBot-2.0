@@ -6,19 +6,19 @@
 package core;
 
 import com.mb3364.twitch.api.Twitch;
-import commands.*;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.security.auth.login.LoginException;
+import commands.CommandPing;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.JDABuilder;
 import platform.discord.listener.DiscordListener;
 import util.CommandParser;
 import util.Const;
 
+import javax.security.auth.login.LoginException;
+import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- *
  * @author Veteran Software
  * @version 1.0
  * @since 09/28/2016
@@ -26,11 +26,12 @@ import util.Const;
 public class Main {
 
     public static final CommandParser parser = new CommandParser();
-
-    private static HashMap<String, Command> commands = new HashMap<>();
     private static final Logger LOG = Logger.getLogger(Main.class.getName());
+    private static HashMap<String, Command> commands = new HashMap<>();
 
     public static void main(String[] args) {
+
+        commands.put("ping", new CommandPing());
 
         /**
          * Instantiate the JDA Object This 'try' block keeps the bot in the Guild.
@@ -41,7 +42,7 @@ public class Main {
             Twitch twitchListener = new Twitch();
 
             JDA jda = new JDABuilder()
-                    .setAutoReconnect(true)// Ensure JDA autoreconnects
+                    .setAutoReconnect(true)// Ensure JDA auto-reconnects
                     .setAudioEnabled(false)// Turn off JDA audio support
                     .setBulkDeleteSplittingEnabled(false)
                     .setBotToken(Const.DISCORD_BOT_TOKEN)
@@ -51,7 +52,6 @@ public class Main {
         } catch (LoginException | IllegalArgumentException | InterruptedException ex) {
             java.util.logging.Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-        getCommands().put("ping", new CommandPing());
     }
 
     /**
@@ -69,7 +69,6 @@ public class Main {
     }
 
     /**
-     *
      * @param cmd
      */
     public static void handleCommand(CommandParser.CommandContainer cmd) {

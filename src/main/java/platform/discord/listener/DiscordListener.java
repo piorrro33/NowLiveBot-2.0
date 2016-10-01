@@ -5,11 +5,13 @@
  */
 package platform.discord.listener;
 
+import core.Main;
 import java.util.Locale;
+import java.util.logging.Logger;
 import net.dv8tion.jda.MessageBuilder;
-import net.dv8tion.jda.hooks.ListenerAdapter;
+import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-
+import net.dv8tion.jda.hooks.ListenerAdapter;
 import util.Const;
 
 /**
@@ -17,6 +19,8 @@ import util.Const;
  * @author keesh
  */
 public class DiscordListener extends ListenerAdapter {
+
+    private static final Logger LOG = Logger.getLogger(DiscordListener.class.getName());
 
     /**
      * Incoming message handler.
@@ -40,6 +44,9 @@ public class DiscordListener extends ListenerAdapter {
                     event.getMessage().getContent());
         }
 
+        if (event.getMessage().getContent().startsWith(Const.COMMAND) && !event.getMessage().getAuthor().getId().equals(event.getJDA().getSelfInfo().getId())) {
+            Main.handleCommand(Main.parser.parse(event.getMessage().getContent().toLowerCase(), event));
+        }
         if (event.getMessage().getContent().length() >= Const.COMMAND_LENGTH
                 && event.getMessage().getContent().toLowerCase(Locale.getDefault())
                 .substring(0, Const.COMMAND_LENGTH).equals(Const.COMMAND)) {
@@ -49,6 +56,13 @@ public class DiscordListener extends ListenerAdapter {
                     event.getTextChannel().getName(),
                     event.getAuthor().getUsername());
             // For debugging purposes, output a message from the bot to the Guild channel
+            try {
+                Message builder = new MessageBuilder().appendString("Someone said a command.").build();
+            } catch (Exception e) {
+                System.out.printf("[%s][%s] : Failed to write to Discord.\n",
+                        event.getGuild().getName(),
+                        event.getTextChannel().getName());
+            }
         }
     }
 }

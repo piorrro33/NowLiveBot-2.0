@@ -47,3 +47,7 @@ Thumbs.db
 *.iws
 .idea/
 
+# Floobits stuff
+.floo
+.flooignore
+

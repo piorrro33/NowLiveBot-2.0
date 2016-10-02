@@ -5,6 +5,8 @@
  */
 package util;
 
+import langs.En;
+
 import java.util.logging.Logger;
 
 /**
@@ -20,17 +22,21 @@ public class Const {
     public static final String DISCORD_BOT_TOKEN = "MjI4NTgzODExMDI4NDg0MDk4.Cs_YDg.O6oyssWJYFBRwcZUIq4-Me26xXQ";
     public static final String TWITCH_CLIENT_ID = "7713uzjnh50pdd9v2v0apto553xeo67";
     public static final String COMMAND_PREFIX = "-";// Requires single, regex safe character (at the moment) wahahahaha
+    public static final String BOT_NAME = "NowLiveBot";
     public static final String COMMAND = "nowlive";
     public static final String DISCORD_CLIENT_ID = "228583811028484098";
     public static final Integer COMMAND_LENGTH = COMMAND.length();
     // Language specific variables
     // TODO:  Replace 'En' with the guild language from the DB (when it's setup that way)
+    public static final String INCORRECT_ARGS = En.INCORRECT_ARGS;
     public static final String INVITE = langs.En.INVITE;
     public static final String INVITE_HELP = langs.En.INVITE_HELP;
     public static final String PING_HELP = langs.En.PING_HELP;
     public static final String EMPTY_COMMAND = langs.En.EMPTY_COMMAND;
     public static final String ADD_HELP = langs.En.ADD_HELP;
     public static final String COMPACT_HELP = langs.En.COMPACT_HELP;
+    public static final String ANNOUNCE_HELP = langs.En.ANNOUNCE_HELP;
+
     private static final Logger LOG = Logger.getLogger(Const.class.getName());
 
 }

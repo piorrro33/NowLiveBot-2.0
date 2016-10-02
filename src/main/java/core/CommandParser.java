@@ -5,10 +5,7 @@
  */
 package core;
 
-import core.commands.Add;
-import core.commands.Compact;
-import core.commands.Invite;
-import core.commands.Ping;
+import core.commands.*;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import util.Const;
 
@@ -32,10 +29,7 @@ public class CommandParser {
         commands.put("invite", new Invite());
         commands.put("add", new Add());
         commands.put("compact", new Compact());
-
-        // ping check
-        // slice and dice the command into an array
-        // pass the array to parser
+        commands.put("announce", new Announce());
     }
 
     /**

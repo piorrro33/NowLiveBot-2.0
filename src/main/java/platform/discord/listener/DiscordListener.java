@@ -5,14 +5,12 @@
  */
 package platform.discord.listener;
 
+import core.CommandParser;
 import core.Main;
-import net.dv8tion.jda.MessageBuilder;
-import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
 import util.Const;
 
-import java.util.Locale;
 import java.util.logging.Logger;
 
 /**
@@ -48,29 +46,21 @@ public class DiscordListener extends ListenerAdapter {
         //System.out.println("Event Message Content: " + event.getMessage().getContent());
         //System.out.println("Event Message Author ID: " + event.getMessage().getAuthor().getId());
         //System.out.println("Event.getJDA ID: " + event.getJDA().getSelfInfo().getId());
-        if (event.getMessage().getContent().startsWith(Const.COMMAND_PREFIX) && !event.getMessage().getAuthor().getId().equals(event.getJDA().getSelfInfo().getId())) {
-            // DEBUG STATEMENT: Remove in production
-            System.out.println("Passed filters!!");
-            if (event.getMessage().getContent().toLowerCase().startsWith(Const.COMMAND_PREFIX + Const.COMMAND)) {
-                // Make sure at least COMMMAND is present (including COMMAND_PREFIX and a trailing space)
-                if (event.getMessage().getContent().length() >= Const.COMMAND_LENGTH + 2) {
-                    // Strip out the COMMAND, COMMAND_PREFIX and the trailing space
-                    String strippedMessage = event.getMessage().getContent().toLowerCase().substring(Const.COMMAND_LENGTH + 2);
-                    // null check (maybe unecessary at this point)
-                    if (!strippedMessage.isEmpty()) {
-                        Main.handleCommand(Main.parser.parse(strippedMessage.toLowerCase(), event));
-                    }
-                } else {
-                    // If COMMAND_PREFIX + COMMAND is invoked with no command
-                    event.getTextChannel().sendMessage(langs.En.EMPTY_COMMAND);
-                }
-                // Ping is the only command that doesn't use COMMAND_PREFIX + COMMAND, so send it
-            } else if (event.getMessage().getContent().toLowerCase().startsWith(Const.COMMAND_PREFIX + "ping")) {
-                Main.handleCommand(Main.parser.parse(event.getMessage().getContent().toLowerCase(), event));
-            } else {
-                // TODO: Make database call to update message count.
-            }
 
+        String cntMsg = event.getMessage().getContent().toLowerCase();
+        String jdaID = event.getMessage().getAuthor().getId();
+
+        // Pre-check all core.commands to ignore JDA written messages.
+        if (cntMsg.startsWith(Const.COMMAND_PREFIX) && !jdaID.equals(event.getJDA().getSelfInfo().getId())) {
+            commandFilter(cntMsg, event);
+        } else {
+            //TODO: Add DB call for tracking number of messages sent in DB
+        }
+    }
+
+    private void commandFilter(String cntMsg, MessageReceivedEvent event) {
+        if (cntMsg.startsWith("ping", 1) || cntMsg.startsWith(Const.COMMAND, 1)) {
+            CommandParser.handleCommand(Main.parser.parse(cntMsg, event));
         }
     }
 }

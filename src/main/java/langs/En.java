@@ -17,23 +17,30 @@ import util.Const;
 public interface En {
 
     // Don't forget to add the String reference in Const.java
-    public static final String INVITE = "Hey buddy! Invite me to your server!\n"
+    String INVITE = "Hey buddy! Invite me to your server!\n\t"
             + "Click here: https://discordapp.com/oauth2/authorize?&client_id="
             + Const.DISCORD_CLIENT_ID
             + "&scope=bot&permissions=224256";
-    public static final String INVITE_HELP = "USAGE: "
+    String INVITE_HELP = "USAGE: "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
-            + " invite\t -Invite NowLive bot to your Discord Server.";
-    public static final String PING_HELP = "USAGE: !ping - Ping NowLiveBot.";
-    public static final String EMPTY_COMMAND = "Next time you wake me up, please send a command as well.";
-    public static final String ADD_HELP = "USAGE: "
+            + " invite\n\tInvite NowLive bot to your Discord Server.";
+    String PING_HELP = "USAGE: !ping\n\tPing NowLiveBot.";
+    String EMPTY_COMMAND = "Next time you wake me up, please send a command as well.";
+    String ADD_HELP = "USAGE: "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " add <option> <content>"
             + "\n\t__**<option>**__\t- __<content>__"
-            + "\n\t**game**\t\t-> The name of the game exactly as it appears on the streaming platform"
-            + "\n\t**channel**\t-> The streamer's name"
-            + "\n\t**team**\t\t-> The name of the streaming team (Twitch only)"
-            + "\n\t**tag**\t\t\t-> Word or group of words to search for in the stream title\n";
+            + "\n\t**game** - The name of the game exactly as it appears on the streaming platform"
+            + "\n\t**channel** - The streamer's name"
+            + "\n\t**team** - The name of the streaming team (Twitch only)"
+            + "\n\t**tag** - Word or group of words to search for in the stream title\n";
+    String COMPACT_HELP = "USAGE: "
+            + Const.COMMAND_PREFIX
+            + Const.COMMAND
+            + " compact <option>"
+            + "\n__**<option>**__"
+            + "\n\t**on** - Turns on Compact Mode"
+            + "\n\t**off** - Turns off Compact Mode";
 }

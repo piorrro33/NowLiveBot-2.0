@@ -20,7 +20,7 @@ public interface Command {
      * @param event
      * @return boolean true if criteria is met, false if criteria not met
      */
-    public boolean called(String[] args, MessageReceivedEvent event);
+    boolean called(String args, MessageReceivedEvent event);
     
     /**
      * Action taken after the command is verified
@@ -28,14 +28,14 @@ public interface Command {
      * @param args
      * @param event 
      */
-    public void action(String[] args, MessageReceivedEvent event);
+    void action(String args, MessageReceivedEvent event);
     
     /**
      * Returns help info for the command
      * 
      * @param event 
      */
-    public void help(MessageReceivedEvent event);
+    void help(MessageReceivedEvent event);
     
     /**
      * Runs specified scripts which are determined by {success}
@@ -43,5 +43,5 @@ public interface Command {
      * @param success [boolean] 
      * @param event 
      */
-    public void executed(boolean success, MessageReceivedEvent event);
+    void executed(boolean success, MessageReceivedEvent event);
 }

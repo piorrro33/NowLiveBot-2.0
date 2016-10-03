@@ -27,7 +27,6 @@ public class DiscordListener extends ListenerAdapter {
      */
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-        System.out.println("--On Message Receive Event");
         // Log message to console
         if (event.isPrivate()) {
             // PM's are not Guild specific, so don't request Guild and/or channel specific info
@@ -35,6 +34,7 @@ public class DiscordListener extends ListenerAdapter {
             System.out.printf("[PM][%s] : %s\n",
                     event.getAuthor().getUsername(),
                     event.getMessage().getContent());
+            event.getAuthor().getPrivateChannel().sendMessage(Const.PRIVATE_MESSAGE_REPLY);
         } else {
             System.out.printf("[%s][%s][%s] : %s\n",
                     event.getGuild().getName(),
@@ -43,11 +43,7 @@ public class DiscordListener extends ListenerAdapter {
                     event.getMessage().getContent());
         }
 
-        //System.out.println("Event Message Content: " + event.getMessage().getContent());
-        //System.out.println("Event Message Author ID: " + event.getMessage().getAuthor().getId());
-        //System.out.println("Event.getJDA ID: " + event.getJDA().getSelfInfo().getId());
-
-        String cntMsg = event.getMessage().getContent().toLowerCase();
+        String cntMsg = event.getMessage().getContent();
         String jdaID = event.getMessage().getAuthor().getId();
 
         // Pre-check all core.commands to ignore JDA written messages.

@@ -10,6 +10,7 @@ import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 import java.util.logging.Logger;
 
+import static langs.En.PING;
 import static langs.En.PING_HELP;
 
 /**
@@ -31,7 +32,13 @@ public class Ping implements Command {
 
     @Override
     public void action(String args, MessageReceivedEvent event) {
-        event.getTextChannel().sendMessage("Pong!");
+        // TODO: Add ping times to the bot and the database
+        int timer = 0;
+        while (timer < 10) {
+            event.getTextChannel().sendTyping();
+            timer++;
+        }
+        event.getTextChannel().sendMessage(PING);
     }
 
     @Override

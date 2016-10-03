@@ -25,11 +25,15 @@ public class CommandParser {
         /**
          * Register core.commands with the bot
          */
-        commands.put("ping", new Ping());
-        commands.put("invite", new Invite());
         commands.put("add", new Add());
-        commands.put("compact", new Compact());
         commands.put("announce", new Announce());
+        commands.put("compact", new Compact());
+        commands.put("help", new Help());
+        commands.put("invite", new Invite());
+        commands.put("move", new Move());
+        commands.put("ping", new Ping());
+        commands.put("remove", new Remove());
+        commands.put("streams", new Streams());
     }
 
     /**
@@ -52,15 +56,12 @@ public class CommandParser {
      * @param cmd
      */
     public static void handleCommand(CommandParser.CommandContainer cmd) {
-        System.out.println("Made it into handleCommand()");
 
-        System.out.println("\nVariables inside handleCommand():");
-        System.out.println("invoke: " + cmd.invoke);
-        System.out.println("args: " + cmd.args);
-        System.out.println("event: " + cmd.event);
+        System.out.println("\nVariables inside CommandContainer():");
+        System.out.println("cmd.invoke: " + cmd.invoke);
+        System.out.println("cmd.args: " + cmd.args);
 
         if (getCommands().containsKey(cmd.invoke)) {
-            System.out.println("cmd.args as a string: " + cmd.args + "\n");
 
             boolean safe = getCommands().get(cmd.invoke).called(cmd.args, cmd.event);
 
@@ -68,11 +69,10 @@ public class CommandParser {
                 // DEBUG STATEMENT: Remove in production
                 System.out.println("Boolean 'safe' is " + safe + ".\n");
                 System.out.println("cmd.args: " + cmd.args);
-                //System.out.println("cmd.args.length(): " + cmd.args.length());
+
                 // TODO: Match the capitalisation of ping and return in pong
+
                 if (cmd.args != null && cmd.args.equals("help")) {
-                    // DEBUG STATEMENT: Remove in production
-                    System.out.println("Asked for help with the command: " + cmd.invoke + "\n");
                     getCommands().get(cmd.invoke).help(cmd.event);
                 } else {
                     getCommands().get(cmd.invoke).action(cmd.args, cmd.event);
@@ -86,9 +86,7 @@ public class CommandParser {
     }
 
     public CommandContainer parse(String raw, MessageReceivedEvent event) {
-        // Remove COMMAND_PREFIX
-        String beheaded = raw.replaceFirst(Const.COMMAND_PREFIX, "");
-        System.out.println("beheaded inside parser method: " + beheaded);
+        String beheaded = raw.replaceFirst(Const.COMMAND_PREFIX, "");  // Remove COMMAND_PREFIX
 
         String removeCommand = null;
         String invoke = null;
@@ -96,8 +94,7 @@ public class CommandParser {
 
         if (beheaded.contains(" ")) {
             removeCommand = beheaded.substring(beheaded.indexOf(" ") + 1); // Remove Const.COMMAND {add opt opt}
-            Integer spaceIndex = removeCommand.indexOf(" ");
-            System.out.println("spaceIndex: " + spaceIndex);
+
             if (removeCommand.contains(" ")) {
                 invoke = removeCommand.substring(0, removeCommand.indexOf(" ")); // Return just the command
                 args = removeCommand.substring(removeCommand.indexOf(" ") + 1);
@@ -112,11 +109,6 @@ public class CommandParser {
             event.getTextChannel().sendMessage(Const.EMPTY_COMMAND);
         }
 
-        System.out.println("\nVariables inside parse():");
-        System.out.println("removeCommand: " + removeCommand);
-        System.out.println("invoke: " + invoke);
-        System.out.println("args: " + args);
-
         return new CommandContainer(raw, invoke, args, event);
     }
 
@@ -129,7 +121,7 @@ public class CommandParser {
 
         public CommandContainer(String rw, String invoke, String args, MessageReceivedEvent event) {
             this.raw = rw;
-            this.invoke = invoke; // The Command
+            this.invoke = invoke.toLowerCase(); // The Command (ensure the command is always passes as lowercase)
             this.args = args; // Command Arguments
             this.event = event; // The Event
         }

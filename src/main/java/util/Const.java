@@ -7,8 +7,6 @@ package util;
 
 import langs.En;
 
-import java.util.logging.Logger;
-
 /**
  * Common variables used throughout
  *
@@ -23,20 +21,31 @@ public class Const {
     public static final String TWITCH_CLIENT_ID = "7713uzjnh50pdd9v2v0apto553xeo67";
     public static final String COMMAND_PREFIX = "-";// Requires single, regex safe character (at the moment) wahahahaha
     public static final String BOT_NAME = "NowLiveBot";
-    public static final String COMMAND = "nowlive";
+    public static final String COMMAND = "nl";
     public static final String DISCORD_CLIENT_ID = "228583811028484098";
     public static final Integer COMMAND_LENGTH = COMMAND.length();
+
+    public static final String PLAYING = "Playstation 5";
+
     // Language specific variables
     // TODO:  Replace 'En' with the guild language from the DB (when it's setup that way)
+    public static final String HELP_PM = En.HELP_PM;
+    public static final String TYPE_ONCE = En.TYPE_ONCE;
     public static final String INCORRECT_ARGS = En.INCORRECT_ARGS;
-    public static final String INVITE = langs.En.INVITE;
-    public static final String INVITE_HELP = langs.En.INVITE_HELP;
-    public static final String PING_HELP = langs.En.PING_HELP;
-    public static final String EMPTY_COMMAND = langs.En.EMPTY_COMMAND;
-    public static final String ADD_HELP = langs.En.ADD_HELP;
-    public static final String COMPACT_HELP = langs.En.COMPACT_HELP;
-    public static final String ANNOUNCE_HELP = langs.En.ANNOUNCE_HELP;
+    public static final String EMPTY_COMMAND = En.EMPTY_COMMAND;
+    public static final String EMPTY_ARGS = En.EMPTY_ARGS;
+    public static final String PRIVATE_MESSAGE_REPLY = En.PRIVATE_MESSAGE_REPLY;
 
-    private static final Logger LOG = Logger.getLogger(Const.class.getName());
+    // Command specific text
 
+    public static final String ADD_HELP = En.ADD_HELP;
+    public static final String ANNOUNCE_HELP = En.ANNOUNCE_HELP;
+    public static final String COMPACT_HELP = En.COMPACT_HELP;
+    public static final String PING = En.PING;
+    public static final String PING_HELP = En.PING_HELP;
+    public static final String INVITE = En.INVITE;
+    public static final String INVITE_HELP = En.INVITE_HELP;
+    public static final String MOVE_HELP = En.MOVE_HELP;
+    public static final String REMOVE_HELP = En.REMOVE_HELP;
+    public static final String STREAMS_HELP = En.STREAMS_HELP;
 }

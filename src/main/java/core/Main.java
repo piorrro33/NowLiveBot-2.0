@@ -43,7 +43,7 @@ public class Main {
                     .addListener(discordListener)
                     //.addListener(twitchListener)
                     .buildBlocking();
-            jda.getAccountManager().setGame("#ReckingCrew4Life"); // Set the 'Playing...'
+            jda.getAccountManager().setGame(Const.PLAYING); // Set the 'Playing...'
             jda.getAccountManager().update(); // Must call '.update()' in order for this to work.
         } catch (LoginException | IllegalArgumentException | InterruptedException ex) {
             java.util.logging.Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);

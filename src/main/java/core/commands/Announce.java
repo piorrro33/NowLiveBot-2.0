@@ -22,7 +22,7 @@ public class Announce implements Command {
     @Override
     public void action(String args, MessageReceivedEvent event) {
         // TODO: When the DB gets setup, iterate through all guilds the bot is in and send this out to all guilds
-        event.getTextChannel().sendMessage("Message from the " + Const.BOT_NAME + " developers:\n\t" + args);
+        event.getTextChannel().sendMessage("*Message from the " + Const.BOT_NAME + " developers:*\n\n\t" + args);
     }
 
     @Override

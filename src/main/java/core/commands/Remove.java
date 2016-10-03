@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package core.commands;
 
 import core.Command;
@@ -12,11 +7,11 @@ import util.Const;
 import java.util.logging.Logger;
 
 /**
- * @author keesh
+ * Created by keesh on 10/3/2016.
  */
-public class Add implements Command {
+public class Remove implements Command {
 
-    private static final Logger LOG = Logger.getLogger(Add.class.getName());
+    private static final Logger LOG = Logger.getLogger(Remove.class.getName());
     public String help;
     private String option;
     private String argument;
@@ -45,6 +40,7 @@ public class Add implements Command {
             } else {
                 // If there are no passed arguments
                 event.getTextChannel().sendMessage(Const.EMPTY_ARGS);
+
                 return false;
             }
         }
@@ -55,13 +51,13 @@ public class Add implements Command {
     @Override
     public void action(String args, MessageReceivedEvent event) {
 
-        event.getTextChannel().sendMessage("Added `" + this.option + "` " + this.argument);
+        event.getTextChannel().sendMessage("Removed `" + this.option + "` " + this.argument);
     }
 
     @Override
     public void help(MessageReceivedEvent event) {
 
-        event.getTextChannel().sendMessage(Const.ADD_HELP);
+        event.getTextChannel().sendMessage(Const.REMOVE_HELP);
     }
 
     @Override

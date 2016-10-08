@@ -7,7 +7,7 @@ import util.Const;
 import java.lang.reflect.Field;
 
 /**
- * Created by keesh on 10/3/2016.
+ * @author Veteran Software by Ague Mort
  */
 public class Help implements Command {
     @Override
@@ -21,7 +21,7 @@ public class Help implements Command {
         Field[] c = Const.class.getDeclaredFields();
         for (Field field : c) {
             Const nullObject = new Const();
-            try {
+            try { 
                 Object value = field.get(nullObject);
                 if (value.toString().contains("USAGE")) {
                     message += value.toString();

@@ -7,24 +7,25 @@ package core;
 
 import core.commands.*;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import util.Const;
 
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.logging.Logger;
 
 /**
  * @author keesh
  */
 public class CommandParser {
-    private static final Logger LOG = Logger.getLogger(CommandParser.class.getName());
-
     public static HashMap<String, Command> commands = new HashMap<>();
+    private static Logger logger = LoggerFactory.getLogger(CommandParser.class);
 
-    public CommandParser() {
+    CommandParser() {
 
-        /**
-         * Register core.commands with the bot
-         */
+        // Register core.commands with the bot
         commands.put("add", new Add());
         commands.put("announce", new Announce());
         commands.put("compact", new Compact());
@@ -53,13 +54,13 @@ public class CommandParser {
     }
 
     /**
-     * @param cmd
+     * @param cmd Object containing required arguments to invoke the command
      */
-    public static void handleCommand(CommandParser.CommandContainer cmd) {
+    public static void handleCommand(CommandParser.CommandContainer cmd) throws PropertyVetoException, IOException, SQLException {
 
-        System.out.println("\nVariables inside CommandContainer():");
-        System.out.println("cmd.invoke: " + cmd.invoke);
-        System.out.println("cmd.args: " + cmd.args);
+        logger.debug("\nVariables inside CommandContainer():");
+        logger.debug("cmd.invoke: " + cmd.invoke);
+        logger.debug("cmd.args: " + cmd.args);
 
         if (getCommands().containsKey(cmd.invoke)) {
 
@@ -67,8 +68,8 @@ public class CommandParser {
 
             if (safe) {
                 // DEBUG STATEMENT: Remove in production
-                System.out.println("Boolean 'safe' is " + safe + ".\n");
-                System.out.println("cmd.args: " + cmd.args);
+                logger.debug("Boolean 'safe' is " + safe + ".\n");
+                logger.debug("cmd.args: " + cmd.args);
 
                 // TODO: Match the capitalisation of ping and return in pong
 
@@ -88,7 +89,7 @@ public class CommandParser {
     public CommandContainer parse(String raw, MessageReceivedEvent event) {
         String beheaded = raw.replaceFirst(Const.COMMAND_PREFIX, "");  // Remove COMMAND_PREFIX
 
-        String removeCommand = null;
+        String removeCommand;
         String invoke = null;
         String args = null;
 
@@ -112,14 +113,14 @@ public class CommandParser {
         return new CommandContainer(raw, invoke, args, event);
     }
 
-    public static class CommandContainer {
+    private static class CommandContainer {
 
-        public final String raw;
-        public final String invoke;
         public final String args;
         public final MessageReceivedEvent event;
+        final String raw;
+        final String invoke;
 
-        public CommandContainer(String rw, String invoke, String args, MessageReceivedEvent event) {
+        CommandContainer(String rw, String invoke, String args, MessageReceivedEvent event) {
             this.raw = rw;
             this.invoke = invoke.toLowerCase(); // The Command (ensure the command is always passes as lowercase)
             this.args = args; // Command Arguments

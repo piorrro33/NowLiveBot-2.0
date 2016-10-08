@@ -8,7 +8,6 @@ package platform.twitch.listener;
 import platform.twitch.controller.TwitchController;
 
 /**
- *
  * @author keesh
  */
 public class TwitchListener {

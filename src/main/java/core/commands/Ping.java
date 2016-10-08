@@ -7,14 +7,17 @@ package core.commands;
 
 import core.Command;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
+import util.database.Database;
 
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.logging.Logger;
 
 import static langs.En.PING;
 import static langs.En.PING_HELP;
 
 /**
- *
  * @author keesh
  */
 public class Ping implements Command {
@@ -23,7 +26,7 @@ public class Ping implements Command {
     /**
      * Help message for Ping
      */
-    public final String HELP = PING_HELP;
+    private final String HELP = PING_HELP;
 
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
@@ -37,6 +40,11 @@ public class Ping implements Command {
         while (timer < 10) {
             event.getTextChannel().sendTyping();
             timer++;
+        }
+        try {
+            Database.getInstance().checkPooledStatus();
+        } catch (IOException | SQLException | PropertyVetoException e) {
+            e.printStackTrace();
         }
         event.getTextChannel().sendMessage(PING);
     }

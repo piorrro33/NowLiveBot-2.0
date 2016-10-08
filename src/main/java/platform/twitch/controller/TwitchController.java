@@ -6,7 +6,6 @@
 package platform.twitch.controller;
 
 /**
- *
  * @author keesh
  */
 public class TwitchController {

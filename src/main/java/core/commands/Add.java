@@ -7,26 +7,37 @@ package core.commands;
 
 import core.Command;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import platform.discord.controller.DiscordController;
 import util.Const;
+import util.database.Database;
+import util.database.calls.Tracker;
 
-import java.util.logging.Logger;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * @author keesh
  */
 public class Add implements Command {
 
-    private static final Logger LOG = Logger.getLogger(Add.class.getName());
+    private static Logger logger = LoggerFactory.getLogger(Add.class);
     public String help;
     private String option;
     private String argument;
+    private String[] options = new String[]{"channel", "game", "manager", "tag", "team", "help"};
 
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
 
-        String[] options = new String[]{"channel", "game", "manager", "tag", "team", "help"};
 
-        for (String s : options) { // Iterate through the available options for this command
+        for (String s : this.options) { // Iterate through the available options for this command
             if (args != null && !args.isEmpty()) {
                 if (optionCheck(args, s)) {
                     if (argumentCheck(args, s.length())) {
@@ -54,19 +65,84 @@ public class Add implements Command {
 
     @Override
     public void action(String args, MessageReceivedEvent event) {
+        DiscordController dController = new DiscordController(event);
 
-        event.getTextChannel().sendMessage("Added `" + this.option + "` " + this.argument);
+        BigInteger guildId = new BigInteger(dController.getguildId());
+
+        for (String s : this.options) {
+            if (this.option.equals(s) && !this.option.equals("help")) {
+                Connection connection;
+                Statement statement;
+                ResultSet resultSet;
+                Integer resultInt;
+                Integer platformId = 1; // platformId is always 1 for Twitch until other platforms are added
+
+                try {
+                    connection = Database.getInstance().getConnection();
+                    statement = connection.createStatement();
+
+                    // Check to see if the game already exists in the db for that guild
+                    String query;
+
+                    if (this.option.equals("manager")) {
+                        logger.info("Checking to see if " + dController.getMentionedUsersId()
+                                + " already exists for guild: " + guildId);
+
+                        query = "SELECT `userId` FROM `" + this.option + "` WHERE `guildId` = " + guildId + " " +
+                                "AND " + "`userId` = '" + dController.getMentionedUsersId() + "'";
+                    } else {
+                        logger.info("Checking to see if the " + this.option + " already exists for guild: " + guildId);
+                        query = "SELECT `name` FROM `" + this.option + "` WHERE `guildId` = " + guildId + " AND " +
+                                "`platformId` = " + platformId + " AND `name` = '" + this.option + "'";
+                    }
+
+                    resultSet = statement.executeQuery(query);
+
+                    if (resultSet.next()) {
+                        event.getTextChannel().sendMessage(Const.ALREADY_EXISTS);
+                    } else {
+                        if (this.option.equals("manager")) {
+                            query = "INSERT INTO `" + this.option + "` (`id`, `guildId`, `userId`) VALUES " +
+                                    "(null, '" + guildId + "', '" + String.valueOf(dController.getMentionedUsersId())
+                                    + "')";
+                        } else {
+                            query = "INSERT INTO `" + this.option + "` (`id`, `guildId`, `platformId`, `name`) VALUES " +
+                                    "(null, '" + guildId + "', " + platformId + ", '" + this.argument + "')";
+                        }
+
+                        resultInt = statement.executeUpdate(query);
+
+                        if (resultInt > 0) {
+                            event.getTextChannel().sendMessage("Added `" + this.option + "` " + this.argument);
+                            logger.info("Successfully added " + this.argument + " to the database for guildId: " +
+                                    guildId + ".");
+                        } else {
+                            event.getTextChannel().sendMessage("Failed to add `" + this.option + "` " + this.argument);
+                            logger.info("Failed to add " + this.option + " " + this.argument + " to the database for " +
+                                    "guildId: " + guildId + ".");
+                        }
+                    }
+
+                    Database.getInstance();
+                    Database.cleanUp(resultSet, statement, connection);
+
+                } catch (IOException | SQLException | PropertyVetoException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     @Override
     public void help(MessageReceivedEvent event) {
-
         event.getTextChannel().sendMessage(Const.ADD_HELP);
     }
 
     @Override
-    public void executed(boolean success, MessageReceivedEvent event) {
+    public void executed(boolean success, MessageReceivedEvent event) throws PropertyVetoException, IOException, SQLException {
         // TODO: Database command count + other post-script
+        Tracker tracker = new Tracker("Add");
+
     }
 
     private boolean optionCheck(String args, String option) {

@@ -7,8 +7,11 @@ package core;
 
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.sql.SQLException;
+
 /**
- *
  * @author keesh
  */
 public interface Command {
@@ -16,32 +19,32 @@ public interface Command {
     /**
      * Used to determine if appropriate arguments exist
      *
-     * @param args
-     * @param event
+     * @param args Arguments being passed
+     * @param event From JDA: MessageReceivedEvent
      * @return boolean true if criteria is met, false if criteria not met
      */
     boolean called(String args, MessageReceivedEvent event);
-    
+
     /**
      * Action taken after the command is verified
-     * 
-     * @param args
-     * @param event 
+     *
+     * @param args Arguments being passed
+     * @param event From JDA: MessageReceivedEvent
      */
     void action(String args, MessageReceivedEvent event);
-    
+
     /**
      * Returns help info for the command
-     * 
-     * @param event 
+     *
+     * @param event From JDA: MessageReceivedEvent
      */
     void help(MessageReceivedEvent event);
-    
+
     /**
      * Runs specified scripts which are determined by {success}
-     * 
-     * @param success [boolean] 
-     * @param event 
+     *
+     * @param success [boolean]
+     * @param event From JDA: MessageReceivedEvent
      */
-    void executed(boolean success, MessageReceivedEvent event);
+    void executed(boolean success, MessageReceivedEvent event) throws PropertyVetoException, IOException, SQLException;
 }

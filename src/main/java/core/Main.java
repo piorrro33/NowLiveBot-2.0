@@ -5,15 +5,21 @@
  */
 package core;
 
-import com.mb3364.twitch.api.Twitch;
+//import com.mb3364.twitch.api.Twitch;
+
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.JDABuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import platform.discord.listener.DiscordListener;
 import util.Const;
+import util.PropReader;
+import util.database.Database;
 
 import javax.security.auth.login.LoginException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.sql.SQLException;
 
 /**
  * @author Veteran Software
@@ -23,30 +29,37 @@ import java.util.logging.Logger;
 public class Main {
 
     public static final CommandParser parser = new CommandParser();
-    private static final Logger LOG = Logger.getLogger(Main.class.getName());
+    private static Logger logger = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws PropertyVetoException, IOException, SQLException {
+        // Verify the database is there on startup
+        Database.getInstance();
+        Database.checkDatabase();
 
-        /**
-         * Instantiate the JDA Object This 'try' block keeps the bot in the Guild.
-         */
+        // Instantiate the JDA Object
+
         try {
+
             DiscordListener discordListener = new DiscordListener();
 
-            Twitch twitchListener = new Twitch();
+            //Twitch twitchListener = new Twitch();
 
             JDA jda = new JDABuilder()
                     .setAutoReconnect(true) // Ensure JDA auto-reconnects
                     .setAudioEnabled(false) // Turn off JDA audio support
                     .setBulkDeleteSplittingEnabled(false)
-                    .setBotToken(Const.DISCORD_BOT_TOKEN)
+                    .setBotToken(PropReader.getInstance().getProp().getProperty("discord.token"))
                     .addListener(discordListener)
                     //.addListener(twitchListener)
                     .buildBlocking();
             jda.getAccountManager().setGame(Const.PLAYING); // Set the 'Playing...'
             jda.getAccountManager().update(); // Must call '.update()' in order for this to work.
-        } catch (LoginException | IllegalArgumentException | InterruptedException ex) {
-            java.util.logging.Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (LoginException ex) {
+            logger.error("JDA Login failed. Bot token incorrect.", ex);
+        } catch (IllegalArgumentException ex) {
+            logger.error("JDA login failed. Bot token invalid.", ex);
+        } catch (InterruptedException ex) {
+            logger.error("InterruptedException", ex);
         }
     }
 }

@@ -6,6 +6,7 @@
 package langs;
 
 import util.Const;
+import util.PropReader;
 
 /**
  * English language output strings
@@ -26,6 +27,7 @@ public interface En {
     String PRIVATE_MESSAGE_REPLY = "I'm sorry, but the bot you are trying to reach has a voicemail box that has not " +
             "been setup yet.  Please try your PM again later.";
     String TYPE_ONCE = "You only need to type that part once, silly.";
+    String ALREADY_EXISTS = "/shrug It looks like you already added that to my database.";
 
     // Command specific text
 
@@ -51,7 +53,7 @@ public interface En {
             + "\n\toff - Turns off Compact Mode```";
     String INVITE = "Hey buddy! Invite me to your server!\n\t"
             + "Click here: https://discordapp.com/oauth2/authorize?&client_id="
-            + Const.DISCORD_CLIENT_ID + "&scope=bot&permissions=224256";
+            + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=224256";
     String INVITE_HELP = "```Ruby\nINVITE: used to display my invite link\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND

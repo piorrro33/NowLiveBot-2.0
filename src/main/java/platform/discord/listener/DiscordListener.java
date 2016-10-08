@@ -7,11 +7,20 @@ package platform.discord.listener;
 
 import core.CommandParser;
 import core.Main;
+import net.dv8tion.jda.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
 import util.Const;
+import util.database.calls.GuildJoin;
+import util.database.calls.GuildLeave;
 
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.logging.Logger;
+
+import static util.database.Database.logger;
 
 /**
  * @author keesh
@@ -23,7 +32,7 @@ public class DiscordListener extends ListenerAdapter {
     /**
      * Incoming message handler.
      *
-     * @param event
+     * @param event JDA MessageReceivedEvent
      */
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -34,7 +43,9 @@ public class DiscordListener extends ListenerAdapter {
             System.out.printf("[PM][%s] : %s\n",
                     event.getAuthor().getUsername(),
                     event.getMessage().getContent());
-            event.getAuthor().getPrivateChannel().sendMessage(Const.PRIVATE_MESSAGE_REPLY);
+            if (!event.getAuthor().isBot()) {
+                event.getAuthor().getPrivateChannel().sendMessage(Const.PRIVATE_MESSAGE_REPLY);
+            }
         } else {
             System.out.printf("[%s][%s][%s] : %s\n",
                     event.getGuild().getName(),
@@ -48,13 +59,33 @@ public class DiscordListener extends ListenerAdapter {
 
         // Pre-check all core.commands to ignore JDA written messages.
         if (cntMsg.startsWith(Const.COMMAND_PREFIX) && !jdaID.equals(event.getJDA().getSelfInfo().getId())) {
-            commandFilter(cntMsg, event);
+            try {
+                commandFilter(cntMsg, event);
+            } catch (PropertyVetoException | IOException | SQLException e) {
+                e.printStackTrace();
+            }
         } else {
             //TODO: Add DB call for tracking number of messages sent in DB
         }
     }
 
-    private void commandFilter(String cntMsg, MessageReceivedEvent event) {
+    @Override
+    public void onGuildJoin(GuildJoinEvent event) {
+        try {
+            GuildJoin.joinGuild(event);
+        } catch (PropertyVetoException | SQLException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onGuildLeave(GuildLeaveEvent event) {
+        GuildLeave.leaveGuild(event);
+        logger.info("NowLive bot has been dismissed from: " + event.getGuild().getName() + "(Id: " + event.getGuild
+                ().getId() + ")");
+    }
+
+    private void commandFilter(String cntMsg, MessageReceivedEvent event) throws PropertyVetoException, IOException, SQLException {
         if (cntMsg.startsWith("ping", 1) || cntMsg.startsWith(Const.COMMAND, 1)) {
             CommandParser.handleCommand(Main.parser.parse(cntMsg, event));
         }

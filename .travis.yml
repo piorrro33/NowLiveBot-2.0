@@ -2,8 +2,8 @@ language: java
 
 # Check for gradle
 script:
-  gradle check
-  gradle assemble
+  - gradle check
+  - gradle assemble
 
 # Gradle caching
 before_cache:

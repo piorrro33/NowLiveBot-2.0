@@ -7,10 +7,6 @@ import org.slf4j.LoggerFactory;
 import util.Const;
 import util.database.calls.Tracker;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.sql.SQLException;
-
 import static platform.discord.controller.DiscordController.sendToChannel;
 
 /**
@@ -26,12 +22,14 @@ public class Status implements Command {
     public boolean called(String args, MessageReceivedEvent event) {
         String[] options = new String[]{"discord", "database", "twitch", "all"};
 
-        for (String s : options) { // Iterate through the available options for this command
+        for (String s : options) {
+            // Iterate through the available options for this command
             if (args != null && !args.isEmpty()) {
                 if (optionCheck(args, s)) {
                     this.option = s;
                     return true;
-                } else if (args.equals("help")) { // If the help argument is the only argument that is passed
+                } else if ("help".equals(args)) {
+                    // If the help argument is the only argument that is passed
                     return true;
                 }
             } else {
@@ -52,7 +50,7 @@ public class Status implements Command {
                 break;
 
             case "database":
-                String query = "SHOW SESSION STATUS LIKE %Uptime%";
+                //String query = "SHOW SESSION STATUS LIKE %Uptime%";
                 break;
 
             case "twitch":
@@ -77,11 +75,7 @@ public class Status implements Command {
 
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
-        try {
-            new Tracker("Status");
-        } catch (PropertyVetoException | IOException | SQLException e) {
-            logger.warn("There was a problem tracking this command usage.");
-        }
+        new Tracker("Status");
     }
 
     private boolean optionCheck(String args, String option) {

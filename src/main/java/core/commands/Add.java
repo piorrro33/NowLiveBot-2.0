@@ -14,8 +14,6 @@ import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -34,8 +32,8 @@ public class Add implements Command {
 
     private static Logger logger = LoggerFactory.getLogger(Add.class);
     public String help;
-    private String option;
-    private String argument;
+    public String option;
+    public String argument;
     private String[] options = new String[]{"channel", "game", "manager", "tag", "team", "help"};
 
     @Override
@@ -55,7 +53,8 @@ public class Add implements Command {
                         missingArguments(event);
                         return false;
                     }
-                } else if (args.equals("help")) { // If the help argument is the only argument that is passed
+                } else if ("help".equals(args)) {
+                    // If the help argument is the only argument that is passed
                     return true;
                 }
             } else {
@@ -133,7 +132,7 @@ public class Add implements Command {
                     Database.getInstance();
                     Database.cleanUp(resultSet, statement, connection);
 
-                } catch (IOException | SQLException | PropertyVetoException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -147,11 +146,7 @@ public class Add implements Command {
 
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
-        try {
-            new Tracker("Add");
-        } catch (PropertyVetoException | IOException | SQLException e) {
-            logger.warn("There was a problem tracking this command usage.");
-        }
+        new Tracker("Add");
 
     }
 

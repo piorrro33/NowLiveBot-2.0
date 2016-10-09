@@ -12,10 +12,6 @@ import org.slf4j.LoggerFactory;
 import util.Const;
 import util.database.calls.Tracker;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.sql.SQLException;
-
 import static platform.discord.controller.DiscordController.sendToChannel;
 
 /**
@@ -29,7 +25,7 @@ public class Invite implements Command {
     public boolean called(String args, MessageReceivedEvent event) {
 
         if (args != null && !args.isEmpty()) {
-            if (args.equals("help")) { // If the help argument is the only argument that is passed
+            if ("help".equals(args)) { // If the help argument is the only argument that is passed
                 return true;
             } else {
                 sendToChannel(event, Const.INCORRECT_ARGS);
@@ -51,10 +47,6 @@ public class Invite implements Command {
 
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
-        try {
-            new Tracker("Invite");
-        } catch (PropertyVetoException | IOException | SQLException e) {
-            logger.warn("There was a problem tracking this command usage.");
-        }
+        new Tracker("Invite");
     }
 }

@@ -9,8 +9,6 @@ import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -20,43 +18,11 @@ import static platform.discord.controller.DiscordController.sendToChannel;
 /**
  * @author Veteran Software by Ague Mort
  */
-public class Remove implements Command {
+public class Remove extends Add implements Command {
 
     private static Logger logger = LoggerFactory.getLogger(Add.class);
     public String help;
-    private String option;
-    private String argument;
     private String[] options = new String[]{"channel", "game", "manager", "tag", "team", "help"};
-
-    @Override
-    public boolean called(String args, MessageReceivedEvent event) {
-
-
-        for (String s : this.options) { // Iterate through the available options for this command
-            if (args != null && !args.isEmpty()) {
-                if (optionCheck(args, s)) {
-                    if (argumentCheck(args, s.length())) {
-                        // Sets the class scope variables that will be used by action()
-                        this.option = s;
-                        this.argument = args.substring(this.option.length() + 1);
-                        return true;
-                    } else {
-                        // If the required arguments for the option are missing
-                        missingArguments(event);
-                        return false;
-                    }
-                } else if (args.equals("help")) { // If the help argument is the only argument that is passed
-                    return true;
-                }
-            } else {
-                // If there are no passed arguments
-                sendToChannel(event, Const.EMPTY_ARGS);
-                return false;
-            }
-        }
-        // If all checks fail
-        return false;
-    }
 
     @Override
     public void action(String args, MessageReceivedEvent event) {
@@ -102,7 +68,7 @@ public class Remove implements Command {
                     Database.getInstance();
                     Database.cleanUp(resultInt, statement, connection);
 
-                } catch (IOException | SQLException | PropertyVetoException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -116,24 +82,6 @@ public class Remove implements Command {
 
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
-        try {
-            new Tracker("Remove");
-        } catch (PropertyVetoException | IOException | SQLException e) {
-            logger.warn("There was a problem tracking this command usage.");
-        }
+        new Tracker("Remove");
     }
-
-    private boolean optionCheck(String args, String option) {
-        return args.contains(" ") && args.toLowerCase().substring(0, option.length()).equals(option);
-    }
-
-    private boolean argumentCheck(String args, Integer spaceLocation) {
-
-        return args.indexOf(" ") == spaceLocation && args.length() >= args.indexOf(" ") + 1;
-    }
-
-    private void missingArguments(MessageReceivedEvent event) {
-        sendToChannel(event, Const.INCORRECT_ARGS);
-    }
-
 }

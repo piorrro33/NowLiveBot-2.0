@@ -22,7 +22,7 @@ public class SchemaCheck extends Database {
         super();
     }
 
-    public static void checkDatabase() {
+    public static void checkDb() {
         logger.info("Checking to see if the schema is present.");
         Connection connection = null;
         Statement statement = null;
@@ -48,8 +48,6 @@ public class SchemaCheck extends Database {
             logger.error("There is an error in the SQL syntax.", e);
         } catch (SQLException e) {
             logger.error("SQLException error.  No clue what.", e);
-        } catch (PropertyVetoException | IOException e) {
-            e.printStackTrace();
         } finally {
             cleanUp(resultSet, statement, connection);
         }
@@ -94,10 +92,6 @@ public class SchemaCheck extends Database {
             if (result) {
                 logger.info("Now using schema: " + MYSQL_SCHEMA);
             }
-        } catch (IOException e) {
-            logger.error("IO Exception.", e);
-        } catch (PropertyVetoException e) {
-            logger.error("Property Veto Exception", e);
         } finally {
             cleanUp(resultSet, statement, connection);
         }

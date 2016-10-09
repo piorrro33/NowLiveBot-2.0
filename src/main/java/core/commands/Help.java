@@ -7,10 +7,7 @@ import org.slf4j.LoggerFactory;
 import util.Const;
 import util.database.calls.Tracker;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.sql.SQLException;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
 
@@ -52,10 +49,6 @@ public class Help implements Command {
 
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
-        try {
-            new Tracker("Help");
-        } catch (PropertyVetoException | IOException | SQLException e) {
-            logger.warn("There was a problem tracking this command usage.");
-        }
+        new Tracker("Help");
     }
 }

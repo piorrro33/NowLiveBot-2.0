@@ -11,11 +11,12 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import static util.database.calls.SchemaCheck.checkDb;
 
 /**
  * @author Veteran Software by Ague Mort
@@ -32,10 +33,14 @@ public class Database {
     private static Database database;
     private ComboPooledDataSource cpds;
 
-    public Database() throws PropertyVetoException, SQLException, IOException {
+    public Database() {
         // c3p0 connection pooling instantiation
         this.cpds = new ComboPooledDataSource();
-        this.cpds.setDriverClass(JDBC_DRIVER);
+        try {
+            this.cpds.setDriverClass(JDBC_DRIVER);
+        } catch (PropertyVetoException e) {
+            logger.error("There was an issue setting the JDBC Driver", e);
+        }
         this.cpds.setJdbcUrl(MYSQL_URL + MYSQL_OPTIONS);
         this.cpds.setUser(MYSQL_USERNAME);
         this.cpds.setPassword(MYSQL_PASSWORD);
@@ -48,7 +53,7 @@ public class Database {
         this.cpds.setNumHelperThreads(5);
     }
 
-    public static Database getInstance() throws IOException, SQLException, PropertyVetoException {
+    public static Database getInstance() {
         if (database == null) {
             database = new Database();
             return database;
@@ -57,8 +62,8 @@ public class Database {
         }
     }
 
-    public static void checkDatabase() throws PropertyVetoException, SQLException, IOException {
-        util.database.calls.SchemaCheck.checkDatabase();
+    public static void checkDatabase() {
+        checkDb();
         logger.info("Database check complete.");
     }
 
@@ -120,8 +125,13 @@ public class Database {
         }
     }
 
-    public Connection getConnection() throws SQLException {
-        return this.cpds.getConnection();
+    public Connection getConnection() {
+        try {
+            return this.cpds.getConnection();
+        } catch (SQLException e) {
+            logger.error("There was an error getting the connection.", e);
+        }
+        return null;
     }
 
     public void checkPooledStatus() {

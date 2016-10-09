@@ -8,8 +8,6 @@ import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -22,18 +20,18 @@ import static platform.discord.controller.DiscordController.sendToChannel;
 public class Compact implements Command {
 
     private static Logger logger = LoggerFactory.getLogger(Compact.class);
-    private String option;
 
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
         String[] options = new String[]{"on", "off", "help"};
 
-        for (String s : options) { // Iterate through the available options for this command
+        for (String s : options) {
+            // Iterate through the available options for this command
             if (args != null && !args.isEmpty()) {
                 if (optionCheck(args, s)) {
-                    option = s;
                     return true;
-                } else if (args.equals("help")) { // If the help argument is the only argument that is passed
+                } else if ("help".equals(args)) {
+                    // If the help argument is the only argument that is passed
                     return true;
                 }
             } else {
@@ -78,7 +76,7 @@ public class Compact implements Command {
                 } else {
                     sendToChannel(event, Const.COMPACT_FAILURE);
                 }
-            } catch (IOException | SQLException | PropertyVetoException e) {
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
@@ -91,11 +89,7 @@ public class Compact implements Command {
 
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
-        try {
-            new Tracker("Compact");
-        } catch (PropertyVetoException | IOException | SQLException e) {
-            logger.warn("There was a problem tracking this command usage.");
-        }
+        new Tracker("Compact");
     }
 
     private boolean optionCheck(String args, String option) {

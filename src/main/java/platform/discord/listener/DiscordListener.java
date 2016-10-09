@@ -18,7 +18,6 @@ import util.database.calls.GuildLeave;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.logging.Logger;
 
 import static util.database.Database.logger;
 
@@ -26,8 +25,6 @@ import static util.database.Database.logger;
  * @author keesh
  */
 public class DiscordListener extends ListenerAdapter {
-
-    private static final Logger LOG = Logger.getLogger(DiscordListener.class.getName());
 
     /**
      * Incoming message handler.
@@ -64,8 +61,6 @@ public class DiscordListener extends ListenerAdapter {
             } catch (PropertyVetoException | IOException | SQLException e) {
                 e.printStackTrace();
             }
-        } else {
-            //TODO: Add DB call for tracking number of messages sent in DB
         }
     }
 

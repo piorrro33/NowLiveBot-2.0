@@ -116,6 +116,9 @@ public class GuildJoin extends Database {
                     }
                 }
                 break;
+            default:
+                logger.info("No data to add to table: " + s);
+                break;
         }
     }
 }

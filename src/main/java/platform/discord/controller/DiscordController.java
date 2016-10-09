@@ -11,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.database.Database;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -49,7 +47,7 @@ public class DiscordController {
             // TODO: CHECK PERMISSIONS ASSHOLE
             event.getJDA().getTextChannelById(channelId).sendMessage(message);
 
-        } catch (SQLException | IOException | PropertyVetoException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }

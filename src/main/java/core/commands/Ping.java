@@ -13,10 +13,6 @@ import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.sql.SQLException;
-
 import static platform.discord.controller.DiscordController.sendToChannel;
 
 /**
@@ -40,11 +36,7 @@ public class Ping implements Command {
             event.getTextChannel().sendTyping();
             timer++;
         }
-        try {
-            Database.getInstance().checkPooledStatus();
-        } catch (IOException | SQLException | PropertyVetoException e) {
-            e.printStackTrace();
-        }
+        Database.getInstance().checkPooledStatus();
         sendToChannel(event, Const.PING);
     }
 
@@ -55,11 +47,7 @@ public class Ping implements Command {
 
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
-        try {
-            new Tracker("Ping");
-        } catch (PropertyVetoException | IOException | SQLException e) {
-            logger.warn("There was a problem tracking this command usage.", e);
-        }
+        new Tracker("Ping");
     }
 
 }

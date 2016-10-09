@@ -7,8 +7,6 @@ package core;
 
 import core.commands.*;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import util.Const;
 
 import java.beans.PropertyVetoException;
@@ -23,7 +21,6 @@ import static platform.discord.controller.DiscordController.sendToChannel;
  */
 public class CommandParser {
     public static HashMap<String, Command> commands = new HashMap<>();
-    private static Logger logger = LoggerFactory.getLogger(CommandParser.class);
 
     CommandParser() {
 
@@ -74,8 +71,7 @@ public class CommandParser {
                     getCommands().get(cmd.invoke).action(cmd.args, cmd.event);
                 }
             } else {
-                // Send error message stating that the command wasn't formatted properly.
-                // Possibly just send the help info.
+                sendToChannel(cmd.event, Const.INCORRECT_ARGS);
             }
             getCommands().get(cmd.invoke).executed(safe, cmd.event);
         }
@@ -98,7 +94,7 @@ public class CommandParser {
                 // Send to commands with no args
                 invoke = removeCommand;
             }
-        } else if (beheaded.equals("ping")) {
+        } else if ("ping".equals(beheaded)) {
             invoke = beheaded;
             args = null;
         } else {
@@ -112,11 +108,9 @@ public class CommandParser {
 
         public final String args;
         public final MessageReceivedEvent event;
-        final String raw;
-        final String invoke;
+        private final String invoke;
 
         CommandContainer(String rw, String invoke, String args, MessageReceivedEvent event) {
-            this.raw = rw;
             this.invoke = invoke.toLowerCase(); // The Command (ensure the command is always passes as lowercase)
             this.args = args; // Command Arguments
             this.event = event; // The Event

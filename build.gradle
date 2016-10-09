@@ -72,6 +72,4 @@ dependencies {
     compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.4'
     compile group: 'com.mchange', name: 'c3p0', version: '0.9.5.2'
     compile group: 'com.mchange', name: 'mchange-commons-java', version: '0.2.12'
-	compile group: 'org.hibernate', name: 'hibernate-core', version: '5.2.2.Final'
-    compile group: 'org.hibernate', name: 'hibernate-c3p0', version: '5.2.3.Final'
 }

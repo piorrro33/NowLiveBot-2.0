@@ -9,8 +9,6 @@ import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -28,7 +26,7 @@ public class Move implements Command {
         if (args != null && !args.isEmpty()) {
             if (args.substring(0, 1).equals("#") && !args.contains(" ")) {
                 return true;
-            } else if (!args.equals("help")) {
+            } else if (!"help".equals(args)) {
                 sendToChannel(event, Const.INCORRECT_ARGS);
                 return false;
             } else {
@@ -60,7 +58,7 @@ public class Move implements Command {
                     } else {
                         sendToChannel(event, Const.MOVE_FAILURE);
                     }
-                } catch (SQLException | IOException | PropertyVetoException e) {
+                } catch (SQLException e) {
                     logger.error("There was a problem updating Move in the database", e);
                 }
             } else {
@@ -76,10 +74,6 @@ public class Move implements Command {
 
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
-        try {
-            new Tracker("Move");
-        } catch (PropertyVetoException | IOException | SQLException e) {
-            logger.warn("There was a problem tracking this command usage.");
-        }
+        new Tracker("Move");
     }
 }

@@ -3,10 +3,7 @@ package util.database.calls;
 import net.dv8tion.jda.events.guild.GuildLeaveEvent;
 import util.database.Database;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
@@ -19,9 +16,6 @@ public class GuildLeave extends Database {
     private static Statement statement = null;
     private static Integer result = 0;
     private static String query;
-
-    public GuildLeave(GuildLeaveEvent gEvent) throws PropertyVetoException, SQLException, IOException {
-    }
 
     public static void leaveGuild(GuildLeaveEvent gEvent) {
         tableList.add("channel");

@@ -2,8 +2,6 @@ package util.database.calls;
 
 import util.database.Database;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -12,7 +10,7 @@ import java.sql.Statement;
  * @author Veteran Software by Ague Mort
  */
 public class Tracker extends Database {
-    public Tracker(String command) throws PropertyVetoException, IOException, SQLException {
+    public Tracker(String command) {
         super();
 
         Connection connection;
@@ -30,7 +28,7 @@ public class Tracker extends Database {
             }
             Database.getInstance();
             Database.cleanUp(result, statement, connection);
-        } catch (IOException | SQLException | PropertyVetoException e) {
+        } catch (SQLException e) {
             logger.warn("There was a problem updating the count for commands in my database.");
         }
     }

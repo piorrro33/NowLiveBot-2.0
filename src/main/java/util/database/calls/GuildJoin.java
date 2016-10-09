@@ -50,49 +50,28 @@ public class GuildJoin extends Database {
             guildId = gEvent.getGuild().getId();
             defaultChannel = gEvent.getGuild().getPublicChannel().getId();
             logger.info("Attempting to join guild: " + guildId);
+            int failed = 0;
             for (String s : tableList) {
                 query = "SELECT `guildId` FROM `" + s + "` WHERE `guildId` = '" + guildId + "'";
                 resultSet = statement.executeQuery(query);
                 if (resultSet.next()) {
                     logger.warn("This guild has data remnants in my database!");
-                } else {
-                    switch (s) {
-                        case "guild":
-                            query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `isActive`, " +
-                                    "`cleanup`) VALUES ('" + guildId + "', '" + defaultChannel + "', 0, 0, " +
-                                    "0)";
-                            result = statement.executeUpdate(query);
-                            if (result > 0) {
-                                logger.info("Successfully added guild " + guildId + " to my database");
-                            } else {
-                                logger.warn("Failed to add guild information to my database");
-                            }
-                            break;
-                        case "manager":
-                            ArrayList<String> userIds = new ArrayList<>();
-                            userIds.add(gEvent.getGuild().getOwnerId());
-                            for (Role role : gEvent.getGuild().getRoles()) {
-                                if (role.hasPermission(Permission.MANAGE_SERVER)) {
-                                    for (User user : gEvent.getGuild().getUsersWithRole((role))) {
-                                        if (!userIds.contains(user.getId())) {
-                                            userIds.add(user.getId());
-                                        }
-                                    }
-                                }
-                            }
-                            for (String users : userIds) {
-                                query = "INSERT INTO `manager` (`guildId`, `userId`) VALUES ('" + guildId + "', '" +
-                                        users + "')";
-                                result = statement.executeUpdate(query);
-                                if (result > 0) {
-                                    logger.info("Successfully added manager " + users + " to guild " + guildId + ".");
-                                } else {
-                                    logger.warn("Failed to add manager to my database");
-                                }
-                            }
-                            break;
+                    query = "DELETE FROM `" + s + "` WHERE `guildId` = '" + guildId + "'";
+                    result = statement.executeUpdate(query);
+                    if (result > 0) {
+                        addData(gEvent, s);
+                    } else {
+                        failed++;
                     }
+                } else {
+                    // Add data if table is clean
+                    addData(gEvent, s);
                 }
+            }
+            if (failed == 0) {
+                gEvent.getGuild().getPublicChannel().sendMessage("Your guild has been added!!");
+            } else {
+                gEvent.getGuild().getPublicChannel().sendMessage("There was an error adding your guild!!");
             }
         } catch (Exception e) {
             logger.error("There was a MySQL exception.", e);
@@ -100,6 +79,43 @@ public class GuildJoin extends Database {
             cleanUp(result, statement, connection);
         }
     }
+
+    private static void addData(GuildJoinEvent gEvent, String s) throws SQLException {
+        switch (s) {
+            case "guild":
+                query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `isActive`, " +
+                        "`cleanup`) VALUES ('" + guildId + "', '" + defaultChannel + "', 0, 0, " +
+                        "0)";
+                result = statement.executeUpdate(query);
+                if (result > 0) {
+                    logger.info("Successfully added guild " + guildId + " to my database");
+                } else {
+                    logger.warn("Failed to add guild information to my database");
+                }
+                break;
+            case "manager":
+                ArrayList<String> userIds = new ArrayList<>();
+                userIds.add(gEvent.getGuild().getOwnerId());
+                for (Role role : gEvent.getGuild().getRoles()) {
+                    if (role.hasPermission(Permission.MANAGE_SERVER)) {
+                        for (User user : gEvent.getGuild().getUsersWithRole((role))) {
+                            if (!userIds.contains(user.getId())) {
+                                userIds.add(user.getId());
+                            }
+                        }
+                    }
+                }
+
+                for (String users : userIds) {
+                    query = "INSERT INTO `manager` (`guildId`, `userId`) VALUES ('" + guildId + "', '" + users + "')";
+                    result = statement.executeUpdate(query);
+                    if (result > 0) {
+                        logger.info("Successfully added manager " + users + " to guild " + guildId + ".");
+                    } else {
+                        logger.warn("Failed to add manager to my database~");
+                    }
+                }
+                break;
+        }
+    }
 }
-
-

@@ -7,19 +7,23 @@ package core.commands;
 
 import core.Command;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import util.Const;
+import util.database.calls.Tracker;
 
-import java.util.logging.Logger;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.sql.SQLException;
 
-import static langs.En.INVITE;
-import static langs.En.INVITE_HELP;
+import static platform.discord.controller.DiscordController.sendToChannel;
 
 /**
  * @author keesh
  */
 public class Invite implements Command {
 
-    private static final Logger LOG = Logger.getLogger(Invite.class.getName());
+    private static Logger logger = LoggerFactory.getLogger(Invite.class);
 
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
@@ -28,7 +32,7 @@ public class Invite implements Command {
             if (args.equals("help")) { // If the help argument is the only argument that is passed
                 return true;
             } else {
-                event.getTextChannel().sendMessage(Const.INCORRECT_ARGS);
+                sendToChannel(event, Const.INCORRECT_ARGS);
                 return false;
             }
         }
@@ -37,18 +41,20 @@ public class Invite implements Command {
 
     @Override
     public void action(String args, MessageReceivedEvent event) {
-
-        event.getTextChannel().sendMessage(INVITE);
+        sendToChannel(event, Const.INVITE);
     }
 
     @Override
     public void help(MessageReceivedEvent event) {
-
-        event.getTextChannel().sendMessage(INVITE_HELP);
+        sendToChannel(event, Const.INVITE_HELP);
     }
 
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
-        // TODO: Database command count + other post-script
+        try {
+            new Tracker("Invite");
+        } catch (PropertyVetoException | IOException | SQLException e) {
+            logger.warn("There was a problem tracking this command usage.");
+        }
     }
 }

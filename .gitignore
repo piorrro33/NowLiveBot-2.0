@@ -1,6 +1,5 @@
 # NetBeans
 nbproject/private/
-build/
 nbbuild/
 dist/
 nbdist/
@@ -12,6 +11,8 @@ nbdist/
 build/
 /*/build/
 /gradle.properties
+*.lock
+*.bin
 
 # Generated files
 bin/
@@ -51,3 +52,9 @@ Thumbs.db
 .floo
 .flooignore
 
+.settings/
+config.properties
+nowlive_schema.sql
+out/
+src/resources/
+src/test/

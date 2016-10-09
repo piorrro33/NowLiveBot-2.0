@@ -36,12 +36,13 @@ public class Main {
         Database.getInstance();
         Database.checkDatabase();
 
-        // Instantiate the JDA Object
+        // Run mode~
+        logger.info("Debug mode: " + debugMode());
 
+        // Instantiate the JDA Object
         try {
 
             DiscordListener discordListener = new DiscordListener();
-
             //Twitch twitchListener = new Twitch();
 
             JDA jda = new JDABuilder()
@@ -61,5 +62,9 @@ public class Main {
         } catch (InterruptedException ex) {
             logger.error("InterruptedException", ex);
         }
+    }
+
+    public static boolean debugMode() {
+        return Boolean.parseBoolean(PropReader.getInstance().getProp().getProperty("mode.debug"));
     }
 }

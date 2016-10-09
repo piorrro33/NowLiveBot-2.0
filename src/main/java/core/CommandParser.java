@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+import static platform.discord.controller.DiscordController.sendToChannel;
+
 /**
  * @author keesh
  */
@@ -58,18 +60,11 @@ public class CommandParser {
      */
     public static void handleCommand(CommandParser.CommandContainer cmd) throws PropertyVetoException, IOException, SQLException {
 
-        logger.debug("\nVariables inside CommandContainer():");
-        logger.debug("cmd.invoke: " + cmd.invoke);
-        logger.debug("cmd.args: " + cmd.args);
-
         if (getCommands().containsKey(cmd.invoke)) {
 
             boolean safe = getCommands().get(cmd.invoke).called(cmd.args, cmd.event);
 
             if (safe) {
-                // DEBUG STATEMENT: Remove in production
-                logger.debug("Boolean 'safe' is " + safe + ".\n");
-                logger.debug("cmd.args: " + cmd.args);
 
                 // TODO: Match the capitalisation of ping and return in pong
 
@@ -78,15 +73,15 @@ public class CommandParser {
                 } else {
                     getCommands().get(cmd.invoke).action(cmd.args, cmd.event);
                 }
-                getCommands().get(cmd.invoke).executed(safe, cmd.event);
             } else {
                 // Send error message stating that the command wasn't formatted properly.
                 // Possibly just send the help info.
             }
+            getCommands().get(cmd.invoke).executed(safe, cmd.event);
         }
     }
 
-    public CommandContainer parse(String raw, MessageReceivedEvent event) {
+    public CommandContainer parse(String raw, MessageReceivedEvent event) throws PropertyVetoException, SQLException, IOException {
         String beheaded = raw.replaceFirst(Const.COMMAND_PREFIX, "");  // Remove COMMAND_PREFIX
 
         String removeCommand;
@@ -107,7 +102,7 @@ public class CommandParser {
             invoke = beheaded;
             args = null;
         } else {
-            event.getTextChannel().sendMessage(Const.EMPTY_COMMAND);
+            sendToChannel(event, Const.EMPTY_COMMAND);
         }
 
         return new CommandContainer(raw, invoke, args, event);

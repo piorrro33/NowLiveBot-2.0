@@ -7,29 +7,28 @@ package core.commands;
 
 import core.Command;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import util.Const;
 import util.database.Database;
+import util.database.calls.Tracker;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.logging.Logger;
 
-import static langs.En.PING;
-import static langs.En.PING_HELP;
+import static platform.discord.controller.DiscordController.sendToChannel;
 
 /**
  * @author keesh
  */
 public class Ping implements Command {
-    private static final Logger LOG = Logger.getLogger(Ping.class.getName());
 
-    /**
-     * Help message for Ping
-     */
-    private final String HELP = PING_HELP;
+    private static Logger logger = LoggerFactory.getLogger(Ping.class);
 
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
+
         return true;
     }
 
@@ -46,17 +45,21 @@ public class Ping implements Command {
         } catch (IOException | SQLException | PropertyVetoException e) {
             e.printStackTrace();
         }
-        event.getTextChannel().sendMessage(PING);
+        sendToChannel(event, Const.PING);
     }
 
     @Override
     public void help(MessageReceivedEvent event) {
-        event.getTextChannel().sendMessage(HELP);
+        sendToChannel(event, Const.PING_HELP);
     }
 
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
-        // TODO: Database command count + other post-script
+        try {
+            new Tracker("Ping");
+        } catch (PropertyVetoException | IOException | SQLException e) {
+            logger.warn("There was a problem tracking this command usage.", e);
+        }
     }
 
 }

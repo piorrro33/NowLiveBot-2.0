@@ -22,8 +22,8 @@ public class Const {
     public static final String COMMAND_PREFIX = "-";// Requires single, regex safe character (at the moment) wahahahaha
     public static final String BOT_NAME = "NowLiveBot";
     public static final String COMMAND = "nl";
-    public static final Integer COMMAND_LENGTH = COMMAND.length();
-    public static final String PLAYING = "Playstation 5";
+    //public static final Integer COMMAND_LENGTH = COMMAND.length();
+    public static final String PLAYING = "Playstation 360";
     // Language specific variables
     // TODO:  Replace 'En' with the guild language from the DB (when it's setup that way)
     public static final String HELP_PM = En.HELP_PM;
@@ -34,16 +34,24 @@ public class Const {
     public static final String PRIVATE_MESSAGE_REPLY = En.PRIVATE_MESSAGE_REPLY;
     public static final String ADD_HELP = En.ADD_HELP;
     public static final String ALREADY_EXISTS = En.ALREADY_EXISTS;
-
+    public static final String DOESNT_EXIST = En.DOESNT_EXIST;
     // Command specific text
     public static final String ANNOUNCE_HELP = En.ANNOUNCE_HELP;
+
     public static final String COMPACT_HELP = En.COMPACT_HELP;
-    public static final String PING = En.PING;
-    public static final String PING_HELP = En.PING_HELP;
+    public static final String COMPACT_FAILURE = En.COMPACT_FAILURE;
+    public static final String COMPACT_MODE_ON = En.COMPACT_MODE_ON;
+    public static final String COMPACT_MODE_OFF = En.COMPACT_MODE_OFF;
     public static final String INVITE = En.INVITE;
     public static final String INVITE_HELP = En.INVITE_HELP;
+    public static final String MOVE_DONT_OWN_CHANNEL = En.MOVE_DONT_OWN_CHANNEL;
+    public static final String MOVE_FAILURE = En.MOVE_FAILURE;
     public static final String MOVE_HELP = En.MOVE_HELP;
+    public static final String MOVE_SUCCESS = En.MOVE_SUCCESS;
+    public static final String PING = En.PING;
+    public static final String PING_HELP = En.PING_HELP;
     public static final String REMOVE_HELP = En.REMOVE_HELP;
     public static final String STREAMS_HELP = En.STREAMS_HELP;
+    public static final String STATUS_HELP = En.STATUS_HELP;
 
 }

@@ -22,7 +22,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static platform.discord.controller.DiscordController.sendToChannel;
+
 /**
+ * Add Command.
+ * TODO: Move SQL calls to separate class.
+ *
  * @author keesh
  */
 public class Add implements Command {
@@ -55,7 +60,7 @@ public class Add implements Command {
                 }
             } else {
                 // If there are no passed arguments
-                event.getTextChannel().sendMessage(Const.EMPTY_ARGS);
+                sendToChannel(event, Const.EMPTY_ARGS);
                 return false;
             }
         }
@@ -92,14 +97,16 @@ public class Add implements Command {
                                 "AND " + "`userId` = '" + dController.getMentionedUsersId() + "'";
                     } else {
                         logger.info("Checking to see if the " + this.option + " already exists for guild: " + guildId);
-                        query = "SELECT `name` FROM `" + this.option + "` WHERE `guildId` = " + guildId + " AND " +
-                                "`platformId` = " + platformId + " AND `name` = '" + this.option + "'";
+
+                        query = "SELECT `name` FROM `" + this.option + "` WHERE `guildId` = '" + guildId + "' AND " +
+                                "`platformId` = " + platformId + " AND `name` = '" + this.argument + "'";
                     }
+                    logger.info(query);
 
                     resultSet = statement.executeQuery(query);
 
-                    if (resultSet.next()) {
-                        event.getTextChannel().sendMessage(Const.ALREADY_EXISTS);
+                    if (resultSet.isBeforeFirst()) {
+                        sendToChannel(event, Const.ALREADY_EXISTS);
                     } else {
                         if (this.option.equals("manager")) {
                             query = "INSERT INTO `" + this.option + "` (`id`, `guildId`, `userId`) VALUES " +
@@ -113,11 +120,11 @@ public class Add implements Command {
                         resultInt = statement.executeUpdate(query);
 
                         if (resultInt > 0) {
-                            event.getTextChannel().sendMessage("Added `" + this.option + "` " + this.argument);
+                            sendToChannel(event, "Added `" + this.option + "` " + this.argument);
                             logger.info("Successfully added " + this.argument + " to the database for guildId: " +
                                     guildId + ".");
                         } else {
-                            event.getTextChannel().sendMessage("Failed to add `" + this.option + "` " + this.argument);
+                            sendToChannel(event, "Failed to add `" + this.option + "` " + this.argument);
                             logger.info("Failed to add " + this.option + " " + this.argument + " to the database for " +
                                     "guildId: " + guildId + ".");
                         }
@@ -135,13 +142,16 @@ public class Add implements Command {
 
     @Override
     public void help(MessageReceivedEvent event) {
-        event.getTextChannel().sendMessage(Const.ADD_HELP);
+        sendToChannel(event, Const.ADD_HELP);
     }
 
     @Override
-    public void executed(boolean success, MessageReceivedEvent event) throws PropertyVetoException, IOException, SQLException {
-        // TODO: Database command count + other post-script
-        Tracker tracker = new Tracker("Add");
+    public void executed(boolean success, MessageReceivedEvent event) {
+        try {
+            new Tracker("Add");
+        } catch (PropertyVetoException | IOException | SQLException e) {
+            logger.warn("There was a problem tracking this command usage.");
+        }
 
     }
 
@@ -150,13 +160,11 @@ public class Add implements Command {
     }
 
     private boolean argumentCheck(String args, Integer spaceLocation) {
-
         return args.indexOf(" ") == spaceLocation && args.length() >= args.indexOf(" ") + 1;
     }
 
     private void missingArguments(MessageReceivedEvent event) {
-
-        event.getTextChannel().sendMessage(Const.INCORRECT_ARGS);
+        sendToChannel(event, Const.INCORRECT_ARGS);
     }
 
 }

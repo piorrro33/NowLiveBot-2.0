@@ -9,41 +9,52 @@ import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.database.Database;
+
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
- * @author keesh
+ * @author Veteran Software by Ague Mort
  */
 public class DiscordController {
 
     private static Logger logger = LoggerFactory.getLogger(DiscordController.class);
     private String guildIdMessageEvent;
-    private String channelIdMessageEvent;
-    private String userIdMessageEvent;
-    private String mentionedChannelId;
-    private String guildName;
     private String mentionedUsersId;
 
     public DiscordController(MessageReceivedEvent event) {
 
         this.guildIdMessageEvent = event.getGuild().getId();
-        this.channelIdMessageEvent = event.getChannel().getId();
-        this.userIdMessageEvent = event.getAuthor().getId();
-        this.guildName = event.getGuild().getName();
-        mentionedChannelId(event);
         mentionedUsersID(event);
     }
 
-    private void mentionedChannelId(MessageReceivedEvent event) {
-        if (event.getGuild().getTextChannels().contains(event.getMessage().getMentionedChannels())) {
-            if (event.getMessage().getMentionedChannels().size() == 1) {
-                this.mentionedChannelId = String.valueOf(event.getMessage().getMentionedChannels().get(0));
+    public static void sendToChannel(MessageReceivedEvent event, String message) {
+        Connection connection;
+        try {
+            connection = Database.getInstance().getConnection();
+            Statement statement = connection.createStatement();
+            String query = "SELECT `channelId` FROM `guild` WHERE `guildId` = '" + event.getGuild().getId() + "'";
+            ResultSet resultSet = statement.executeQuery(query);
+            String channelId;
+            if (resultSet.next()) {
+                channelId = resultSet.getString(1);
+            } else {
+                channelId = event.getGuild().getPublicChannel().getId();
             }
-        } else {
-            this.mentionedChannelId = null;
+            // TODO: CHECK PERMISSIONS ASSHOLE
+            event.getJDA().getTextChannelById(channelId).sendMessage(message);
+
+        } catch (SQLException | IOException | PropertyVetoException e) {
+            e.printStackTrace();
         }
     }
 
-    public void mentionedUsersID(MessageReceivedEvent event) {
+    private void mentionedUsersID(MessageReceivedEvent event) {
         for (User u : event.getMessage().getMentionedUsers()) {
             this.mentionedUsersId = u.getId();
             logger.info("Mentioned Users Id's: " + this.mentionedUsersId);
@@ -56,25 +67,5 @@ public class DiscordController {
 
     public String getguildId() {
         return this.guildIdMessageEvent;
-    }
-
-    public String getChannelId() {
-        return this.channelIdMessageEvent;
-    }
-
-    public String getUserId() {
-        return this.userIdMessageEvent;
-    }
-
-    public String getMentionedChannelId() {
-        return this.mentionedChannelId;
-    }
-
-    public String getGuildName(MessageReceivedEvent event) {
-        return this.guildName;
-    }
-
-    public String getAuthorName(MessageReceivedEvent event) {
-        return event.getAuthor().getUsername();
     }
 }

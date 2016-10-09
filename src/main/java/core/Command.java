@@ -23,7 +23,7 @@ public interface Command {
      * @param event From JDA: MessageReceivedEvent
      * @return boolean true if criteria is met, false if criteria not met
      */
-    boolean called(String args, MessageReceivedEvent event);
+    boolean called(String args, MessageReceivedEvent event) throws PropertyVetoException, SQLException, IOException;
 
     /**
      * Action taken after the command is verified
@@ -31,14 +31,14 @@ public interface Command {
      * @param args Arguments being passed
      * @param event From JDA: MessageReceivedEvent
      */
-    void action(String args, MessageReceivedEvent event);
+    void action(String args, MessageReceivedEvent event) throws PropertyVetoException, SQLException, IOException;
 
     /**
      * Returns help info for the command
      *
      * @param event From JDA: MessageReceivedEvent
      */
-    void help(MessageReceivedEvent event);
+    void help(MessageReceivedEvent event) throws PropertyVetoException, SQLException, IOException;
 
     /**
      * Runs specified scripts which are determined by {success}

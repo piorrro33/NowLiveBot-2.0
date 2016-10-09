@@ -12,8 +12,9 @@ import java.sql.Statement;
  * @author Veteran Software by Ague Mort
  */
 public class Tracker extends Database {
-    public Tracker(String command) throws PropertyVetoException, SQLException, IOException {
-        logger.info("Updating the command count in the database");
+    public Tracker(String command) throws PropertyVetoException, IOException, SQLException {
+        super();
+
         Connection connection;
         Statement statement;
         Integer result;
@@ -24,13 +25,13 @@ public class Tracker extends Database {
                     "1) ON DUPLICATE KEY UPDATE `commandCount` = `commandCount` + 1";
             result = statement.executeUpdate(query);
             if (result > 0) {
-                logger.info("Command " + command + " updated");
+                logger.info("Command " + command + " was used and incremented in the database.");
                 return;
             }
             Database.getInstance();
             Database.cleanUp(result, statement, connection);
         } catch (IOException | SQLException | PropertyVetoException e) {
-            e.printStackTrace();
+            logger.warn("There was a problem updating the count for commands in my database.");
         }
     }
 }

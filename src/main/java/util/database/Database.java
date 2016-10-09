@@ -86,7 +86,7 @@ public class Database {
         }
     }
 
-    protected static void cleanUp(Integer resultSet, Statement statement, Connection connection) {
+    public static void cleanUp(Integer resultSet, Statement statement, Connection connection) {
         if (statement != null) {
             try {
                 statement.close();
@@ -127,6 +127,7 @@ public class Database {
     public void checkPooledStatus() {
         try {
             Context initContext = new InitialContext();
+            // TODO: Figure out the JNDI name of the database
             Context appContext = (Context) initContext.lookup("java:/comp/env");
             Database ds = (Database) appContext.lookup("jdbc/nowlivebot");
             //InitialContext ictx = new InitialContext();

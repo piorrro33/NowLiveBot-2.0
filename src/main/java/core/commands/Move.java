@@ -1,13 +1,27 @@
 package core.commands;
 
 import core.Command;
+import net.dv8tion.jda.entities.TextChannel;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import util.Const;
+import util.database.Database;
+import util.database.calls.Tracker;
+
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import static platform.discord.controller.DiscordController.sendToChannel;
 
 /**
- * Created by keesh on 10/2/2016.
+ * @author Veteran Software by Ague Mort
  */
 public class Move implements Command {
+    public static Logger logger = LoggerFactory.getLogger(Database.class);
 
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
@@ -15,13 +29,13 @@ public class Move implements Command {
             if (args.substring(0, 1).equals("#") && !args.contains(" ")) {
                 return true;
             } else if (!args.equals("help")) {
-                event.getTextChannel().sendMessage(Const.INCORRECT_ARGS);
+                sendToChannel(event, Const.INCORRECT_ARGS);
                 return false;
             } else {
                 return true;
             }
         } else {
-            event.getTextChannel().sendMessage(Const.EMPTY_ARGS);
+            sendToChannel(event, Const.EMPTY_ARGS);
             return false;
         }
     }
@@ -29,16 +43,43 @@ public class Move implements Command {
     @Override
     public void action(String args, MessageReceivedEvent event) {
         // Get the channelID from the guild and insert into the DB
-        event.getTextChannel().sendMessage("You moved me to " + args + ".");
+
+        for (TextChannel textChannel : event.getJDA().getTextChannelsByName(args.substring(1))) {
+
+            if (textChannel.getGuild().getId().equals(event.getGuild().getId())) {
+                try {
+                    Connection connection = Database.getInstance().getConnection();
+                    Statement statement = connection.createStatement();
+                    String query = "UPDATE `guild` SET `channelId` = '" + textChannel.getId() + "' WHERE `guildId` = " +
+                            "'" + event.getGuild().getId() + "'";
+
+                    Integer result = statement.executeUpdate(query);
+
+                    if (result.equals(1)) {
+                        sendToChannel(event, Const.MOVE_SUCCESS);
+                    } else {
+                        sendToChannel(event, Const.MOVE_FAILURE);
+                    }
+                } catch (SQLException | IOException | PropertyVetoException e) {
+                    logger.error("There was a problem updating Move in the database", e);
+                }
+            } else {
+                break;
+            }
+        }
     }
 
     @Override
     public void help(MessageReceivedEvent event) {
-        event.getTextChannel().sendMessage(Const.MOVE_HELP);
+        sendToChannel(event, Const.MOVE_HELP);
     }
 
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
-
+        try {
+            new Tracker("Move");
+        } catch (PropertyVetoException | IOException | SQLException e) {
+            logger.warn("There was a problem tracking this command usage.");
+        }
     }
 }

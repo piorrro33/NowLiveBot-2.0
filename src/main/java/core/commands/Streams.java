@@ -2,19 +2,31 @@ package core.commands;
 
 import core.Command;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import util.Const;
+import util.database.calls.Tracker;
+
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.sql.SQLException;
+
+import static platform.discord.controller.DiscordController.sendToChannel;
 
 /**
- * Created by keesh on 10/3/2016.
+ * @author Veteran Software by Ague Mort
  */
 public class Streams implements Command {
+
+    private static Logger logger = LoggerFactory.getLogger(Streams.class);
+
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
         if (args != null && !args.isEmpty()) {
             if (args.equals("help")) { // If the help argument is the only argument that is passed
                 return true;
             } else {
-                event.getTextChannel().sendMessage(Const.INCORRECT_ARGS);
+                sendToChannel(event, Const.INCORRECT_ARGS);
                 return false;
             }
         }
@@ -30,11 +42,15 @@ public class Streams implements Command {
 
     @Override
     public void help(MessageReceivedEvent event) {
-        event.getTextChannel().sendMessage(Const.STREAMS_HELP);
+        sendToChannel(event, Const.STREAMS_HELP);
     }
 
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
-
+        try {
+            new Tracker("Streams");
+        } catch (PropertyVetoException | IOException | SQLException e) {
+            logger.warn("There was a problem tracking this command usage.");
+        }
     }
 }

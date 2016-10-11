@@ -29,13 +29,26 @@ public interface En {
     String TYPE_ONCE = "You only need to type that part once, silly.";
     String ALREADY_EXISTS = "/shrug It looks like you already added that to my database.";
     String DOESNT_EXIST = "That was never added to my database.";
+    String COMPACT_FAILURE = "Um, something went wrong.  My compact mode is unchanged.";
     String COMPACT_MODE_ON = "Compact mode has been turned on.";
     String COMPACT_MODE_OFF = "Compact mode has been turned off.";
-    String MOVE_SUCCESS = "All of my announcements will now be made here!";
+    String MOVE_DONT_OWN_CHANNEL = "Hey now, I can't announce to a channel that doesn't exists on your server!";
     String MOVE_FAILURE = "I can't seem to send announcements there.  Make sure I have the proper permissions in that" +
             " channel.";
-    String MOVE_DONT_OWN_CHANNEL = "Hey now, I can't announce to a channel that doesn't exists on your server!";
-    String COMPACT_FAILURE = "Um, something went wrong.  My compact mode is unchanged.";
+    String MOVE_SUCCESS = "All of my announcements will now be made here!";
+    String NONE_ONLINE = "Sorry bud, but there's nobody online right now that this Discord is following.";
+    String NOTIFY_NONE = "Ok, I won't mention anyone in my announcements.";
+    String NOTIFY_ME = "Sweet, I'll make sure to mention you when I make my announcements.";
+    String NOTIFY_HERE = "All who are online will get a mention when I announce streams.";
+    String NOTIFY_EVERYONE = "WHOA!!  **EVERYONE** that belongs to the server will get notified when I announce " +
+            "streams!  *(Are you sure?  I don't recommend this for large servers...)*";
+    String NOW_PLAYING_LOWER = " is now playing ";
+    String ONLINE_STREAM_PM_1 = "Hey there!  There's currently ";
+    String ONLINE_STREAM_PM_2 = " streamers online that you may be interested in!  Follow their links to check them " +
+            "out: \n\n";
+    String ON = " on ";
+    String OOPS = "Oops!  Something went wrong and nothing was changed!  Let's try that again.";
+    String WATCH_THEM_HERE = "Watch them here: ";
 
     // Command specific text
     String ADD_HELP = "```Ruby\nADD: Used to add something to my database.\nUSAGE:  "
@@ -70,6 +83,14 @@ public interface En {
             + Const.COMMAND
             + " move <channel>\n\t"
             + "<channel> - The name of the channel you wish to move my announcements to (MUST include the #)```";
+    String NOTIFY_HELP = "```Ruby\nNOTIFY: Used to change the global notification option for this server.\nUSAGE:  "
+            + Const.COMMAND_PREFIX
+            + Const.COMMAND
+            + " notify <option>"
+            + "\n\tnone - No @ notifications of any kind (default)"
+            + "\n\tme - I will @ mention you only."
+            + "\n\there - I will notify only those people that are online when I make the announcement"
+            + "\n\teveryone - I'll notify EVERYONE!!  Mwahahaha!!  (I don't recommend this on large servers)```";
     String PING_HELP = "```Ruby\nPING: Used to ping me. If I am working correctly, I'll send you a pong.\nUSAGE: "
             + Const.COMMAND_PREFIX + "ping```";
     String REMOVE_HELP = "```Ruby\nREMOVE: Used to remove something to my database.\nUSAGE:  "

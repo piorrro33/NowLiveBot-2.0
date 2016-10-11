@@ -33,7 +33,6 @@ public class GuildJoin extends Database {
     }
 
     public static void joinGuild(GuildJoinEvent gEvent) throws PropertyVetoException, SQLException, IOException {
-        logger.info("Made it into the joinGuild method.");
         tableList.add("channel");
         tableList.add("game");
         tableList.add("guild");
@@ -44,6 +43,7 @@ public class GuildJoin extends Database {
         tableList.add("stream");
         tableList.add("tag");
         tableList.add("team");
+
         try {
             connection = getInstance().getConnection();
             statement = connection.createStatement();
@@ -55,9 +55,11 @@ public class GuildJoin extends Database {
                 query = "SELECT `guildId` FROM `" + s + "` WHERE `guildId` = '" + guildId + "'";
                 resultSet = statement.executeQuery(query);
                 if (resultSet.next()) {
+                    // If there's still remnants or possible corrupt data, remove it
                     logger.warn("This guild has data remnants in my database!");
                     query = "DELETE FROM `" + s + "` WHERE `guildId` = '" + guildId + "'";
                     result = statement.executeUpdate(query);
+
                     if (result > 0) {
                         addData(gEvent, s);
                     } else {

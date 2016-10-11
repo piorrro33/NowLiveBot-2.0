@@ -7,8 +7,6 @@ package core.commands;
 
 import core.Command;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import util.Const;
 import util.database.calls.Tracker;
 
@@ -18,8 +16,6 @@ import static platform.discord.controller.DiscordController.sendToChannel;
  * @author keesh
  */
 public class Invite implements Command {
-
-    private static Logger logger = LoggerFactory.getLogger(Invite.class);
 
     @Override
     public boolean called(String args, MessageReceivedEvent event) {

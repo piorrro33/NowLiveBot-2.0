@@ -35,9 +35,20 @@ public class Const {
     public static final String ADD_HELP = En.ADD_HELP;
     public static final String ALREADY_EXISTS = En.ALREADY_EXISTS;
     public static final String DOESNT_EXIST = En.DOESNT_EXIST;
+    public static final String NONE_ONLINE = En.NONE_ONLINE;
+    public static final String ONLINE_STREAM_PM_1 = En.ONLINE_STREAM_PM_1;
+    public static final String ONLINE_STREAM_PM_2 = En.ONLINE_STREAM_PM_2;
+    public static final String NOW_PLAYING_LOWER = En.NOW_PLAYING_LOWER;
+    public static final String ON = En.ON;
+    public static final String WATCH_THEM_HERE = En.WATCH_THEM_HERE;
+    public static final String NOTIFY_NONE = En.NOTIFY_NONE;
+    public static final String NOTIFY_ME = En.NOTIFY_ME;
+    public static final String NOTIFY_HERE = En.NOTIFY_HERE;
+    public static final String NOTIFY_EVERYONE = En.NOTIFY_EVERYONE;
+    public static final String OOPS = En.OOPS;
+
     // Command specific text
     public static final String ANNOUNCE_HELP = En.ANNOUNCE_HELP;
-
     public static final String COMPACT_HELP = En.COMPACT_HELP;
     public static final String COMPACT_FAILURE = En.COMPACT_FAILURE;
     public static final String COMPACT_MODE_ON = En.COMPACT_MODE_ON;
@@ -48,6 +59,7 @@ public class Const {
     public static final String MOVE_FAILURE = En.MOVE_FAILURE;
     public static final String MOVE_HELP = En.MOVE_HELP;
     public static final String MOVE_SUCCESS = En.MOVE_SUCCESS;
+    public static final String NOTIFY_HELP = En.NOTIFY_HELP;
     public static final String PING = En.PING;
     public static final String PING_HELP = En.PING_HELP;
     public static final String REMOVE_HELP = En.REMOVE_HELP;

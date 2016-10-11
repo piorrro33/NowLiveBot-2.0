@@ -31,6 +31,7 @@ public class CommandParser {
         commands.put("help", new Help());
         commands.put("invite", new Invite());
         commands.put("move", new Move());
+        commands.put("notify", new Notify());
         commands.put("ping", new Ping());
         commands.put("remove", new Remove());
         commands.put("streams", new Streams());
@@ -101,7 +102,7 @@ public class CommandParser {
             sendToChannel(event, Const.EMPTY_COMMAND);
         }
 
-        return new CommandContainer(raw, invoke, args, event);
+        return new CommandContainer(invoke, args, event);
     }
 
     private static class CommandContainer {
@@ -110,7 +111,7 @@ public class CommandParser {
         public final MessageReceivedEvent event;
         private final String invoke;
 
-        CommandContainer(String rw, String invoke, String args, MessageReceivedEvent event) {
+        CommandContainer(String invoke, String args, MessageReceivedEvent event) {
             this.invoke = invoke.toLowerCase(); // The Command (ensure the command is always passes as lowercase)
             this.args = args; // Command Arguments
             this.event = event; // The Event

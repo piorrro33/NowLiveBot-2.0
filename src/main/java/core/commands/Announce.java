@@ -32,6 +32,7 @@ public class Announce implements Command {
     public void action(String args, MessageReceivedEvent event) {
         // TODO: When the DB gets setup, iterate through all guilds the bot is in and send this out to all guilds
         sendToChannel(event, "*Message from the " + Const.BOT_NAME + " developers:*\n\n\t" + args);
+        logger.info("Global announcement sent");
     }
 
     @Override

@@ -52,6 +52,10 @@ public class DiscordController {
         }
     }
 
+    public static void sendToPm(MessageReceivedEvent event, String message) {
+        event.getAuthor().getPrivateChannel().sendMessage(message);
+    }
+
     private void mentionedUsersID(MessageReceivedEvent event) {
         for (User u : event.getMessage().getMentionedUsers()) {
             this.mentionedUsersId = u.getId();

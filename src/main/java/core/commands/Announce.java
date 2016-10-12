@@ -43,6 +43,6 @@ public class Announce implements Command {
 
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
-        new Tracker("Invite");
+        new Tracker("Announce");
     }
 }

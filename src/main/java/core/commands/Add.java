@@ -89,6 +89,7 @@ public class Add implements Command {
                     String query;
 
                     if (this.option.equals("manager")) {
+                        // TODO: Do a bot check to make sure bots don't get added to the manager list
                         logger.info("Checking to see if " + dController.getMentionedUsersId()
                                 + " already exists for guild: " + guildId);
 

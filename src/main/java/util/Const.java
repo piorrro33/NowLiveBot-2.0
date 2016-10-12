@@ -46,6 +46,7 @@ public class Const {
     public static final String NOTIFY_HERE = En.NOTIFY_HERE;
     public static final String NOTIFY_EVERYONE = En.NOTIFY_EVERYONE;
     public static final String OOPS = En.OOPS;
+    public static final String WRONG_COMMAND = En.WRONG_COMMAND;
 
     // Command specific text
     public static final String ANNOUNCE_HELP = En.ANNOUNCE_HELP;

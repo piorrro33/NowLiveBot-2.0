@@ -75,6 +75,8 @@ public class CommandParser {
                 sendToChannel(cmd.event, Const.INCORRECT_ARGS);
             }
             getCommands().get(cmd.invoke).executed(safe, cmd.event);
+        } else {
+            sendToChannel(cmd.event, Const.WRONG_COMMAND);
         }
     }
 

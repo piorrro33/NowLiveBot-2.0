@@ -27,6 +27,7 @@ public interface En {
     String PRIVATE_MESSAGE_REPLY = "I'm sorry, but the bot you are trying to reach has a voice mail box that has not " +
             "been setup yet.  Please try your PM again later.";
     String TYPE_ONCE = "You only need to type that part once, silly.";
+    String WRONG_COMMAND = "Hmm... I don't know that command.";
     String ALREADY_EXISTS = "/shrug It looks like you already added that to my database.";
     String DOESNT_EXIST = "That was never added to my database.";
     String COMPACT_FAILURE = "Um, something went wrong.  My compact mode is unchanged.";

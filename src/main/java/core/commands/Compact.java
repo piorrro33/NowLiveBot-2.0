@@ -60,7 +60,8 @@ public class Compact implements Command {
             try {
                 Connection connection = Database.getInstance().getConnection();
                 Statement statement = connection.createStatement();
-                String query = "UPDATE `guild` SET `isCompact` = " + intArg;
+                String query = "UPDATE `guild` SET `isCompact` = " + intArg + " WHERE `guildId` = '" + event.getGuild
+                        ().getId() + "'";
                 Integer result = statement.executeUpdate(query);
                 if (result.equals(1)) {
                     if (intArg.equals(0)) {

@@ -20,7 +20,7 @@ import static util.database.Database.cleanUp;
  */
 public class Notify implements Command {
 
-    Logger logger = LoggerFactory.getLogger(Notify.class);
+    private Logger logger = LoggerFactory.getLogger(Notify.class);
 
     private Connection connection = null;
     private Statement statement = null;

@@ -33,6 +33,10 @@ public interface En {
     String COMPACT_FAILURE = "Um, something went wrong.  My compact mode is unchanged.";
     String COMPACT_MODE_ON = "Compact mode has been turned on.";
     String COMPACT_MODE_OFF = "Compact mode has been turned off.";
+    String ENABLE_SUCCESS = "Yay!  I'm enabled!  Now I can start doing my job!";
+    String ENABLE_FAIL = ":crying_cat_face: That didn't work...";
+    String DISABLE_SUCCESS = "Why you want to disassemble Johnny 5?!??";
+    String DISABLE_FAIL = ":crying_cat_face: That didn't work... Give it another go.";
     String MOVE_DONT_OWN_CHANNEL = "Hey now, I can't announce to a channel that doesn't exists on your server!";
     String MOVE_FAILURE = "I can't seem to send announcements there.  Make sure I have the proper permissions in that" +
             " channel.";
@@ -72,6 +76,14 @@ public interface En {
             + "\n<option>"
             + "\n\ton - Turns on Compact Mode"
             + "\n\toff - Turns off Compact Mode```";
+    String ENABLE_HELP = "```Ruby\nENABLE: Turn on my stream announcing abilities!\nUSAGE:  "
+            + Const.COMMAND_PREFIX
+            + Const.COMMAND
+            + " enable\n\tI will obey...```";
+    String DISABLE_HELP = "```Ruby\nDISABLE: Turn off my stream announcing abilities!\nUSAGE:  "
+            + Const.COMMAND_PREFIX
+            + Const.COMMAND
+            + " disable\n\tIf I must...```";
     String INVITE = "Hey buddy! Invite me to your server!\n\t"
             + "Click here: https://discordapp.com/oauth2/authorize?&client_id="
             + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=224256";

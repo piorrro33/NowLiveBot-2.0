@@ -28,6 +28,8 @@ public class CommandParser {
         commands.put("add", new Add());
         commands.put("announce", new Announce());
         commands.put("compact", new Compact());
+        commands.put("disable", new Disable());
+        commands.put("enable", new Enable());
         commands.put("help", new Help());
         commands.put("invite", new Invite());
         commands.put("move", new Move());

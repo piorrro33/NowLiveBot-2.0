@@ -54,6 +54,12 @@ public class Const {
     public static final String COMPACT_FAILURE = En.COMPACT_FAILURE;
     public static final String COMPACT_MODE_ON = En.COMPACT_MODE_ON;
     public static final String COMPACT_MODE_OFF = En.COMPACT_MODE_OFF;
+    public static final String DISABLE_HELP = En.DISABLE_HELP;
+    public static final String DISABLE_SUCCESS = En.DISABLE_SUCCESS;
+    public static final String DISABLE_FAIL = En.DISABLE_FAIL;
+    public static final String ENABLE_HELP = En.ENABLE_HELP;
+    public static final String ENABLE_SUCCESS = En.ENABLE_SUCCESS;
+    public static final String ENABLE_FAIL = En.ENABLE_FAIL;
     public static final String INVITE = En.INVITE;
     public static final String INVITE_HELP = En.INVITE_HELP;
     public static final String MOVE_DONT_OWN_CHANNEL = En.MOVE_DONT_OWN_CHANNEL;

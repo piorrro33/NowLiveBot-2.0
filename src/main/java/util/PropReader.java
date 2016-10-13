@@ -30,7 +30,9 @@ public class PropReader {
         prop = new Properties();
 
         try {
-            input = new FileInputStream("./config.properties=");
+            String fileName = "./config.properties=";
+            input = new FileInputStream(fileName);
+
             try {
                 prop.load(input);
             } catch (IOException e) {

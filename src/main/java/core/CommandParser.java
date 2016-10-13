@@ -27,6 +27,7 @@ public class CommandParser {
         // Register core.commands with the bot
         commands.put("add", new Add());
         commands.put("announce", new Announce());
+        commands.put("cleanup", new CleanUp());
         commands.put("compact", new Compact());
         commands.put("disable", new Disable());
         commands.put("enable", new Enable());

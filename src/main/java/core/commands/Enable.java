@@ -49,7 +49,7 @@ public class Enable implements Command {
             query = "UPDATE `guild` SET `isActive` = 1 WHERE `guildId` = '" + event.getGuild().getId() + "'";
             Integer result = statement.executeUpdate(query);
 
-            if (result == 1) {
+            if (result.equals(1)) {
                 sendToChannel(event, Const.ENABLE_SUCCESS);
             } else {
                 sendToChannel(event, Const.ENABLE_FAIL);

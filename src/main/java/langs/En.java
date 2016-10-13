@@ -30,6 +30,10 @@ public interface En {
     String WRONG_COMMAND = "Hmm... I don't know that command.";
     String ALREADY_EXISTS = "/shrug It looks like you already added that to my database.";
     String DOESNT_EXIST = "That was never added to my database.";
+    String CLEANUP_SUCCESS_NONE = "Ok, I won't do anything to my announcements.";
+    String CLEANUP_SUCCESS_EDIT = "Editing my announcements, it is.";
+    String CLEANUP_SUCCESS_DELETE = "Sir, yes Sir!  I will delete all my announcements from now on!";
+    String CLEANUP_FAIL = "Ah, man...  Something went wrong...";
     String COMPACT_FAILURE = "Um, something went wrong.  My compact mode is unchanged.";
     String COMPACT_MODE_ON = "Compact mode has been turned on.";
     String COMPACT_MODE_OFF = "Compact mode has been turned off.";
@@ -56,7 +60,7 @@ public interface En {
     String WATCH_THEM_HERE = "Watch them here: ";
 
     // Command specific text
-    String ADD_HELP = "```Ruby\nADD: Used to add something to my database.\nUSAGE:  "
+    String ADD_HELP = "```Ruby\nADD:  Used to add something to my database.\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " add <option> <content>"
@@ -65,38 +69,46 @@ public interface En {
             + "\n\tchannel - The streamer's name"
             + "\n\tteam - The name of the streaming team (Twitch only)"
             + "\n\ttag - Word or group of words to search for in the stream title```";
-    String ANNOUNCE_HELP = "```Ruby\nANNOUNCE: Shhh...  I'm a secret...\nUSAGE:  "
+    String ANNOUNCE_HELP = "```Ruby\nANNOUNCE:  Shhh...  I'm a secret...\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " announce <content>\n\tThis command is only available to the developers.```";
-    String COMPACT_HELP = "```Ruby\nCOMPACT: Switch my announcements to a shorter version.\nUSAGE:  "
+    String CLEANUP_HELP = "```Ruby\nCLEANUP:  Change the way I clean up my stream announcements.\nUSAGE:"
+            + Const.COMMAND_PREFIX
+            + Const.COMMAND
+            + " cleanup <option>"
+            + "\n<option>"
+            + "\n\tnone - I won't change a thing to my announcements! (default)"
+            + "\n\tedit - I'll edit my announcements to say \"OFFLINE\" whe the streamer goes offline"
+            + "\n\tdelete - I'll just delete the announcement when the streamer is no longer live```";
+    String COMPACT_HELP = "```Ruby\nCOMPACT:  Switch my announcements to a shorter version.\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " compact <option>"
             + "\n<option>"
             + "\n\ton - Turns on Compact Mode"
             + "\n\toff - Turns off Compact Mode```";
-    String ENABLE_HELP = "```Ruby\nENABLE: Turn on my stream announcing abilities!\nUSAGE:  "
+    String ENABLE_HELP = "```Ruby\nENABLE:  Turn on my stream announcing abilities!\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " enable\n\tI will obey...```";
-    String DISABLE_HELP = "```Ruby\nDISABLE: Turn off my stream announcing abilities!\nUSAGE:  "
+    String DISABLE_HELP = "```Ruby\nDISABLE:  Turn off my stream announcing abilities!\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " disable\n\tIf I must...```";
     String INVITE = "Hey buddy! Invite me to your server!\n\t"
             + "Click here: https://discordapp.com/oauth2/authorize?&client_id="
             + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=224256";
-    String INVITE_HELP = "```Ruby\nINVITE: used to display my invite link\nUSAGE:  "
+    String INVITE_HELP = "```Ruby\nINVITE:  used to display my invite link\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " invite\n\tInvite NowLive bot to your Discord Server.```";
-    String MOVE_HELP = "```Ruby\nMOVE: Change where I make my announcements.\nUSAGE:  "
+    String MOVE_HELP = "```Ruby\nMOVE:  Change where I make my announcements.\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " move <channel>\n\t"
             + "<channel> - The name of the channel you wish to move my announcements to (MUST include the #)```";
-    String NOTIFY_HELP = "```Ruby\nNOTIFY: Used to change the global notification option for this server.\nUSAGE:  "
+    String NOTIFY_HELP = "```Ruby\nNOTIFY:  Used to change the global notification option for this server.\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " notify <option>"
@@ -104,9 +116,9 @@ public interface En {
             + "\n\tme - I will @ mention you only."
             + "\n\there - I will notify only those people that are online when I make the announcement"
             + "\n\teveryone - I'll notify EVERYONE!!  Mwahahaha!!  (I don't recommend this on large servers)```";
-    String PING_HELP = "```Ruby\nPING: Used to ping me. If I am working correctly, I'll send you a pong.\nUSAGE: "
+    String PING_HELP = "```Ruby\nPING:  Used to ping me. If I am working correctly, I'll send you a pong.\nUSAGE: "
             + Const.COMMAND_PREFIX + "ping```";
-    String REMOVE_HELP = "```Ruby\nREMOVE: Used to remove something to my database.\nUSAGE:  "
+    String REMOVE_HELP = "```Ruby\nREMOVE:  Used to remove something to my database.\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " remove <option> <content>"
@@ -115,7 +127,7 @@ public interface En {
             + "\n\tchannel - The streamer's name"
             + "\n\tteam - The name of the streaming team (Twitch only)"
             + "\n\ttag - Word or group of words to search for in the stream title```";
-    String STREAMS_HELP = "```Ruby\nSTREAMS: I'll send you a list of active streams as a PM.\nUSAGE:  "
+    String STREAMS_HELP = "```Ruby\nSTREAMS:  I'll send you a list of active streams as a PM.\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " streams```";

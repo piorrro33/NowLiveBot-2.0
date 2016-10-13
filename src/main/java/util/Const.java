@@ -50,6 +50,11 @@ public class Const {
 
     // Command specific text
     public static final String ANNOUNCE_HELP = En.ANNOUNCE_HELP;
+    public static final String CLEANUP_HELP = En.CLEANUP_HELP;
+    public static final String CLEANUP_SUCCESS_NONE = En.CLEANUP_SUCCESS_NONE;
+    public static final String CLEANUP_SUCCESS_EDIT = En.CLEANUP_SUCCESS_EDIT;
+    public static final String CLEANUP_SUCCESS_DELETE = En.CLEANUP_SUCCESS_DELETE;
+    public static final String CLEANUP_FAIL = En.CLEANUP_FAIL;
     public static final String COMPACT_HELP = En.COMPACT_HELP;
     public static final String COMPACT_FAILURE = En.COMPACT_FAILURE;
     public static final String COMPACT_MODE_ON = En.COMPACT_MODE_ON;

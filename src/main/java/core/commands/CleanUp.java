@@ -15,7 +15,7 @@ import static platform.discord.controller.DiscordController.sendToChannel;
 /**
  * @author Veteran Software by Ague Mort
  */
-public class Disable extends Enable implements Command {
+public class CleanUp implements Command {
     /**
      * Used to determine if appropriate arguments exist
      *
@@ -25,7 +25,12 @@ public class Disable extends Enable implements Command {
      */
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
-        return super.called(args, event);
+        if (args != null && !args.isEmpty()) {
+            return args.equals("none") || args.equals("edit") || args.equals("delete") || args.equals("help");
+        } else {
+            sendToChannel(event, Const.EMPTY_ARGS);
+            return false;
+        }
     }
 
     /**
@@ -36,22 +41,39 @@ public class Disable extends Enable implements Command {
      */
     @Override
     public void action(String args, MessageReceivedEvent event) {
+        String query;
+        String returnStatement;
+
+        switch (args) {
+            case "none":
+                query = "UPDATE `guild` SET `cleanup` = 0 WHERE `guildId` = '" + event.getGuild().getId() + "'";
+                returnStatement = Const.CLEANUP_SUCCESS_NONE;
+                break;
+            case "edit":
+                query = "UPDATE `guild` SET `cleanup` = 1 WHERE `guildId` = '" + event.getGuild().getId() + "'";
+                returnStatement = Const.CLEANUP_SUCCESS_EDIT;
+                break;
+            case "delete":
+                query = "UPDATE `guild` SET `cleanup` = 2 WHERE `guildId` = '" + event.getGuild().getId() + "'";
+                returnStatement = Const.CLEANUP_SUCCESS_DELETE;
+                break;
+            default:
+                query = null;
+                return;
+        }
         try {
             Connection connection = Database.getInstance().getConnection();
             Statement statement = connection.createStatement();
-            String query;
-            query = "UPDATE `guild` SET `isActive` = 0 WHERE `guildId` = '" + event.getGuild().getId() + "'";
             Integer result = statement.executeUpdate(query);
-
             if (result.equals(1)) {
-                sendToChannel(event, Const.DISABLE_SUCCESS);
+                sendToChannel(event, returnStatement);
             } else {
-                sendToChannel(event, Const.DISABLE_FAIL);
-
+                sendToChannel(event, Const.CLEANUP_FAIL);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
     }
 
     /**
@@ -61,7 +83,7 @@ public class Disable extends Enable implements Command {
      */
     @Override
     public void help(MessageReceivedEvent event) {
-        sendToChannel(event, Const.DISABLE_HELP);
+        sendToChannel(event, Const.CLEANUP_HELP);
     }
 
     /**
@@ -72,6 +94,6 @@ public class Disable extends Enable implements Command {
      */
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
-        new Tracker("Disable");
+        new Tracker("Cleanup");
     }
 }

@@ -18,9 +18,9 @@ import java.util.Properties;
  */
 public class PropReader {
 
+    private static final String fileName = "./config.properties";
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(PropReader.class);
     private static PropReader instance = new PropReader();
-
     private Properties prop;
 
     private PropReader() {
@@ -30,7 +30,6 @@ public class PropReader {
         prop = new Properties();
 
         try {
-            String fileName = "./config.properties=";
             input = new FileInputStream(fileName);
 
             try {

@@ -39,7 +39,6 @@ public class Add implements Command {
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
 
-
         for (String s : this.options) { // Iterate through the available options for this command
             if (args != null && !args.isEmpty()) {
                 if (optionCheck(args, s)) {
@@ -63,6 +62,7 @@ public class Add implements Command {
                 return false;
             }
         }
+
         // If all checks fail
         return false;
     }

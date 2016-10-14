@@ -47,6 +47,9 @@ public class Const {
     public static final String NOTIFY_EVERYONE = En.NOTIFY_EVERYONE;
     public static final String OOPS = En.OOPS;
     public static final String WRONG_COMMAND = En.WRONG_COMMAND;
+    public static final String NOT_A_MANAGER = En.NOT_A_MANAGER;
+    public static final String NOT_AN_ADMIN = En.NOT_AN_ADMIN;
+    public static final String ADMIN_OVERRIDE = En.ADMIN_OVERRIDE;
 
     // Command specific text
     public static final String ANNOUNCE_HELP = En.ANNOUNCE_HELP;

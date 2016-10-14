@@ -8,6 +8,7 @@ package core;
 import core.commands.*;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import util.Const;
+import util.database.calls.CheckPerms;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
@@ -22,6 +23,8 @@ import static platform.discord.controller.DiscordController.sendToChannel;
 public class CommandParser {
     public static HashMap<String, Command> commands = new HashMap<>();
 
+    private static CheckPerms perms = new CheckPerms();
+
     CommandParser() {
 
         // Register core.commands with the bot
@@ -35,6 +38,7 @@ public class CommandParser {
         commands.put("invite", new Invite());
         commands.put("move", new Move());
         commands.put("notify", new Notify());
+        commands.put("permissions", new Permissions());
         commands.put("ping", new Ping());
         commands.put("remove", new Remove());
         commands.put("streams", new Streams());
@@ -63,21 +67,31 @@ public class CommandParser {
 
         if (getCommands().containsKey(cmd.invoke)) {
 
-            boolean safe = getCommands().get(cmd.invoke).called(cmd.args, cmd.event);
+            // Check and see if the command requires elevated permissions and how to handle that
+            Boolean adminCheck = perms.checkAdmins(cmd.event, cmd.invoke);
+            Boolean managerCheck = perms.checkManager(cmd.event, cmd.invoke);
+            if (adminCheck || managerCheck) {
 
-            if (safe) {
+                boolean safe = getCommands().get(cmd.invoke).called(cmd.args, cmd.event);
 
-                // TODO: Match the capitalisation of ping and return in pong
+                if (safe) {
 
-                if (cmd.args != null && cmd.args.equals("help")) {
-                    getCommands().get(cmd.invoke).help(cmd.event);
+                    if (cmd.args != null && cmd.args.equals("help")) {
+                        getCommands().get(cmd.invoke).help(cmd.event);
+                    } else {
+                        getCommands().get(cmd.invoke).action(cmd.args, cmd.event);
+                    }
                 } else {
-                    getCommands().get(cmd.invoke).action(cmd.args, cmd.event);
+                    sendToChannel(cmd.event, Const.INCORRECT_ARGS);
                 }
+                getCommands().get(cmd.invoke).executed(safe, cmd.event);
             } else {
-                sendToChannel(cmd.event, Const.INCORRECT_ARGS);
+                if (!managerCheck && !adminCheck) {
+                    sendToChannel(cmd.event, Const.NOT_A_MANAGER);
+                } else {
+                    sendToChannel(cmd.event, Const.NOT_AN_ADMIN);
+                }
             }
-            getCommands().get(cmd.invoke).executed(safe, cmd.event);
         } else {
             sendToChannel(cmd.event, Const.WRONG_COMMAND);
         }

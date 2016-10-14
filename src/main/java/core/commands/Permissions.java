@@ -2,20 +2,11 @@ package core.commands;
 
 import core.Command;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import util.Const;
-import util.database.Database;
-import util.database.calls.Tracker;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-import static platform.discord.controller.DiscordController.sendToChannel;
 
 /**
  * @author Veteran Software by Ague Mort
  */
-public class Enable implements Command {
+public class Permissions implements Command {
 
     /**
      * Used to determine if appropriate arguments exist
@@ -37,22 +28,7 @@ public class Enable implements Command {
      */
     @Override
     public void action(String args, MessageReceivedEvent event) {
-        try {
-            Connection connection = Database.getInstance().getConnection();
-            Statement statement = connection.createStatement();
-            String query;
-            query = "UPDATE `guild` SET `isActive` = 1 WHERE `guildId` = '" + event.getGuild().getId() + "'";
-            Integer result = statement.executeUpdate(query);
 
-            if (result.equals(1)) {
-                sendToChannel(event, Const.ENABLE_SUCCESS);
-            } else {
-                sendToChannel(event, Const.ENABLE_FAIL);
-
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -62,7 +38,7 @@ public class Enable implements Command {
      */
     @Override
     public void help(MessageReceivedEvent event) {
-        sendToChannel(event, Const.ENABLE_HELP);
+
     }
 
     /**
@@ -73,6 +49,6 @@ public class Enable implements Command {
      */
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
-        new Tracker("Enable");
+
     }
 }

@@ -33,6 +33,7 @@ public class Streams implements Command {
                 return true;
             } else {
                 sendToChannel(event, Const.INCORRECT_ARGS);
+
                 return false;
             }
         }

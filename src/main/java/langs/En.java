@@ -50,13 +50,16 @@ public interface En {
     String NOTIFY_ME = "Sweet, I'll make sure to mention you when I make my announcements.";
     String NOTIFY_HERE = "All who are online will get a mention when I announce streams.";
     String NOTIFY_EVERYONE = "WHOA!!  **EVERYONE** that belongs to the server will get notified when I announce " +
-            "streams!  *(Are you sure?  I don't recommend this for large servers...)*";
+            "streams!  *(Are you sure?  I don't recommend this for large servers...  It can make people grumpy.)*";
     String NOW_PLAYING_LOWER = " is now playing ";
     String ONLINE_STREAM_PM_1 = "Hey there!  There's currently ";
     String ONLINE_STREAM_PM_2 = " streamers online that you may be interested in!  Follow their links to check them " +
             "out: \n\n";
     String ON = " on ";
     String OOPS = "Oops!  Something went wrong and nothing was changed!  Let's try that again.";
+    String NOT_A_MANAGER = "Sorry, but only my managers can do that.";
+    String NOT_AN_ADMIN = "To whom it may concern:  I am your servant, but you are not my master.";
+    String ADMIN_OVERRIDE = "*Permission of this command have been overridden by a bot developer.*";
     String WATCH_THEM_HERE = "Watch them here: ";
 
     // Command specific text
@@ -96,8 +99,8 @@ public interface En {
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " disable\n\tIf I must...```";
-    String INVITE = "Hey buddy! Invite me to your server!\n\t"
-            + "Click here: https://discordapp.com/oauth2/authorize?&client_id="
+    String INVITE = "Hey buddy! Invite me to your server!\n\n\t"
+            + "**Click here:** https://discordapp.com/oauth2/authorize?&client_id="
             + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=224256";
     String INVITE_HELP = "```Ruby\nINVITE:  used to display my invite link\nUSAGE:  "
             + Const.COMMAND_PREFIX

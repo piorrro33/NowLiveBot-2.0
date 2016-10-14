@@ -36,7 +36,7 @@ public class Notify implements Command {
      */
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
-        if (args != null && args != "") {
+        if (args != null && !"".equals(args)) {
             if (args.equals("me") || args.equals("here") || args.equals("everyone") || args.equals("none") || args
                     .equals("help")) {
                 return true;

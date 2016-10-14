@@ -19,11 +19,9 @@ public class Announce implements Command {
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
         if (args != null && !args.isEmpty()) {
-
             return true;
         } else {
             sendToChannel(event, Const.INCORRECT_ARGS);
-
             return false;
         }
     }

@@ -16,6 +16,7 @@ import static platform.discord.controller.DiscordController.sendToChannel;
  * @author Veteran Software by Ague Mort
  */
 public class CleanUp implements Command {
+
     /**
      * Used to determine if appropriate arguments exist
      *

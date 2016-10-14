@@ -15,7 +15,7 @@ public interface Command {
     /**
      * Used to determine if appropriate arguments exist
      *
-     * @param args Arguments being passed
+     * @param args  Arguments being passed
      * @param event From JDA: MessageReceivedEvent
      * @return boolean true if criteria is met, false if criteria not met
      */
@@ -24,7 +24,7 @@ public interface Command {
     /**
      * Action taken after the command is verified
      *
-     * @param args Arguments being passed
+     * @param args  Arguments being passed
      * @param event From JDA: MessageReceivedEvent
      */
     void action(String args, MessageReceivedEvent event);
@@ -40,7 +40,7 @@ public interface Command {
      * Runs specified scripts which are determined by {success}
      *
      * @param success [boolean]
-     * @param event From JDA: MessageReceivedEvent
+     * @param event   From JDA: MessageReceivedEvent
      */
     void executed(boolean success, MessageReceivedEvent event);
 }

@@ -16,12 +16,12 @@ public class Help implements Command {
 
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
-
         return true;
     }
 
     @Override
     public void action(String args, MessageReceivedEvent event) {
+        // TODO: need to revamp how help is done bc 2,000 character limit
         String message = "";
         Field[] c = Const.class.getDeclaredFields();
         for (Field field : c) {

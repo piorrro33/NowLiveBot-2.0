@@ -61,6 +61,7 @@ public interface En {
     String NOT_AN_ADMIN = "To whom it may concern:  I am your servant, but you are not my master.";
     String ADMIN_OVERRIDE = "*Permission of this command have been overridden by a bot developer.*";
     String WATCH_THEM_HERE = "Watch them here: ";
+    String NOW_LIVE = "NOW LIVE!\n\n";
 
     // Command specific text
     String ADD_HELP = "```Ruby\nADD:  Used to add something to my database.\nUSAGE:  "
@@ -121,7 +122,7 @@ public interface En {
             + "\n\teveryone - I'll notify EVERYONE!!  Mwahahaha!!  (I don't recommend this on large servers)```";
     String PING_HELP = "```Ruby\nPING:  Used to ping me. If I am working correctly, I'll send you a pong.\nUSAGE: "
             + Const.COMMAND_PREFIX + "ping```";
-    String REMOVE_HELP = "```Ruby\nREMOVE:  Used to remove something to my database.\nUSAGE:  "
+    String REMOVE_HELP = "```Ruby\nREMOVE:  Used to remove something from my database.\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " remove <option> <content>"

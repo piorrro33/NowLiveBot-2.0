@@ -73,6 +73,7 @@ public class Compact implements Command {
                 } else {
                     sendToChannel(event, Const.COMPACT_FAILURE);
                 }
+                Database.cleanUp(result, statement, connection);
             } catch (SQLException e) {
                 e.printStackTrace();
             }

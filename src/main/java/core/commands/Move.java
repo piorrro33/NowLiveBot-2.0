@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
+import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software by Ague Mort
@@ -58,6 +59,7 @@ public class Move implements Command {
                     } else {
                         sendToChannel(event, Const.MOVE_FAILURE);
                     }
+                    cleanUp(result, statement, connection);
                 } catch (SQLException e) {
                     logger.error("There was a problem updating Move in the database", e);
                 }

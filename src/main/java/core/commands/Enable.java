@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
+import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software by Ague Mort
@@ -50,6 +51,7 @@ public class Enable implements Command {
                 sendToChannel(event, Const.ENABLE_FAIL);
 
             }
+            cleanUp(result, statement, connection);
         } catch (SQLException e) {
             e.printStackTrace();
         }

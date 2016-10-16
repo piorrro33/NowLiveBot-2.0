@@ -5,13 +5,12 @@
  */
 package core;
 
-//import com.mb3364.twitch.api.Twitch;
-
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.JDABuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import platform.discord.listener.DiscordListener;
+import platform.generic.listener.PlatformListener;
 import util.Const;
 import util.PropReader;
 import util.database.Database;
@@ -20,6 +19,10 @@ import javax.security.auth.login.LoginException;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Veteran Software
@@ -29,6 +32,7 @@ import java.sql.SQLException;
 public class Main {
 
     public static final CommandParser parser = new CommandParser();
+    public static JDA jda;
     private static Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws PropertyVetoException, IOException, SQLException {
@@ -43,15 +47,15 @@ public class Main {
         try {
 
             DiscordListener discordListener = new DiscordListener();
-            //Twitch twitchListener = new Twitch();
+            PlatformListener platformListener = new PlatformListener();
 
-            JDA jda = new JDABuilder()
+            jda = new JDABuilder()
                     .setAutoReconnect(true) // Ensure JDA auto-reconnects
                     .setAudioEnabled(false) // Turn off JDA audio support
                     .setBulkDeleteSplittingEnabled(false)
                     .setBotToken(PropReader.getInstance().getProp().getProperty("discord.token"))
                     .addListener(discordListener)
-                    //.addListener(twitchListener)
+                    //.addListener(platformListener)
                     .buildBlocking();
             jda.getAccountManager().setGame(Const.PLAYING); // Set the 'Playing...'
             jda.getAccountManager().update(); // Must call '.update()' in order for this to work.

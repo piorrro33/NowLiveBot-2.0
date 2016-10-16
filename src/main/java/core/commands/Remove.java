@@ -37,6 +37,7 @@ public class Remove extends Add implements Command {
                 Statement statement;
                 Integer resultInt;
                 Integer platformId = 1; // platformId is always 1 for Twitch until other platforms are added
+                this.argument = this.argument.replace("'", "''");
 
                 try {
                     connection = Database.getInstance().getConnection();

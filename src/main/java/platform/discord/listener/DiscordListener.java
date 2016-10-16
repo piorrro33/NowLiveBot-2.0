@@ -7,6 +7,7 @@ package platform.discord.listener;
 
 import core.CommandParser;
 import core.Main;
+import net.dv8tion.jda.events.guild.GuildAvailableEvent;
 import net.dv8tion.jda.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
@@ -84,5 +85,9 @@ public class DiscordListener extends ListenerAdapter {
         if (cntMsg.startsWith("ping", 1) || cntMsg.startsWith(Const.COMMAND, 1)) {
             CommandParser.handleCommand(Main.parser.parse(cntMsg, event));
         }
+    }
+
+    public void onGuildAvailble (GuildAvailableEvent event) {
+        //DiscordController.
     }
 }

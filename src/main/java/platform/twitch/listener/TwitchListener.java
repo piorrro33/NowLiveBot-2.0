@@ -5,64 +5,36 @@
  */
 package platform.twitch.listener;
 
-import platform.twitch.controller.TwitchController;
+import com.mb3364.twitch.api.Twitch;
+import util.PropReader;
+import util.database.Database;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * @author keesh
  */
-public class TwitchListener {
+public class TwitchListener extends Twitch {
 
-    private final String twitchClientId;
-    private final TwitchController twitchController;
+    public TwitchListener() {
 
-    public TwitchListener(String clientID) {
-        // Instantiate TwitchController
-        this.twitchController = new TwitchController();
-        // Populate class scope of clientID
-        this.twitchClientId = clientID;
-    }
-
-    /**
-     * @return String
-     */
-    public String channels(String restOfCommand) {
-        return twitchController.channels(twitchClientId);
-    }
-
-    private void channelsFeed() {
+        this.setClientId(PropReader.getInstance().getProp().getProperty("twitch.client.id"));
 
     }
 
-    private void chat() {
-
+    public String getTwitchClientId() {
+        return this.getClientId();
     }
 
-    private void follows() {
-
-    }
-
-    private void games() {
-
-    }
-
-    private void search() {
-
-    }
-
-    private void streams() {
-
-    }
-
-    private void teams() {
-
-    }
-
-    private void users() {
-
-    }
-
-    private void videos() {
-
+    public void checkLiveChannels() {
+        Connection connection = Database.getInstance().getConnection();
+        try {
+            Statement statement = connection.createStatement();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 }

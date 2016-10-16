@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
+import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software by Ague Mort
@@ -71,6 +72,7 @@ public class CleanUp implements Command {
             } else {
                 sendToChannel(event, Const.CLEANUP_FAIL);
             }
+            cleanUp(result, statement, connection);
         } catch (SQLException e) {
             e.printStackTrace();
         }

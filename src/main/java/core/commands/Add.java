@@ -14,7 +14,6 @@ import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
-import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -71,7 +70,7 @@ public class Add implements Command {
     public void action(String args, MessageReceivedEvent event) {
         DiscordController dController = new DiscordController(event);
 
-        BigInteger guildId = new BigInteger(dController.getguildId());
+        String guildId = dController.getguildId();
 
         for (String s : this.options) {
             if (this.option.equals(s) && !this.option.equals("help")) {
@@ -80,10 +79,10 @@ public class Add implements Command {
                 ResultSet resultSet;
                 Integer resultInt;
                 Integer platformId = 1; // platformId is always 1 for Twitch until other platforms are added
+                this.argument = this.argument.replace("'", "''");
 
                 try {
                     connection = Database.getInstance().getConnection();
-                    statement = connection.createStatement();
 
                     // Check to see if the game already exists in the db for that guild
                     String query;
@@ -93,8 +92,8 @@ public class Add implements Command {
                         logger.info("Checking to see if " + dController.getMentionedUsersId()
                                 + " already exists for guild: " + guildId);
 
-                        query = "SELECT `userId` FROM `" + this.option + "` WHERE `guildId` = " + guildId + " " +
-                                "AND " + "`userId` = '" + dController.getMentionedUsersId() + "'";
+                        query = "SELECT `userId` FROM `" + this.option + "` WHERE `guildId` = '" + guildId + "' AND " +
+                                "`userId` = '" + String.valueOf(dController.getMentionedUsersId()) + "'";
                     } else {
                         logger.info("Checking to see if the " + this.option + " already exists for guild: " + guildId);
 
@@ -102,6 +101,7 @@ public class Add implements Command {
                                 "`platformId` = " + platformId + " AND `name` = '" + this.argument + "'";
                     }
                     logger.info(query);
+                    statement = connection.prepareStatement(query);
 
                     resultSet = statement.executeQuery(query);
 
@@ -135,6 +135,8 @@ public class Add implements Command {
 
                 } catch (SQLException e) {
                     e.printStackTrace();
+                } finally {
+
                 }
             }
         }

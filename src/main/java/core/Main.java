@@ -47,7 +47,6 @@ public class Main {
         try {
 
             DiscordListener discordListener = new DiscordListener();
-            PlatformListener platformListener = new PlatformListener();
 
             jda = new JDABuilder()
                     .setAutoReconnect(true) // Ensure JDA auto-reconnects
@@ -66,6 +65,8 @@ public class Main {
         } catch (InterruptedException ex) {
             logger.error("InterruptedException", ex);
         }
+
+        new PlatformListener();
     }
 
     public static boolean debugMode() {

@@ -22,14 +22,14 @@ public class Help implements Command {
     @Override
     public void action(String args, MessageReceivedEvent event) {
         // TODO: need to revamp how help is done bc 2,000 character limit
-        String message = "";
+        StringBuilder message = new StringBuilder();
         Field[] c = Const.class.getDeclaredFields();
         for (Field field : c) {
             Const nullObject = new Const();
             try {
                 Object value = field.get(nullObject);
                 if (value.toString().contains("USAGE")) {
-                    message += value.toString();
+                    message.append(value.toString());
                 }
             } catch (IllegalAccessException e) {
                 e.printStackTrace();

@@ -21,7 +21,7 @@ import static platform.discord.controller.DiscordController.sendToChannel;
  * @author keesh
  */
 public class CommandParser {
-    public static HashMap<String, Command> commands = new HashMap<>();
+    static HashMap<String, Command> commands = new HashMap<>();
 
     private static CheckPerms perms = new CheckPerms();
 
@@ -97,12 +97,12 @@ public class CommandParser {
         }
     }
 
-    public CommandContainer parse(String raw, MessageReceivedEvent event) throws PropertyVetoException, SQLException, IOException {
+    public CommandContainer parse(String raw, MessageReceivedEvent event) {
         String beheaded = raw.replaceFirst(Const.COMMAND_PREFIX, "");  // Remove COMMAND_PREFIX
 
         String removeCommand;
-        String invoke = null;
-        String args = null;
+        String invoke = "";
+        String args = "";
 
         if (beheaded.contains(" ")) {
             removeCommand = beheaded.substring(beheaded.indexOf(" ") + 1); // Remove Const.COMMAND {add opt opt}
@@ -116,7 +116,7 @@ public class CommandParser {
             }
         } else if ("ping".equals(beheaded)) {
             invoke = beheaded;
-            args = null;
+            args = "";
         } else {
             sendToChannel(event, Const.EMPTY_COMMAND);
         }

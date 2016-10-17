@@ -10,8 +10,9 @@ import util.database.Database;
 import util.database.calls.Tracker;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
 import static util.database.Database.cleanUp;
@@ -20,7 +21,11 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public class Move implements Command {
-    public static Logger logger = LoggerFactory.getLogger(Database.class);
+    private static Connection connection;
+    private static PreparedStatement pStatement;
+    private static String query;
+    private static Integer result;
+    public static final Logger logger = LoggerFactory.getLogger(Database.class);
 
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
@@ -47,21 +52,24 @@ public class Move implements Command {
 
             if (textChannel.getGuild().getId().equals(event.getGuild().getId())) {
                 try {
-                    Connection connection = Database.getInstance().getConnection();
-                    Statement statement = connection.createStatement();
-                    String query = "UPDATE `guild` SET `channelId` = '" + textChannel.getId() + "' WHERE `guildId` = " +
-                            "'" + event.getGuild().getId() + "'";
+                    String query = "UPDATE `guild` SET `channelId` = ? WHERE `guildId` = ?";
+                    connection = Database.getInstance().getConnection();
+                    pStatement = connection.prepareStatement(query);
 
-                    Integer result = statement.executeUpdate(query);
+                    pStatement.setString(1, textChannel.getId());
+                    pStatement.setString(2, event.getGuild().getId());
+
+                    result = pStatement.executeUpdate();
 
                     if (result.equals(1)) {
                         sendToChannel(event, Const.MOVE_SUCCESS);
                     } else {
                         sendToChannel(event, Const.MOVE_FAILURE);
                     }
-                    cleanUp(result, statement, connection);
                 } catch (SQLException e) {
                     logger.error("There was a problem updating Move in the database", e);
+                } finally {
+                    cleanUp(result, pStatement, connection);
                 }
             } else {
                 break;

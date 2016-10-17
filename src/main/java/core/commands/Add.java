@@ -29,10 +29,14 @@ import static platform.discord.controller.DiscordController.sendToChannel;
  */
 public class Add implements Command {
 
-    private static Logger logger = LoggerFactory.getLogger(Add.class);
+    private static final Logger logger = LoggerFactory.getLogger(Add.class);
     public String help;
     public String option;
     public String argument;
+    public Connection connection;
+    public Statement statement;
+    public ResultSet resultSet;
+    public Integer resultInt;
     private String[] options = new String[]{"channel", "game", "manager", "tag", "team", "help"};
 
     @Override
@@ -61,28 +65,26 @@ public class Add implements Command {
                 return false;
             }
         }
-
         // If all checks fail
         return false;
     }
 
     @Override
     public void action(String args, MessageReceivedEvent event) {
+
         DiscordController dController = new DiscordController(event);
+
+        this.connection = Database.getInstance().getConnection();
 
         String guildId = dController.getguildId();
 
         for (String s : this.options) {
             if (this.option.equals(s) && !this.option.equals("help")) {
-                Connection connection;
-                Statement statement;
-                ResultSet resultSet;
-                Integer resultInt;
                 Integer platformId = 1; // platformId is always 1 for Twitch until other platforms are added
                 this.argument = this.argument.replace("'", "''");
 
                 try {
-                    connection = Database.getInstance().getConnection();
+
 
                     // Check to see if the game already exists in the db for that guild
                     String query;

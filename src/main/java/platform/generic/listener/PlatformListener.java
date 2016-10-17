@@ -21,31 +21,38 @@ public class PlatformListener {
     private static Logger logger = LoggerFactory.getLogger(PlatformListener.class);
 
     public PlatformListener() {
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
         Runnable checkLiveChannels = this::checkLiveChannels;
 
-        Runnable checkLiveGames = this::checkLiveGames;
+        int initialDelay = 2; // Wait this long to start (2 seconds is ample when starting up the bot)
+        int period = 10; // Run this task every {x} seconds
 
-        int initialDelay = 5;
-        int period = 30; // Run this task every minute
+        logger.info("Starting the executor tasks");
 
-        executor.scheduleWithFixedDelay(checkLiveChannels, initialDelay, period, TimeUnit.SECONDS);
-        executor.scheduleWithFixedDelay(checkLiveGames, initialDelay, period, TimeUnit.SECONDS);
+        try {
+            executor.scheduleWithFixedDelay(checkLiveChannels, initialDelay, period, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            logger.info("******************* Caught an exception while keeping the executors active ", e);
+            logger.info("Attempting to restart the executors...");
+            new PlatformListener();
+        }
     }
 
     private synchronized void checkLiveChannels() {
-        Connection connection = Database.getInstance().getConnection();
+        logger.info("Checking if there are any live channels...");
+
         try {
+            Connection connection = Database.getInstance().getConnection();
             Statement statement = connection.createStatement();
-            String query = "SELECT * FROM `channel` ORDER BY `guildId` ASC";
+            String query = "SELECT `guildId`, `name`, `platformId` FROM `channel` ORDER BY `guildId` ASC";
             ResultSet result = statement.executeQuery(query);
+            TwitchController twitch = new TwitchController();
 
             while (result.next()) {
                 switch (result.getInt("platformId")) {
                     case 1:
                         // Send info to Twitch Controller
-                        TwitchController twitch = new TwitchController();
                         twitch.checkChannel(result.getString("name"), result.getString("guildId"), result.getInt
                                 ("platformId"));
                         break;
@@ -54,7 +61,8 @@ public class PlatformListener {
                         break;
                 }
             }
-
+            twitch = null;
+            Database.cleanUp(result, statement, connection);
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -7,12 +7,11 @@ package platform.twitch.controller;
 
 import com.mb3364.http.RequestParams;
 import com.mb3364.twitch.api.Twitch;
-import com.mb3364.twitch.api.handlers.GamesResponseHandler;
 import com.mb3364.twitch.api.handlers.StreamResponseHandler;
 import com.mb3364.twitch.api.handlers.StreamsResponseHandler;
-import com.mb3364.twitch.api.models.Game;
 import com.mb3364.twitch.api.models.Stream;
-import com.mb3364.twitch.api.models.Streams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import platform.generic.controller.PlatformController;
 import util.PropReader;
 
@@ -23,13 +22,14 @@ import java.util.List;
  */
 public class TwitchController extends Twitch {
 
+    private static Logger logger = LoggerFactory.getLogger(TwitchController.class);
     private PlatformController pController = new PlatformController();
 
     public TwitchController() {
         this.setClientId(PropReader.getInstance().getProp().getProperty("twitch.client.id"));
     }
 
-    public synchronized void checkChannel(String channelName, String guildId, Integer platformId) {
+    public void checkChannel(String channelName, String guildId, Integer platformId) {
 
         // Grab the stream info
         this.streams().get(channelName, new StreamResponseHandler() {
@@ -40,10 +40,13 @@ public class TwitchController extends Twitch {
                     String channelName = stream.getChannel().getDisplayName();
                     String streamTitle = stream.getChannel().getStatus();
                     String gameName = stream.getGame();
-                    // Integer viewers = stream.getViewers();
 
                     // Send the stream info to the stream queue
-                    pController.streamToQueue(guildId, platformId, channelName, streamTitle, gameName);
+                    pController.setOnline(guildId, platformId, channelName, streamTitle, gameName, 1);
+                    pController.onlineStreamHandler(guildId, platformId, channelName, streamTitle, gameName);
+                } else {
+                    pController.setOffline(guildId, platformId, channelName, 0);
+
                 }
             }
 
@@ -85,5 +88,4 @@ public class TwitchController extends Twitch {
             }
         });
     }
-
 }

@@ -15,31 +15,27 @@ import org.slf4j.LoggerFactory;
 import util.database.Database;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+
+import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software by Ague Mort
  */
 public class DiscordController {
 
-    private static Logger logger = LoggerFactory.getLogger(DiscordController.class);
+    private static final Logger logger = LoggerFactory.getLogger(DiscordController.class);
     private static Connection connection;
-    private static Statement statement;
+    private static PreparedStatement pStatement;
     private static String query;
+    private static ResultSet result;
     private String guildIdMessageEvent;
     private String mentionedUsersId;
     private JDA jda = Main.jda;
 
     public DiscordController(MessageReceivedEvent event) {
-
-        connection = Database.getInstance().getConnection();
-        try {
-            statement = connection.createStatement();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
         this.guildIdMessageEvent = event.getGuild().getId();
         mentionedUsersID(event);
@@ -47,18 +43,26 @@ public class DiscordController {
 
     public static void sendToChannel(MessageReceivedEvent event, String message) {
         try {
-            query = "SELECT `channelId` FROM `guild` WHERE `guildId` = '" + event.getGuild().getId() + "'";
-            ResultSet resultSet = statement.executeQuery(query);
+            query = "SELECT `channelId` FROM `guild` WHERE `guildId` = ?";
+
+            connection = Database.getInstance().getConnection();
+            pStatement = connection.prepareStatement(query);
+
+            pStatement.setString(1, event.getGuild().getId());
+
+            result = pStatement.executeQuery();
             String channelId;
-            if (resultSet.next()) {
-                channelId = resultSet.getString(1);
+            if (result.next()) {
+                channelId = result.getString(1);
             } else {
                 channelId = event.getGuild().getPublicChannel().getId();
             }
-            // TODO: CHECK PERMISSIONS ASSHOLE
+            // TODO: CHECK PERMISSIONS
             event.getJDA().getTextChannelById(channelId).sendMessage(message);
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
         }
     }
 
@@ -81,63 +85,14 @@ public class DiscordController {
         return this.guildIdMessageEvent;
     }
 
-    public synchronized void streamFromQueue() {
-        MessageBuilder message = new MessageBuilder();
-
-        // Grab the current queue
-        query = "SELECT * FROM `queue` WHERE `platformId` IS NOT NULL ORDER BY `timeAdded` ASC";
-
-        try {
-            ResultSet result = statement.executeQuery(query);
-
-            String guildId = result.getString("guildId");
-
-            notifyLevel(guildId, message); // Determine the beginning of the message
-
-            while (result.next()) {
-
-                if (streamChecks(guildId, "isActive")) {
-
-                    // Get the channel ID to push the message out to
-                    String channelQuery = "SELECT `channelId` FROM `guild` WHERE `guildId` = '" + result
-                            .getString("guildId") + "'";
-                    ResultSet channel = statement.executeQuery(channelQuery);
-
-                    while (result.next()) {
-
-                        //channelId = result.getString("channelId");
-
-                    }
-
-                    if (streamChecks(result.getString("guildId"), "isCompact")) { // Check for compact mode
-
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private synchronized boolean streamChecks(String guildId, String type) {
-        String checksQuery = "SELECT `" + type + "` FROM `guild` WHERE `guildId` = '" + guildId + "'";
-        try {
-            ResultSet checks = statement.executeQuery(checksQuery);
-            while (checks.next()) {
-                if (checks.getString(type).equals(1)) {
-                    return true;
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
 
     private synchronized void notifyLevel(String guildId, MessageBuilder message) {
-        String levelQuery = "SELECT `level`, `userId` FROM `notification` WHERE `guildId` = '" + guildId + "'";
+        String query = "SELECT `level`, `userId` FROM `notification` WHERE `guildId` = ?";
         try {
-            ResultSet level = statement.executeQuery(levelQuery);
+            connection = Database.getInstance().getConnection();
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            ResultSet level = pStatement.executeQuery();
 
             while (level.next()) {
                 switch (level.getInt("level")) {
@@ -154,8 +109,9 @@ public class DiscordController {
                     case 3: // User wants @everyone mention
                         message.appendEveryoneMention();
                         message.appendString("  ");
+                        break;
                     default: // No mention
-
+                        message.appendString("");
                         break;
                 }
             }

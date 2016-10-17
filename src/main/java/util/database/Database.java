@@ -23,7 +23,7 @@ import static util.database.calls.SchemaCheck.checkDb;
  */
 public class Database {
 
-    public static Logger logger = LoggerFactory.getLogger(Database.class);
+    public static final Logger logger = LoggerFactory.getLogger(Database.class);
     private static PropReader prop = PropReader.getInstance();
     private static final String JDBC_DRIVER = prop.getProp().getProperty("jdbc.driver");
     private static final String MYSQL_URL = prop.getProp().getProperty("mysql.url");

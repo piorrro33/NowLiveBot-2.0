@@ -1,35 +1,39 @@
 package util.database.calls;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import util.database.Database;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
+
+import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software by Ague Mort
  */
-public class Tracker extends Database {
+public class Tracker {
+    public static final Logger logger = LoggerFactory.getLogger(Tracker.class);
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private Integer result;
+
     public Tracker(String command) {
         super();
-
-        Connection connection;
-        Statement statement;
-        Integer result;
         try {
+            String query = "INSERT INTO `commandtracker` (`commandName`, `commandCount`) VALUES (?, 1) " +
+                    "ON DUPLICATE KEY UPDATE `commandCount` = `commandCount` + 1";
             connection = Database.getInstance().getConnection();
-            statement = connection.createStatement();
-            String query = "INSERT INTO `commandtracker` (`commandName`, `commandCount`) VALUES ('" + command + "', " +
-                    "1) ON DUPLICATE KEY UPDATE `commandCount` = `commandCount` + 1";
-            result = statement.executeUpdate(query);
-            if (result > 0) {
-                logger.info("Command " + command + " was used and incremented in the database.");
-                return;
+            if (connection != null) {
+                pStatement = connection.prepareStatement(query);
+                pStatement.setString(1, command);
+                result = pStatement.executeUpdate();
             }
-            Database.getInstance();
-            Database.cleanUp(result, statement, connection);
         } catch (SQLException e) {
             logger.warn("There was a problem updating the count for commands in my database.");
+        } finally {
+            cleanUp(pStatement, connection);
         }
     }
 }

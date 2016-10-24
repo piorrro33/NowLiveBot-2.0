@@ -11,7 +11,6 @@ import util.database.calls.Tracker;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
@@ -21,11 +20,11 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public class Move implements Command {
-    private static Connection connection;
-    private static PreparedStatement pStatement;
-    private static String query;
-    private static Integer result;
     public static final Logger logger = LoggerFactory.getLogger(Database.class);
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private String query;
+    private Integer result;
 
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
@@ -52,7 +51,7 @@ public class Move implements Command {
 
             if (textChannel.getGuild().getId().equals(event.getGuild().getId())) {
                 try {
-                    String query = "UPDATE `guild` SET `channelId` = ? WHERE `guildId` = ?";
+                    query = "UPDATE `guild` SET `channelId` = ? WHERE `guildId` = ?";
                     connection = Database.getInstance().getConnection();
                     pStatement = connection.prepareStatement(query);
 
@@ -69,7 +68,7 @@ public class Move implements Command {
                 } catch (SQLException e) {
                     logger.error("There was a problem updating Move in the database", e);
                 } finally {
-                    cleanUp(result, pStatement, connection);
+                    cleanUp(pStatement, connection);
                 }
             } else {
                 break;

@@ -7,8 +7,8 @@ import util.database.Database;
 import util.database.calls.Tracker;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
 import static util.database.Database.cleanUp;
@@ -17,6 +17,9 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public class Enable implements Command {
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private Integer result;
 
     /**
      * Used to determine if appropriate arguments exist
@@ -39,11 +42,12 @@ public class Enable implements Command {
     @Override
     public void action(String args, MessageReceivedEvent event) {
         try {
-            Connection connection = Database.getInstance().getConnection();
-            Statement statement = connection.createStatement();
-            String query;
-            query = "UPDATE `guild` SET `isActive` = 1 WHERE `guildId` = '" + event.getGuild().getId() + "'";
-            Integer result = statement.executeUpdate(query);
+            String query = "UPDATE `guild` SET `isActive` = 1 WHERE `guildId` = ?";
+            connection = Database.getInstance().getConnection();
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, event.getGuild().getId());
+
+            result = pStatement.executeUpdate(query);
 
             if (result.equals(1)) {
                 sendToChannel(event, Const.ENABLE_SUCCESS);
@@ -51,9 +55,10 @@ public class Enable implements Command {
                 sendToChannel(event, Const.ENABLE_FAIL);
 
             }
-            cleanUp(result, statement, connection);
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            cleanUp(pStatement, connection);
         }
     }
 

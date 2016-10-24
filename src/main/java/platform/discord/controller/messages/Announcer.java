@@ -8,6 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import static util.database.Database.cleanUp;
+
 /**
  * @author Veteran Software by Ague Mort
  */
@@ -30,6 +32,8 @@ public class Announcer {
             normalAnnounce();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            cleanUp(rs, pStatement, connection);
         }
     }
 
@@ -49,6 +53,8 @@ public class Announcer {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            cleanUp(chan, pStatement, connection);
         }
 
     }

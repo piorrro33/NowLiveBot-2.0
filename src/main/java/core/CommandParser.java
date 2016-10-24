@@ -21,7 +21,7 @@ import static platform.discord.controller.DiscordController.sendToChannel;
  * @author keesh
  */
 public class CommandParser {
-    static HashMap<String, Command> commands = new HashMap<>();
+    private static HashMap<String, Command> commands = new HashMap<>();
 
     private static CheckPerms perms = new CheckPerms();
 

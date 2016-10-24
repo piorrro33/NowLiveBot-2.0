@@ -22,14 +22,15 @@ import java.util.List;
  */
 public class TwitchController extends Twitch {
 
-    private static Logger logger = LoggerFactory.getLogger(TwitchController.class);
     private PlatformController pController = new PlatformController();
+
+    private Logger logger = LoggerFactory.getLogger(TwitchController.class);
 
     public TwitchController() {
         this.setClientId(PropReader.getInstance().getProp().getProperty("twitch.client.id"));
     }
 
-    public void checkChannel(String channelName, String guildId, Integer platformId) {
+    public synchronized void checkChannel(String channelName, String guildId, Integer platformId) {
 
         // Grab the stream info
         this.streams().get(channelName, new StreamResponseHandler() {
@@ -42,22 +43,19 @@ public class TwitchController extends Twitch {
                     String gameName = stream.getGame();
 
                     // Send the stream info to the stream queue
-                    pController.setOnline(guildId, platformId, channelName, streamTitle, gameName, 1);
+                    //pController.setOnline(guildId, platformId, channelName, streamTitle, gameName, 1);
                     pController.onlineStreamHandler(guildId, platformId, channelName, streamTitle, gameName);
                 } else {
-                    pController.setOffline(guildId, platformId, channelName, 0);
-
+                    pController.offlineStreamHandler(guildId, platformId, channelName);
                 }
             }
 
             @Override
             public void onFailure(int i, String s, String s1) {
-
             }
 
             @Override
             public void onFailure(Throwable throwable) {
-
             }
         });
     }
@@ -65,27 +63,31 @@ public class TwitchController extends Twitch {
     public synchronized void checkGame(String gameName, String guildId, Integer platformId) {
 
         // Grab the stream info
-        RequestParams params = new RequestParams();
-        params.put("limit", 100);
+        for (Integer offset = 0; offset <= 1000; offset += 100) {
+            RequestParams params = new RequestParams();
+            params.put("limit", 100);
+            params.put("offset", offset);
 
-        this.search().streams(gameName, params, new StreamsResponseHandler() {
-            @Override
-            public void onSuccess(int i, List<Stream> list) {
-                for (Stream stream : list) {
-                    stream.getChannel().getDisplayName();
-                    System.out.println(stream.getChannel().getDisplayName() + " is playing " + gameName);
+            this.search().streams(gameName, params, new StreamsResponseHandler() {
+                @Override
+                public void onSuccess(int total, List<Stream> list) {
+                    //logger.info("Total streams online right now for " + gameName + ": " + total);
+                    //logger.info("Offset: " + params.getString("offset"));
+                    for (Stream stream : list) {
+                        checkChannel(stream.getChannel().getDisplayName(), guildId, platformId);
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(int i, String s, String s1) {
+                @Override
+                public void onFailure(int i, String s, String s1) {
+                    logger.info("onFailure: " + i + " : String1: " + s + " : String2: " + s1);
+                }
 
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-
-            }
-        });
+                @Override
+                public void onFailure(Throwable throwable) {
+                    logger.error("onFailure: ", throwable);
+                }
+            });
+        }
     }
 }

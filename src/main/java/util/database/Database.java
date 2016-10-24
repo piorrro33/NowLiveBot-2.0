@@ -12,9 +12,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.beans.PropertyVetoException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import static util.database.calls.SchemaCheck.checkDb;
 
@@ -31,26 +31,27 @@ public class Database {
     private static final String MYSQL_USERNAME = prop.getProp().getProperty("mysql.username");
     private static final String MYSQL_PASSWORD = prop.getProp().getProperty("mysql.password");
     private static Database database;
-    private ComboPooledDataSource cpds;
+    private static ComboPooledDataSource cpds;
 
     public Database() {
         // c3p0 connection pooling instantiation
-        this.cpds = new ComboPooledDataSource();
+        cpds = new ComboPooledDataSource();
         try {
-            this.cpds.setDriverClass(JDBC_DRIVER);
+            cpds.setDriverClass(JDBC_DRIVER);
         } catch (PropertyVetoException e) {
             logger.error("There was an issue setting the JDBC Driver", e);
         }
-        this.cpds.setJdbcUrl(MYSQL_URL + MYSQL_OPTIONS);
-        this.cpds.setUser(MYSQL_USERNAME);
-        this.cpds.setPassword(MYSQL_PASSWORD);
+        cpds.setJdbcUrl(MYSQL_URL + MYSQL_OPTIONS);
+        cpds.setUser(MYSQL_USERNAME);
+        cpds.setPassword(MYSQL_PASSWORD);
         // Optional c3p0 settings below
-        this.cpds.setInitialPoolSize(50);
-        this.cpds.setMaxPoolSize(50);
-        this.cpds.setMaxIdleTime(0);
-        this.cpds.setMinPoolSize(50);
-        this.cpds.setAcquireIncrement(5);
-        this.cpds.setNumHelperThreads(5);
+        cpds.setInitialPoolSize(3);
+        cpds.setMaxPoolSize(20);
+        cpds.setMaxIdleTime(5);
+        cpds.setMinPoolSize(2);
+        cpds.setAcquireIncrement(1);
+        cpds.setNumHelperThreads(5);
+        cpds.setMaxStatements(0);
     }
 
     public static Database getInstance() {
@@ -67,7 +68,7 @@ public class Database {
         logger.info("Database check complete.");
     }
 
-    public static void cleanUp(ResultSet resultSet, Statement statement, Connection connection) {
+    public static void cleanUp(ResultSet resultSet, PreparedStatement statement, Connection connection) {
         if (resultSet != null) {
             try {
                 resultSet.close();
@@ -91,24 +92,7 @@ public class Database {
         }
     }
 
-    public static void cleanUp(Integer resultSet, Statement statement, Connection connection) {
-        if (statement != null) {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                logger.error("Not able to close the Statement.", e);
-            }
-        }
-        if (connection != null) {
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                logger.error("Not able to close the Connection.", e);
-            }
-        }
-    }
-
-    public static void cleanUp(Boolean resultSet, Statement statement, Connection connection) {
+    public static void cleanUp(PreparedStatement statement, Connection connection) {
         if (statement != null) {
             try {
                 statement.close();
@@ -127,7 +111,7 @@ public class Database {
 
     public Connection getConnection() {
         try {
-            return this.cpds.getConnection();
+            return cpds.getConnection();
         } catch (SQLException e) {
             logger.error("There was an error getting the connection.", e);
         }

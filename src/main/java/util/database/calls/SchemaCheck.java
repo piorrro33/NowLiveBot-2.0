@@ -18,46 +18,46 @@ public class SchemaCheck extends Database {
     private static final String MYSQL_SCHEMA = prop.getProp().getProperty("mysql.schema");
     private static Logger logger = LoggerFactory.getLogger(SchemaCheck.class);
 
+    private static Connection connection;
+    private static PreparedStatement pStatement;
+    private static ResultSet resultSet;
+
     public SchemaCheck() throws PropertyVetoException, IOException, SQLException {
         super();
     }
 
     public static void checkDb() {
         logger.info("Checking to see if the schema is present.");
-        Connection connection = null;
-        Statement statement = null;
-        ResultSet resultSet = null;
+
 
         try {
+            String query = "SELECT `SCHEMA_NAME` FROM `information_schema`.`SCHEMATA` WHERE `SCHEMA_NAME` = ?";
             connection = Database.getInstance().getConnection();
-            statement = connection.createStatement();
-            String query = "SELECT `SCHEMA_NAME` FROM `information_schema`.`SCHEMATA` WHERE `SCHEMA_NAME` = '" +
-                    MYSQL_SCHEMA + "'";
-            resultSet = statement.executeQuery(query);
+            if (connection != null) {
+                pStatement = connection.prepareStatement(query);
+                pStatement.setString(1, MYSQL_SCHEMA);
+                resultSet = pStatement.executeQuery();
 
-            Boolean check = resultSet.last(); // Check to see if there's at least one row
+                Boolean check = resultSet.last(); // Check to see if there's at least one row
 
-            if (check) {
-                logger.info("MySQL schema exists.");
-            } else {
-                logger.info("MySQL schema does not exist.");
-                // Load the raw SQL schema file in to the database
-                uploadDatabase();
+                if (check) {
+                    logger.info("MySQL schema exists.");
+                } else {
+                    logger.info("MySQL schema does not exist.");
+                    // Load the raw SQL schema file in to the database
+                    uploadDatabase();
+                }
             }
         } catch (SQLSyntaxErrorException e) {
             logger.error("There is an error in the SQL syntax.", e);
         } catch (SQLException e) {
             logger.error("SQLException error.  No clue what.", e);
         } finally {
-            cleanUp(resultSet, statement, connection);
+            cleanUp(resultSet, pStatement, connection);
         }
     }
 
     private static void uploadDatabase() throws SQLException {
-
-        Connection connection = null;
-        Statement statement = null;
-        int resultSet = 0;
 
         String line;
         StringBuilder buffer = new StringBuilder();
@@ -80,20 +80,21 @@ public class SchemaCheck extends Database {
 
         try {
             connection = Database.getInstance().getConnection();
-            statement = connection.createStatement();
             for (String anInst : inst) {
                 if (!anInst.trim().equals("")) {
-                    resultSet = statement.executeUpdate(anInst);
+                    pStatement = connection.prepareStatement(anInst);
+                    pStatement.executeUpdate(anInst);
                     logger.info("MySQL Query executed successfully:  " + anInst);
                 }
             }
-            statement = connection.createStatement();
-            Boolean result = statement.execute("USE `" + MYSQL_SCHEMA + "`");
-            if (result) {
+            String query = "USE `" + MYSQL_SCHEMA + "`";
+            pStatement = connection.prepareStatement(query);
+
+            if (pStatement.execute("USE `" + MYSQL_SCHEMA + "`")) {
                 logger.info("Now using schema: " + MYSQL_SCHEMA);
             }
         } finally {
-            cleanUp(resultSet, statement, connection);
+            cleanUp(pStatement, connection);
         }
     }
 

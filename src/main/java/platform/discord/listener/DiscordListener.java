@@ -12,13 +12,19 @@ import net.dv8tion.jda.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
+import platform.generic.listener.PlatformListener;
 import util.Const;
 import util.database.calls.GuildJoin;
 import util.database.calls.GuildLeave;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static util.database.Database.logger;
 
@@ -26,6 +32,35 @@ import static util.database.Database.logger;
  * @author keesh
  */
 public class DiscordListener extends ListenerAdapter {
+
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private String query;
+
+    public DiscordListener() {
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
+        Runnable checkLiveGames = PlatformListener::checkLiveGames;
+        Runnable checkLiveChannels = PlatformListener::checkLiveChannels;
+        Runnable messageFactory = PlatformListener::messageFactory;
+        Runnable discordListener = PlatformListener::commandWorker;
+
+        int initialDelay = 10; // Wait this long to start (2 seconds is ample when starting up the bot)
+        int period = 60; // Run this task every {x} seconds
+
+        logger.info("Starting the executor tasks");
+
+        try {
+            executor.submit(discordListener);
+            executor.submit(checkLiveChannels);
+            executor.submit(checkLiveGames);
+            executor.submit(messageFactory);
+        } catch (Exception e) {
+            logger.info("******************* Caught an exception while keeping the executors active ", e);
+            logger.info("Attempting to restart the executors...");
+            new PlatformListener();
+        }
+    }
 
     /**
      * Incoming message handler.
@@ -38,14 +73,14 @@ public class DiscordListener extends ListenerAdapter {
         if (event.isPrivate()) {
             // PM's are not Guild specific, so don't request Guild and/or channel specific info
             // Will cause an Uncaught Exception from JDA and the message won't be read
-            System.out.printf("[PM][%s] : %s\n",
+            System.out.printf("[PM][%s] : %s%n",
                     event.getAuthor().getUsername(),
                     event.getMessage().getContent());
             if (!event.getAuthor().isBot()) {
                 event.getAuthor().getPrivateChannel().sendMessage(Const.PRIVATE_MESSAGE_REPLY);
             }
         } else {
-            System.out.printf("[%s][%s][%s] : %s\n",
+            System.out.printf("[%s][%s][%s] : %s%n",
                     event.getGuild().getName(),
                     event.getTextChannel().getName(),
                     event.getAuthor().getUsername(),
@@ -67,11 +102,7 @@ public class DiscordListener extends ListenerAdapter {
 
     @Override
     public void onGuildJoin(GuildJoinEvent event) {
-        try {
-            GuildJoin.joinGuild(event);
-        } catch (PropertyVetoException | SQLException | IOException e) {
-            e.printStackTrace();
-        }
+        GuildJoin.joinGuild(event);
     }
 
     @Override
@@ -87,7 +118,7 @@ public class DiscordListener extends ListenerAdapter {
         }
     }
 
-    public void onGuildAvailble (GuildAvailableEvent event) {
+    public void onGuildAvailble(GuildAvailableEvent event) {
         //DiscordController.
     }
 }

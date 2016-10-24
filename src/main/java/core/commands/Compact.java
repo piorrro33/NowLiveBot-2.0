@@ -7,15 +7,20 @@ import util.database.Database;
 import util.database.calls.Tracker;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
+import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software by Ague Mort
  */
 public class Compact implements Command {
+
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private Integer result;
 
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
@@ -58,11 +63,15 @@ public class Compact implements Command {
 
         if (intArg.equals(1) || intArg.equals(0)) {
             try {
-                Connection connection = Database.getInstance().getConnection();
-                Statement statement = connection.createStatement();
-                String query = "UPDATE `guild` SET `isCompact` = " + intArg + " WHERE `guildId` = '" + event.getGuild
-                        ().getId() + "'";
-                Integer result = statement.executeUpdate(query);
+                String query = "UPDATE `guild` SET `isCompact` = ? WHERE `guildId` = ?";
+
+                connection = Database.getInstance().getConnection();
+                pStatement = connection.prepareStatement(query);
+                pStatement.setInt(1, intArg);
+                pStatement.setString(2, event.getGuild().getId());
+
+                result = pStatement.executeUpdate();
+
                 if (result.equals(1)) {
                     if (intArg.equals(0)) {
                         sendToChannel(event, Const.COMPACT_MODE_OFF);
@@ -73,9 +82,10 @@ public class Compact implements Command {
                 } else {
                     sendToChannel(event, Const.COMPACT_FAILURE);
                 }
-                Database.cleanUp(result, statement, connection);
             } catch (SQLException e) {
                 e.printStackTrace();
+            } finally {
+                cleanUp(pStatement, connection);
             }
         }
     }

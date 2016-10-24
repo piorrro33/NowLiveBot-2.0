@@ -7,8 +7,8 @@ import util.database.Database;
 import util.database.calls.Tracker;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
 import static util.database.Database.cleanUp;
@@ -17,6 +17,12 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public class CleanUp implements Command {
+
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private String query;
+    private Integer result;
+
 
     /**
      * Used to determine if appropriate arguments exist
@@ -28,7 +34,7 @@ public class CleanUp implements Command {
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
         if (args != null && !args.isEmpty()) {
-            return args.equals("none") || args.equals("edit") || args.equals("delete") || args.equals("help");
+            return "none".equals(args) || "edit".equals(args) || "delete".equals(args) || "help".equals(args);
         } else {
             sendToChannel(event, Const.EMPTY_ARGS);
             return false;
@@ -43,40 +49,40 @@ public class CleanUp implements Command {
      */
     @Override
     public void action(String args, MessageReceivedEvent event) {
-        String query;
         String returnStatement;
 
         switch (args) {
             case "none":
-                query = "UPDATE `guild` SET `cleanup` = 0 WHERE `guildId` = '" + event.getGuild().getId() + "'";
+                query = "UPDATE `guild` SET `cleanup` = 0 WHERE `guildId` = ?";
                 returnStatement = Const.CLEANUP_SUCCESS_NONE;
                 break;
             case "edit":
-                query = "UPDATE `guild` SET `cleanup` = 1 WHERE `guildId` = '" + event.getGuild().getId() + "'";
+                query = "UPDATE `guild` SET `cleanup` = 1 WHERE `guildId` = ?";
                 returnStatement = Const.CLEANUP_SUCCESS_EDIT;
                 break;
             case "delete":
-                query = "UPDATE `guild` SET `cleanup` = 2 WHERE `guildId` = '" + event.getGuild().getId() + "'";
+                query = "UPDATE `guild` SET `cleanup` = 2 WHERE `guildId` = ?";
                 returnStatement = Const.CLEANUP_SUCCESS_DELETE;
                 break;
             default:
-                query = null;
                 return;
         }
         try {
-            Connection connection = Database.getInstance().getConnection();
-            Statement statement = connection.createStatement();
-            Integer result = statement.executeUpdate(query);
+            connection = Database.getInstance().getConnection();
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, event.getGuild().getId());
+            result = pStatement.executeUpdate();
+
             if (result.equals(1)) {
                 sendToChannel(event, returnStatement);
             } else {
                 sendToChannel(event, Const.CLEANUP_FAIL);
             }
-            cleanUp(result, statement, connection);
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            cleanUp(pStatement, connection);
         }
-
     }
 
     /**

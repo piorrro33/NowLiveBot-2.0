@@ -9,8 +9,8 @@ import util.database.Database;
 import util.database.calls.Tracker;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
 import static platform.discord.controller.DiscordController.sendToPm;
@@ -22,9 +22,10 @@ import static util.database.Database.cleanUp;
 public class Streams implements Command {
 
     private static Logger logger = LoggerFactory.getLogger(Streams.class);
-    private Connection connection = null;
-    private Statement statement = null;
-    private ResultSet result = null;
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private String query;
+    private ResultSet result;
 
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
@@ -43,13 +44,13 @@ public class Streams implements Command {
     @Override
     public void action(String args, MessageReceivedEvent event) {
         try {
-            connection = Database.getInstance().getConnection();
-            Statement statement = connection.createStatement();
-            // Grab the number of rows first
+            query = "SELECT COUNT(*) as `rowCount` FROM `stream` WHERE `guildId` = ?";
 
-            String query = "SELECT COUNT(*) as `rowCount` FROM `nowlivebot`.`stream` WHERE `guildId` = " +
-                    "'" + event.getGuild().getId() + "'";
-            result = statement.executeQuery(query);
+            connection = Database.getInstance().getConnection();
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, event.getGuild().getId());
+            result = pStatement.executeQuery();
+
             Integer rowCount = -1;
             while (result.next()) {
                 rowCount = result.getInt("rowCount");
@@ -61,9 +62,10 @@ public class Streams implements Command {
                     "FROM `stream` " +
                     "INNER JOIN `platform` " +
                     "ON `stream`.`platformId` = `platform`.`id` " +
-                    "WHERE `stream`.`guildId` = '" + event.getGuild().getId() + "' " +
-                    "ORDER BY `stream`.`channelName`";
-            result = statement.executeQuery(query);
+                    "WHERE `stream`.`guildId` = ? ORDER BY `stream`.`channelName`";
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, event.getGuild().getId());
+            result = pStatement.executeQuery();
 
             if (rowCount < 1) { // If no streams are online
                 event.getAuthor().getPrivateChannel().sendMessage(Const.NONE_ONLINE);
@@ -82,7 +84,7 @@ public class Streams implements Command {
         } catch (Exception e) {
             logger.error("There was a problem fetching live streams for an on demand request.", e);
         } finally {
-            cleanUp(result, statement, connection);
+            cleanUp(result, pStatement, connection);
         }
     }
 

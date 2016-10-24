@@ -10,10 +10,11 @@ import util.database.Database;
 import util.database.calls.Tracker;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
+import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software by Ague Mort
@@ -22,6 +23,10 @@ public class Remove extends Add implements Command {
 
     private static Logger logger = LoggerFactory.getLogger(Add.class);
     public String help;
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private String query;
+    private Integer resultInt;
     private String[] options = new String[]{"channel", "game", "manager", "tag", "team", "help"};
 
     @Override
@@ -32,28 +37,27 @@ public class Remove extends Add implements Command {
 
         for (String s : this.options) {
             if (this.option.equals(s) && !this.option.equals("help")) {
-
-                Connection connection;
-                Statement statement;
-                Integer resultInt;
                 Integer platformId = 1; // platformId is always 1 for Twitch until other platforms are added
                 this.argument = this.argument.replace("'", "''");
 
                 try {
                     connection = Database.getInstance().getConnection();
-                    statement = connection.createStatement();
 
                     // Check to see if the entry already exists in the db for that guild
-                    String query;
                     if (this.option.equals("manager")) {
-                        query = "DELETE FROM `" + this.option + "` WHERE `guildId` = '" + guildId + "' AND " +
-                                "`userId` = '" + dController.getMentionedUsersId() + "'";
-                    } else {
-                        query = "DELETE FROM `" + this.option + "` WHERE `guildId` = '" + guildId + "' AND " +
-                                "`platformId` = " + platformId + " AND `name` = '" + this.argument + "'";
-                    }
+                        query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `userId` = ?";
 
-                    resultInt = statement.executeUpdate(query);
+                        pStatement = connection.prepareStatement(query);
+                        pStatement.setString(1, guildId);
+                        pStatement.setString(2, dController.getMentionedUsersId());
+                    } else {
+                        query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                        pStatement = connection.prepareStatement(query);
+                        pStatement.setString(1, guildId);
+                        pStatement.setInt(2, platformId);
+                        pStatement.setString(3, this.argument);
+                    }
+                    resultInt = pStatement.executeUpdate();
 
                     if (resultInt > 0) {
                         sendToChannel(event, "Removed `" + this.option + "` " + this.argument);
@@ -66,11 +70,10 @@ public class Remove extends Add implements Command {
                                 " for guildId: " + guildId + ".");
                     }
 
-                    Database.getInstance();
-                    Database.cleanUp(resultInt, statement, connection);
-
                 } catch (SQLException e) {
                     e.printStackTrace();
+                } finally {
+                    cleanUp(pStatement, connection);
                 }
             }
         }

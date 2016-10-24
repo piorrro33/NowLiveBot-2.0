@@ -22,7 +22,6 @@ public class Const {
     public static final String COMMAND_PREFIX = "-";// Requires single, regex safe character (at the moment) wahahahaha
     public static final String BOT_NAME = "NowLiveBot";
     public static final String COMMAND = "nl";
-    //public static final Integer COMMAND_LENGTH = COMMAND.length();
     public static final String PLAYING = "Playstation 360";
     // Language specific variables
     // TODO:  Replace 'En' with the guild language from the DB (when it's setup that way)

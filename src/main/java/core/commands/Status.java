@@ -44,7 +44,7 @@ public class Status implements Command {
 
     @Override
     public void action(String args, MessageReceivedEvent event) {
-        switch (this.option) {
+        /*switch (this.option) {
             case "discord":
 
                 break;
@@ -64,7 +64,7 @@ public class Status implements Command {
             default:
 
                 break;
-        }
+        }*/
     }
 
     @Override

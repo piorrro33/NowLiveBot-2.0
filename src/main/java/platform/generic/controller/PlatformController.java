@@ -1,8 +1,5 @@
 package platform.generic.controller;
 
-import core.Main;
-import net.dv8tion.jda.MessageHistory;
-import net.dv8tion.jda.entities.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.database.Database;
@@ -19,252 +16,229 @@ import static util.database.Database.cleanUp;
  */
 public class PlatformController {
 
+    public static Connection connection;
     private static Logger logger = LoggerFactory.getLogger(PlatformController.class);
+    private static PreparedStatement pStatement;
+    private static PreparedStatement cqtStatement;
+    private static String query;
+    private static ResultSet resultSet;
+    private static ResultSet checkStream;
+    private static ResultSet checkQueue;
 
-    public Connection connection;
-    private PreparedStatement pStatement;
-    private String query;
-    private Integer result;
-    private ResultSet resultSet;
-    private ResultSet checkStream;
-    private ResultSet checkQueue;
+    public static synchronized boolean deleteFromQueue(String guildId, Integer platformId, String channelName) {
 
-    public synchronized boolean setOnline(String guildId, Integer platformId, String channelName, String streamTitle,
-                                          String gameName, Integer online) {
+        try {
+            connection = Database.getInstance().getConnection();
+            query = "DELETE FROM `queue` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
 
-        if (!checkStreamTable(guildId, platformId, channelName)) { // Boolean false if not in stream table
-            if (!checkQueueTable(guildId, platformId, channelName)) { // Boolean true if streamer is not in the queue
-                // Start inserting the info to the message queue
-                query = "INSERT INTO `queue` (`guildId`, `platformId`, `channelName`, `streamTitle`, `gameName`, " +
-                        "`online`) VALUES (?, ?, ?, ?, ?, ?)";
-                try {
-                    connection = Database.getInstance().getConnection();
-                    pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            pStatement.setInt(2, platformId);
+            pStatement.setString(3, channelName);
 
-                    pStatement.setString(1, guildId);
-                    pStatement.setInt(2, platformId);
-                    pStatement.setString(3, channelName);
-                    pStatement.setString(4, streamTitle);
-                    pStatement.setString(5, gameName);
-                    pStatement.setInt(6, online);
+            pStatement.executeUpdate();
 
-                    pStatement.executeUpdate();
-                    return true;
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                } finally {
-                    cleanUp(result, pStatement, connection);
-                }
-            }
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(pStatement, connection);
         }
         return false;
     }
 
-    public synchronized void setOffline(String guildId, Integer platformId, String channelName, Integer online) {
-        if (checkStreamTable(guildId, platformId, channelName)) { // Boolean true if in the stream table
-            try {
-                query = "DELETE FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
-                connection = Database.getInstance().getConnection();
-                pStatement = connection.prepareStatement(query);
-                pStatement.setString(1, guildId);
-                pStatement.setInt(2, platformId);
-                pStatement.setString(3, channelName);
-                pStatement.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } finally {
-                cleanUp(result, pStatement, connection);
-            }
-        } else {
-            if (!checkQueueTable(guildId, platformId, channelName)) { // Make sure it's not in the queue already
-                try {
-                    query = "INSERT INTO `queue` (`guildId`, `platformId`, `channelName`, `online`) VALUES (?, ?, ?, ?)";
-                    connection = Database.getInstance().getConnection();
-                    pStatement = connection.prepareStatement(query);
-                    pStatement.setString(1, guildId);
-                    pStatement.setInt(2, platformId);
-                    pStatement.setString(3, channelName);
-                    pStatement.setInt(4, online);
-                    pStatement.executeUpdate();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                } finally {
-                    cleanUp(result, pStatement, connection);
-                }
-            }
-        }
-    }
-
-    public synchronized void onlineStreamHandler(String guildId, Integer platformId, String channelName, String
-            streamTitle, String gameName) {
-        if (!checkStreamTable(guildId, platformId, channelName)) {
-            addToStream(guildId, platformId, channelName, streamTitle, gameName);
-            deleteFromQueue(guildId, platformId, channelName);
-            announceStream(guildId, platformId, channelName, streamTitle, gameName);
-        }
-    }
-
-    public synchronized void offlineStreamHandler(String guildId, Integer platformId, String channelName) {
-
-    }
-
-    /**
-     * Announce the stream to the appropriate Discord channel
-     * @param guildId String
-     * @param platformId Integer
-     * @param channelName String
-     * @param streamTitle String
-     * @param gameName String
-     */
-    private synchronized void announceStream(String guildId, Integer platformId, String channelName, String streamTitle,
-                                             String gameName) {
-        query = "SELECT `channelId` FROM `guild` WHERE `guildId` = ?";
-        try {
-            connection = Database.getInstance().getConnection();
-            pStatement = connection.prepareStatement(query);
-
-            pStatement.setString(1, guildId);
-
-            resultSet = pStatement.executeQuery();
-            String channelId = "";
-            while (resultSet.next()) {
-                channelId = resultSet.getString("channelId");
-            }
-
-            // Get the platform link
-            String platformLink = "";
-            query = "SELECT `baseLink` FROM `platform` WHERE `id` = ?";
-            pStatement = connection.prepareStatement(query);
-            pStatement.setInt(1, platformId);
-            resultSet = pStatement.executeQuery();
-            while (resultSet.next()) {
-                platformLink = resultSet.getString("baseLink");
-            }
-
-            String message = "NOW LIVE!\n\t" + channelName + " is playing some "
-                    + gameName + "!\n\n\t" + streamTitle + "\n\t" + platformLink + channelName + " :heart_eyes_cat: ";
-
-            // Send the message to the appropriate channel
-            Message msg = Main.jda.getTextChannelById(channelId).sendMessage(message);
-            String msgId = msg.getId();
-            logger.info("Message ID: " + msgId);
-
-            try {
-                Thread.sleep(1150);
-            } catch(InterruptedException ex) {
-                logger.info("I have been awakened prematurely :<");
-            }
-
-            query = "UPDATE `stream` SET `messageId` = ? WHERE `guildId` = ? AND `platformId` = ? AND `channelName` =" +
-                    " ?";
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, msgId);
-            pStatement.setString(2, guildId);
-            pStatement.setInt(3, platformId);
-            pStatement.setString(4, channelName);
-
-            pStatement.executeUpdate();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(resultSet, pStatement, connection);
-        }
-    }
-
     /**
      * Add the stream to the stream table, signifying that it is live and has been announced.
-     * @param guildId String
-     * @param platformId Integer
+     *
+     * @param guildId     String
+     * @param platformId  Integer
      * @param channelName String
      * @param streamTitle String
-     * @param gameName String
+     * @param gameName    String
      * @return Boolean
      */
-    private synchronized boolean addToStream(String guildId, Integer platformId, String channelName, String
+    public static synchronized boolean addToStream(String guildId, Integer platformId, String channelName, String
             streamTitle, String gameName) {
         query = "INSERT INTO `stream` (`guildId`, `platformId`, `channelName`, `streamTitle`, `gameName`) " +
                 "VALUES (?,?,?,?,?)";
         try {
             connection = Database.getInstance().getConnection();
-            pStatement = connection.prepareStatement(query);
+            if (connection != null) {
+                pStatement = connection.prepareStatement(query);
+                pStatement.setString(1, guildId);
+                pStatement.setInt(2, platformId);
+                pStatement.setString(3, channelName);
+                pStatement.setString(4, streamTitle);
+                pStatement.setString(5, gameName);
 
+                pStatement.executeUpdate();
+                return true;
+            }
+        } catch (SQLException e) {
+            logger.info("I threw an exception here", e);
+        } finally {
+            cleanUp(pStatement, connection);
+        }
+
+        return false;
+    }
+
+    /**
+     * Check the stream table to see if the streamer has already been announced.
+     *
+     * @param guildId     String representing the Discord Guild ID
+     * @param platformId  Integer representing the platform in question (Twitch/HitBox/etc)
+     * @param channelName String representing the streamers channel
+     * @return Boolean [false] > Not in stream table | [true] > In the stream table
+     */
+    public static synchronized boolean checkStreamTable(String guildId, Integer platformId, String channelName) {
+        try {
+            connection = Database.getInstance().getConnection();
+            query = "SELECT COUNT(*) AS `count` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` " +
+                    "= ?";
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            pStatement.setInt(2, platformId);
+            pStatement.setString(3, channelName);
+            checkStream = pStatement.executeQuery();
+            while (checkStream.next()) {
+                if (checkStream.getInt("count") == 0) {
+                    return false; // Not in the stream table
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(checkStream, pStatement, connection);
+        }
+        return true; // Found in the stream table
+    }
+
+    public synchronized void onlineStreamHandler(String guildId, Integer platformId, String channelName, String
+            streamTitle, String gameName) {
+        if (!checkStreamTable(guildId, platformId, channelName)) {
+            // Streamer has not been announced
+            if (!checkQueueTable(guildId, platformId, channelName)) {
+                // Streamer has not been queued yet
+                setOnline(guildId, platformId, channelName, streamTitle, gameName, 1);
+            }
+        }
+    }
+
+    public synchronized void offlineStreamHandler(String guildId, Integer platformId, String channelName) {
+        String messageId = getMessageId(guildId, platformId, channelName);
+
+        if (checkStreamTable(guildId, platformId, channelName) && null != messageId) {
+            logger.info(channelName + " has gone offline.");
+            deleteFromStream(guildId, platformId, channelName);
+
+            if (checkQueueTable(guildId, platformId, channelName)) {
+                logger.info("Stream is present in the queue table.");
+                updateQueueOffline(guildId, platformId, channelName);
+            } else {
+                // Not really setting it online, just don't want a different named method with the same content
+                setOnline(guildId, platformId, channelName, null, null, 0);
+            }
+        }
+    }
+
+    /**
+     * Check the queue table to see if the streamer has already been queued.
+     *
+     * @param guildId     String representing the Discord Guild ID
+     * @param platformId  Integer representing the platform in question (Twitch/HitBox/etc)
+     * @param channelName String representing the streamers channel
+     * @return Boolean [false] > Not in queue table | [true] > In the queue table
+     */
+
+    private synchronized boolean checkQueueTable(String guildId, Integer platformId, String channelName) {
+        try {
+            connection = Database.getInstance().getConnection();
+            query = "SELECT COUNT(*) AS `count` FROM `queue` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` =" +
+                    " ?";
+
+            cqtStatement = connection.prepareStatement(query);
+            cqtStatement.setString(1, guildId);
+            cqtStatement.setInt(2, platformId);
+            cqtStatement.setString(3, channelName);
+            checkQueue = cqtStatement.executeQuery();
+            if (checkQueue.next()) {
+                if (checkQueue.getInt("count") == 0) {
+                    return false; // Streamer has not been queued.
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("checkQueueTable() error: ", e);
+        } finally {
+            cleanUp(resultSet, cqtStatement, connection);
+        }
+        return true;
+    }
+
+    private synchronized boolean setOnline(String guildId, Integer platformId, String channelName, String streamTitle,
+                                           String gameName, Integer online) {
+        try {
+            connection = Database.getInstance().getConnection();
+            query = "INSERT INTO `queue` (`guildId`, `platformId`, `channelName`, `streamTitle`, `gameName`, " +
+                    "`online`) VALUES (?, ?, ?, ?, ?, ?)";
+            pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
             pStatement.setInt(2, platformId);
             pStatement.setString(3, channelName);
             pStatement.setString(4, streamTitle);
             pStatement.setString(5, gameName);
-
+            pStatement.setInt(6, online);
             pStatement.executeUpdate();
             return true;
+        } catch (SQLException e) {
+            logger.error("setOnline() error: ", e);
+        } finally {
+            cleanUp(pStatement, connection);
+        }
+        return false;
+    }
+
+    private synchronized String getMessageId(String guildId, Integer platformId, String channelName) {
+
+        try {
+            connection = Database.getInstance().getConnection();
+            query = "SELECT `messageId` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            pStatement.setInt(2, platformId);
+            pStatement.setString(3, channelName);
+            resultSet = pStatement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString("messageId");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(resultSet, pStatement, connection);
         }
-        return false;
+        return "";
     }
 
-    /**
-     * Delete item from the queue
-     * @param guildId String
-     * @param platformId Integer
-     * @param channelName String
-     * @return Boolean
-     */
-    private synchronized boolean deleteFromQueue(String guildId, Integer platformId, String channelName) {
-
-        query = "DELETE FROM `queue` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
-        try {
-            connection = Database.getInstance().getConnection();
-            pStatement = connection.prepareStatement(query);
-
-            pStatement.setString(1, guildId);
-            pStatement.setInt(2, platformId);
-            pStatement.setString(3, channelName);
-
-            pStatement.executeUpdate();
-
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            Integer result = 0;
-            cleanUp(result, pStatement, connection);
-        }
-        return false;
-    }
-
-    public synchronized boolean deleteFromStream(String guildId, Integer platformId, String channelName) {
+    private synchronized boolean deleteFromStream(String guildId, Integer platformId, String channelName) {
         if (checkStreamTable(guildId, platformId, channelName)) {
             logger.info(channelName + " is still in the STREAM table.  Deleting them now");
 
-            query = "DELETE FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
-
             try {
                 connection = Database.getInstance().getConnection();
+                query = "DELETE FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
                 pStatement = connection.prepareStatement(query);
-
                 pStatement.setString(1, guildId);
                 pStatement.setInt(2, platformId);
                 pStatement.setString(3, channelName);
 
-                logger.info(String.valueOf(pStatement));
+                pStatement.executeUpdate();
+                logger.info("Stream deleted from the stream table");
+                return true;
 
-                if (pStatement.executeUpdate() > 0) {
-
-                    logger.info("Offline stream has been deleted.");
-
-                    // TODO: Delete or Edit Discord message
-
-                    return true;
-                } else {
-                    logger.info("There was a problem deleting a streamer from the Stream table.");
-                }
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
-                cleanUp(result, pStatement, connection);
+                cleanUp(pStatement, connection);
             }
         } else {
             logger.info(channelName + " is not in the STREAM table");
@@ -272,65 +246,20 @@ public class PlatformController {
         return false;
     }
 
-    /**
-     * Check the stream table to see if the streamer has already been announced.
-     * @param guildId String representing the Discord Guild ID
-     * @param platformId Integer representing the platform in question (Twitch/HitBox/etc)
-     * @param channelName String representing the streamers channel
-     * @return Boolean [false] > Not in stream table | [true] > In the stream table
-     */
-    private synchronized boolean checkStreamTable(String guildId, Integer platformId, String channelName) {
-        query = "SELECT COUNT(*) AS `count` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` " +
-                "= ?";
-
+    private synchronized void updateQueueOffline(String guildId, Integer platformId, String channelName) {
         try {
             connection = Database.getInstance().getConnection();
+            query = "UPDATE `queue` SET `online` = 0 WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
             pStatement = connection.prepareStatement(query);
+            pStatement.setString(3, channelName);
             pStatement.setString(1, guildId);
             pStatement.setInt(2, platformId);
-            pStatement.setString(3, channelName);
-            checkStream = pStatement.executeQuery();
 
-            while (checkStream.next()) {
-                if (checkStream.getInt("count") == 0) {
-                    return false;
-                }
-            }
+            pStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(resultSet, pStatement, connection);
+            cleanUp(pStatement, connection);
         }
-        return true;
-    }
-
-    /**
-     * Check the queue table to see if the streamer has already been queued.
-     * @param guildId String representing the Discord Guild ID
-     * @param platformId Integer representing the platform in question (Twitch/HitBox/etc)
-     * @param channelName String representing the streamers channel
-     * @return Boolean [false] > Not in stream table | [true] > In the stream table
-     */
-    private synchronized boolean checkQueueTable(String guildId, Integer platformId, String channelName) {
-        query = "SELECT COUNT(*) AS `count` FROM `queue` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
-
-        try {
-            connection = Database.getInstance().getConnection();
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            pStatement.setInt(2, platformId);
-            pStatement.setString(3, channelName);
-            checkQueue = pStatement.executeQuery();
-            while (checkQueue.next()) {
-                if (checkQueue.getInt("count") == 0) {
-                    return false; // Streamer has not been queued.
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(resultSet, pStatement, connection);
-        }
-        return true;
     }
 }

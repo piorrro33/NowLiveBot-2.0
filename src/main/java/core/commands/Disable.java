@@ -7,8 +7,8 @@ import util.database.Database;
 import util.database.calls.Tracker;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
 import static util.database.Database.cleanUp;
@@ -17,6 +17,10 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public class Disable extends Enable implements Command {
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private Integer result;
+
     /**
      * Used to determine if appropriate arguments exist
      *
@@ -24,9 +28,14 @@ public class Disable extends Enable implements Command {
      * @param event From JDA: MessageReceivedEvent
      * @return boolean true if criteria is met, false if criteria not met
      */
+//    @Override
+//    public boolean called(String args, MessageReceivedEvent event) {
+//        return super.called(args, event);
+//    }
+
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
-        return super.called(args, event);
+        return true;
     }
 
     /**
@@ -38,11 +47,12 @@ public class Disable extends Enable implements Command {
     @Override
     public void action(String args, MessageReceivedEvent event) {
         try {
-            Connection connection = Database.getInstance().getConnection();
-            Statement statement = connection.createStatement();
-            String query;
-            query = "UPDATE `guild` SET `isActive` = 0 WHERE `guildId` = '" + event.getGuild().getId() + "'";
-            Integer result = statement.executeUpdate(query);
+            String query = "UPDATE `guild` SET `isActive` = 0 WHERE `guildId` = ?";
+
+            connection = Database.getInstance().getConnection();
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, event.getGuild().getId());
+            result = pStatement.executeUpdate();
 
             if (result.equals(1)) {
                 sendToChannel(event, Const.DISABLE_SUCCESS);
@@ -50,9 +60,10 @@ public class Disable extends Enable implements Command {
                 sendToChannel(event, Const.DISABLE_FAIL);
 
             }
-            cleanUp(result, statement, connection);
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            cleanUp(pStatement, connection);
         }
     }
 

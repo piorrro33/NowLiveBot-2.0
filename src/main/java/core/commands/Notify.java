@@ -9,8 +9,8 @@ import util.database.Database;
 import util.database.calls.Tracker;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
 import static util.database.Database.cleanUp;
@@ -22,9 +22,9 @@ public class Notify implements Command {
 
     private Logger logger = LoggerFactory.getLogger(Notify.class);
 
-    private Connection connection = null;
-    private Statement statement = null;
-    private Integer result = null;
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private Integer result;
     private String query;
 
     /**
@@ -37,8 +37,7 @@ public class Notify implements Command {
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
         if (args != null && !"".equals(args)) {
-            if (args.equals("me") || args.equals("here") || args.equals("everyone") || args.equals("none") || args
-                    .equals("help")) {
+            if ("me".equals(args) || "here".equals(args) || "every9one".equals(args) || "help".equals(args)) {
                 return true;
             } else {
                 sendToChannel(event, Const.INCORRECT_ARGS);
@@ -114,7 +113,6 @@ public class Notify implements Command {
     private boolean update(MessageReceivedEvent event, Integer level) {
         try {
             connection = Database.getInstance().getConnection();
-            statement = connection.createStatement();
             String uId;
 
             if (level == 1) {
@@ -123,12 +121,13 @@ public class Notify implements Command {
                 uId = null;
             }
 
-            query = "UPDATE `notification` SET `userId` = " + uId + ", `level` = " + level + " WHERE `guildId` = '"
-                    + event.getGuild().getId() + "'";
+            query = "UPDATE `notification` SET `userId` = ?, `level` = ? WHERE `guildId` = ?";
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, uId);
+            pStatement.setInt(2, level);
+            pStatement.setString(3, event.getGuild().getId());
 
-            logger.info(query);
-
-            result = statement.executeUpdate(query);
+            result = pStatement.executeUpdate();
 
             if (result > 0) {
                 logger.info("Guild: " + event.getGuild().getName() + " has set notification level.");
@@ -140,7 +139,7 @@ public class Notify implements Command {
         } catch (SQLException e) {
             logger.error("There is a problem establishing a connection to the database in Notify.", e.getMessage());
         } finally {
-            cleanUp(result, statement, connection);
+            cleanUp(pStatement, connection);
         }
         return false;
     }

@@ -1,19 +1,22 @@
 package util.database.calls;
 
 import net.dv8tion.jda.events.guild.GuildLeaveEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import util.database.Database;
 
 import java.sql.Connection;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 
 /**
  * @author Veteran Software by Ague Mort
  */
-public class GuildLeave extends Database {
+public class GuildLeave {
+    public static final Logger logger = LoggerFactory.getLogger(GuildLeave.class);
     private static ArrayList<String> tableList = new ArrayList<>();
     private static Connection connection = null;
-    private static Statement statement = null;
+    private static PreparedStatement pStatement = null;
     private static Integer result = 0;
     private static String query;
 
@@ -24,17 +27,18 @@ public class GuildLeave extends Database {
         tableList.add("manager");
         tableList.add("notification");
         tableList.add("permission");
-        tableList.add("queueitem");
+        tableList.add("queue");
         tableList.add("stream");
         tableList.add("tag");
         tableList.add("team");
 
         try {
-            connection = getInstance().getConnection();
-            statement = connection.createStatement();
+            connection = Database.getInstance().getConnection();
             for (String s : tableList) {
-                query = "DELETE FROM `" + s + "` WHERE `guildId` = " + gEvent.getGuild().getId() + "";
-                result = statement.executeUpdate(query);
+                query = "DELETE FROM `" + s + "` WHERE `guildId` = ?";
+                pStatement = connection.prepareStatement(query);
+                pStatement.setString(1, gEvent.getGuild().getId());
+                result = pStatement.executeUpdate();
                 if (!result.equals(0)) {
                     logger.info("Successfully deleted all data for Guild " + gEvent.getGuild().getId() + " from the "
                             + s.toUpperCase() + " table.");
@@ -44,7 +48,7 @@ public class GuildLeave extends Database {
         } catch (Exception e) {
             logger.error("Failed to remove info from Guild " + gEvent.getGuild().getId() + ".");
         } finally {
-            Database.cleanUp(result, statement, connection);
+            Database.cleanUp(pStatement, connection);
         }
 
     }

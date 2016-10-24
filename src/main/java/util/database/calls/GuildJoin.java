@@ -4,60 +4,67 @@ import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Role;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.guild.GuildJoinEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import util.database.Database;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
+
+import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software by Ague Mort
  */
-public class GuildJoin extends Database {
+public class GuildJoin {
+    public static final Logger logger = LoggerFactory.getLogger(GuildJoin.class);
     private static ArrayList<String> tableList = new ArrayList<>();
 
-    private static Connection connection = null;
-    private static Statement statement = null;
+    private static Connection connection;
+    private static PreparedStatement pStatement;
     private static Integer result = 0;
     private static ResultSet resultSet = null;
     private static String query;
     private static String guildId;
     private static String defaultChannel;
 
-    public static void joinGuild(GuildJoinEvent gEvent) throws PropertyVetoException, SQLException, IOException {
+    public static void joinGuild(GuildJoinEvent gEvent) {
         tableList.add("channel");
         tableList.add("game");
         tableList.add("guild");
         tableList.add("manager");
         tableList.add("notification");
         tableList.add("permission");
-        tableList.add("queueitem");
+        tableList.add("queue");
         tableList.add("stream");
         tableList.add("tag");
         tableList.add("team");
 
         try {
-            connection = getInstance().getConnection();
-            statement = connection.createStatement();
+
             guildId = gEvent.getGuild().getId();
             defaultChannel = gEvent.getGuild().getPublicChannel().getId();
 
-            logger.info("Attempting to join guild: " + guildId);
 
             int failed = 0;
+            logger.info("Attempting to join guild: " + guildId);
             for (String s : tableList) {
-                query = "SELECT `guildId` FROM `" + s + "` WHERE `guildId` = '" + guildId + "'";
-                resultSet = statement.executeQuery(query);
+                connection = Database.getInstance().getConnection();
+                query = "SELECT `guildId` FROM `" + s + "` WHERE `guildId` = ?";
+                pStatement = connection.prepareStatement(query);
+                pStatement.setString(1, gEvent.getGuild().getId());
+                resultSet = pStatement.executeQuery();
 
                 if (resultSet.next()) {
                     // If there's still remnants or possible corrupt data, remove it
                     logger.warn("This guild has data remnants in my database!");
-                    query = "DELETE FROM `" + s + "` WHERE `guildId` = '" + guildId + "'";
-                    result = statement.executeUpdate(query);
+                    query = "DELETE FROM `" + s + "` WHERE `guildId` = ?";
+                    pStatement = connection.prepareStatement(query);
+                    pStatement.setString(1, guildId);
+                    result = pStatement.executeUpdate();
 
                     if (result > 0) {
                         addData(gEvent, s);
@@ -78,18 +85,27 @@ public class GuildJoin extends Database {
         } catch (Exception e) {
             logger.error("There was a MySQL exception.", e);
         } finally {
-            cleanUp(result, statement, connection);
+            cleanUp(resultSet, pStatement, connection);
+            cleanUp(pStatement, connection);
         }
     }
 
-    private static void addData(GuildJoinEvent gEvent, String s) throws SQLException {
-
+    private static void addData(GuildJoinEvent gEvent, String s) {
         switch (s) {
             case "guild":
-                query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `isActive`, " +
-                        "`cleanup`) VALUES ('" + guildId + "', '" + defaultChannel + "', 0, 0, " +
-                        "0)";
-                result = statement.executeUpdate(query);
+                try {
+                    connection = Database.getInstance().getConnection();
+                    query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `isActive`, `cleanup`) " +
+                            "VALUES (?, ?, 0, 0, 0)";
+                    pStatement = connection.prepareStatement(query);
+                    pStatement.setString(1, guildId);
+                    pStatement.setString(2, defaultChannel);
+                    result = pStatement.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } finally {
+                    cleanUp(pStatement, connection);
+                }
                 if (result > 0) {
                     logger.info("Successfully added guild " + guildId + " to my database");
                 } else {
@@ -114,8 +130,18 @@ public class GuildJoin extends Database {
                     }
                 }
                 for (String users : userIds) {
-                    query = "INSERT INTO `manager` (`guildId`, `userId`) VALUES ('" + guildId + "', '" + users + "')";
-                    result = statement.executeUpdate(query);
+                    try {
+                        connection = Database.getInstance().getConnection();
+                        query = "INSERT INTO `manager` (`guildId`, `userId`) VALUES (?, ?)";
+                        pStatement = connection.prepareStatement(query);
+                        pStatement.setString(1, guildId);
+                        pStatement.setString(2, users);
+                        result = pStatement.executeUpdate();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    } finally {
+                        cleanUp(pStatement, connection);
+                    }
                     if (result > 0) {
                         logger.info("Successfully added manager " + users + " to guild " + guildId + ".");
                     } else {
@@ -125,9 +151,20 @@ public class GuildJoin extends Database {
                 break;
 
             case "notification":
-                query = "INSERT INTO `notification` (`id`, `guildId`, `level`, `userId`) VALUES (null, '" + gEvent
-                        .getGuild().getId() + "', 0, null)";
-                result = statement.executeUpdate(query);
+                try {
+                    Integer level = 0;
+                    connection = Database.getInstance().getConnection();
+                    query = "INSERT INTO `notification` (`guildId`, `level`) VALUES (?, ?)";
+                    pStatement = connection.prepareStatement(query);
+                    pStatement.setString(1, guildId);
+                    pStatement.setInt(2, level);
+                    System.out.println(pStatement);
+                    result = pStatement.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } finally {
+                    cleanUp(pStatement, connection);
+                }
                 if (result > 0) {
                     logger.info("Populated the notification table with default data.");
                 } else {

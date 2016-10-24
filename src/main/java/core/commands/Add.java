@@ -14,12 +14,10 @@ import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
+import static util.database.Database.cleanUp;
 
 /**
  * Add Command.
@@ -35,6 +33,8 @@ public class Add implements Command {
     public String argument;
     public Connection connection;
     public Statement statement;
+    public PreparedStatement pStatement;
+    public String query;
     public ResultSet resultSet;
     public Integer resultInt;
     private String[] options = new String[]{"channel", "game", "manager", "tag", "team", "help"};
@@ -74,8 +74,6 @@ public class Add implements Command {
 
         DiscordController dController = new DiscordController(event);
 
-        this.connection = Database.getInstance().getConnection();
-
         String guildId = dController.getguildId();
 
         for (String s : this.options) {
@@ -87,39 +85,48 @@ public class Add implements Command {
 
 
                     // Check to see if the game already exists in the db for that guild
-                    String query;
 
+                    connection = Database.getInstance().getConnection();
                     if (this.option.equals("manager")) {
                         // TODO: Do a bot check to make sure bots don't get added to the manager list
                         logger.info("Checking to see if " + dController.getMentionedUsersId()
                                 + " already exists for guild: " + guildId);
 
-                        query = "SELECT `userId` FROM `" + this.option + "` WHERE `guildId` = '" + guildId + "' AND " +
-                                "`userId` = '" + String.valueOf(dController.getMentionedUsersId()) + "'";
+                        query = "SELECT `userId` FROM `" + this.option + "` WHERE `guildId` = ? AND `userId` = ?";
+                        pStatement = connection.prepareStatement(query);
+                        pStatement.setString(1, guildId);
+                        pStatement.setString(2, String.valueOf(dController.getMentionedUsersId()));
                     } else {
                         logger.info("Checking to see if the " + this.option + " already exists for guild: " + guildId);
 
-                        query = "SELECT `name` FROM `" + this.option + "` WHERE `guildId` = '" + guildId + "' AND " +
-                                "`platformId` = " + platformId + " AND `name` = '" + this.argument + "'";
+                        query = "SELECT `name` FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? " +
+                                "AND `name` = ?";
+                        pStatement = connection.prepareStatement(query);
+                        pStatement.setString(1, guildId);
+                        pStatement.setInt(2, platformId);
+                        pStatement.setString(3, this.argument);
                     }
-                    logger.info(query);
-                    statement = connection.prepareStatement(query);
-
-                    resultSet = statement.executeQuery(query);
+                    resultSet = pStatement.executeQuery();
 
                     if (resultSet.isBeforeFirst()) {
                         sendToChannel(event, Const.ALREADY_EXISTS);
                     } else {
                         if (this.option.equals("manager")) {
                             query = "INSERT INTO `" + this.option + "` (`id`, `guildId`, `userId`) VALUES " +
-                                    "(null, '" + guildId + "', '" + String.valueOf(dController.getMentionedUsersId())
-                                    + "')";
+                                    "(null, ?, ?)";
+                            pStatement = connection.prepareStatement(query);
+                            pStatement.setString(1, guildId);
+                            pStatement.setString(2, String.valueOf(dController.getMentionedUsersId()));
                         } else {
                             query = "INSERT INTO `" + this.option + "` (`id`, `guildId`, `platformId`, `name`) VALUES " +
-                                    "(null, '" + guildId + "', " + platformId + ", '" + this.argument + "')";
+                                    "(null, ?, ?, ?)";
+                            pStatement = connection.prepareStatement(query);
+                            pStatement.setString(1, guildId);
+                            pStatement.setInt(2, platformId);
+                            pStatement.setString(3, this.argument);
                         }
 
-                        resultInt = statement.executeUpdate(query);
+                        resultInt = pStatement.executeUpdate();
 
                         if (resultInt > 0) {
                             sendToChannel(event, "Added `" + this.option + "` " + this.argument);
@@ -131,14 +138,11 @@ public class Add implements Command {
                                     "guildId: " + guildId + ".");
                         }
                     }
-
-                    Database.getInstance();
-                    Database.cleanUp(resultSet, statement, connection);
-
                 } catch (SQLException e) {
                     e.printStackTrace();
                 } finally {
-
+                    cleanUp(resultSet, pStatement, connection);
+                    cleanUp(pStatement, connection);
                 }
             }
         }

@@ -60,3 +60,7 @@ src/resources/
 src/test/
 src/main/java/platform/discord/model/
 src/main/java/platform/discord/view/
+gradle/
+gradlew
+gradlew.bat
+libs/

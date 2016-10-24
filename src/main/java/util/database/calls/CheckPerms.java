@@ -5,57 +5,60 @@ import util.Const;
 import util.database.Database;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
+import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software by Ague Mort
  */
-public class CheckPerms extends Database {
+public class CheckPerms {
 
     private Connection connection;
-    private Statement statement;
+    private PreparedStatement pStatement;
     private String query;
-
-    public CheckPerms() {
-        connection = getInstance().getConnection();
-        try {
-            statement = connection.createStatement();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+    private ResultSet result;
 
     public boolean checkManager(MessageReceivedEvent event, String command) {
         // Check if the called command requires a manager
         ArrayList<String> managerList = new ArrayList<>();
         Boolean isManager = false;
 
-        query = "SELECT `name` AS `command` FROM `command` ORDER BY `command` ASC";
         try {
-            ResultSet result = statement.executeQuery(query);
-            while (result.next()) {
-                managerList.add(result.getString("command"));
+            query = "SELECT `name` AS `command` FROM `command` ORDER BY `command` ASC";
+            connection = Database.getInstance().getConnection();
+            if (connection != null) {
+                pStatement = connection.prepareStatement(query);
+                result = pStatement.executeQuery();
+                while (result.next()) {
+                    managerList.add(result.getString("command"));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
         }
 
         if (!managerList.contains(command)) {
             return true;
         }
 
-        query = "SELECT `userId` FROM `manager` WHERE `guildId` = '" + event.getGuild().getId() + "'";
         try {
-            ResultSet resultSet = statement.executeQuery(query);
+            query = "SELECT `userId` FROM `manager` WHERE `guildId` = ?";
+            connection = Database.getInstance().getConnection();
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, event.getGuild().getId());
+            result = pStatement.executeQuery();
+
             // Iterate through the result set looking to see if the author is a manager
             String userId = event.getAuthor().getId();
-            while (resultSet.next()) {
-                if (userId.equals(resultSet.getString("userId"))) {
+            while (result.next()) {
+                if (userId.equals(result.getString("userId"))) {
                     isManager = true;
                 }
             }
@@ -66,6 +69,8 @@ public class CheckPerms extends Database {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
         }
         return false;
     }
@@ -78,22 +83,29 @@ public class CheckPerms extends Database {
 
         try {
             query = "SELECT `userId` FROM `admins`";
-            ResultSet resultSet = statement.executeQuery(query);
-            // Iterate through the result set looking to see if the author is a bot admin
-            String userId = event.getAuthor().getId();
-            while (resultSet.next()) {
-                if (userId.equals(resultSet.getString("userId"))) {
-                    isAdmin = true;
+            connection = Database.getInstance().getConnection();
+            if (connection != null) {
+                pStatement = connection.prepareStatement(query);
+                result = pStatement.executeQuery();
+
+                // Iterate through the result set looking to see if the author is a bot admin
+                String userId = event.getAuthor().getId();
+                while (result.next()) {
+                    if (userId.equals(result.getString("userId"))) {
+                        isAdmin = true;
+                    }
                 }
-            }
-            if (!adminList.contains(command) && isAdmin.equals(true)) {
-                sendToChannel(event, Const.ADMIN_OVERRIDE);
-                return true;
-            } else if (adminList.contains(command) && isAdmin.equals(true)) {
-                return true;
+                if (!adminList.contains(command) && isAdmin.equals(true)) {
+                    sendToChannel(event, Const.ADMIN_OVERRIDE);
+                    return true;
+                } else if (adminList.contains(command) && isAdmin.equals(true)) {
+                    return true;
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
         }
         return false;
     }

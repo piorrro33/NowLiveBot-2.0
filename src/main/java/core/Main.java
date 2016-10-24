@@ -19,10 +19,6 @@ import javax.security.auth.login.LoginException;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Veteran Software
@@ -34,10 +30,11 @@ public class Main {
     public static final CommandParser parser = new CommandParser();
     public static JDA jda;
     private static Logger logger = LoggerFactory.getLogger(Main.class);
+    public static Database data;
 
     public static void main(String[] args) throws PropertyVetoException, IOException, SQLException {
         // Verify the database is there on startup
-        Database.getInstance();
+        data = Database.getInstance();
         Database.checkDatabase();
 
         // Run mode~
@@ -46,16 +43,16 @@ public class Main {
         // Instantiate the JDA Object
         try {
 
-            DiscordListener discordListener = new DiscordListener();
-
+            // TODO: Double check JDA docs IRT buildBlocking() vs buildAsync()
             jda = new JDABuilder()
                     .setAutoReconnect(true) // Ensure JDA auto-reconnects
                     .setAudioEnabled(false) // Turn off JDA audio support
                     .setBulkDeleteSplittingEnabled(false)
                     .setBotToken(PropReader.getInstance().getProp().getProperty("discord.token"))
-                    .addListener(discordListener)
-                    //.addListener(platformListener)
+                    .addListener(new DiscordListener())
+                    .useSharding(2, 3)
                     .buildBlocking();
+
             jda.getAccountManager().setGame(Const.PLAYING); // Set the 'Playing...'
             jda.getAccountManager().update(); // Must call '.update()' in order for this to work.
         } catch (LoginException ex) {

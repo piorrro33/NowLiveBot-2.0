@@ -6,19 +6,13 @@
 package platform.twitch.listener;
 
 import com.mb3364.twitch.api.Twitch;
-import util.PropReader;
-import util.database.Database;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 /**
  * @author keesh
  */
 public class TwitchListener extends Twitch {
 
-    public TwitchListener() {
+    /*public TwitchListener() {
 
         this.setClientId(PropReader.getInstance().getProp().getProperty("twitch.client.id"));
 
@@ -35,6 +29,6 @@ public class TwitchListener extends Twitch {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
 }

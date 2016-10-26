@@ -12,19 +12,13 @@ import net.dv8tion.jda.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
-import platform.generic.listener.PlatformListener;
 import util.Const;
 import util.database.calls.GuildJoin;
 import util.database.calls.GuildLeave;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static util.database.Database.logger;
 
@@ -32,35 +26,6 @@ import static util.database.Database.logger;
  * @author keesh
  */
 public class DiscordListener extends ListenerAdapter {
-
-    private Connection connection;
-    private PreparedStatement pStatement;
-    private String query;
-
-    public DiscordListener() {
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-
-        Runnable checkLiveGames = PlatformListener::checkLiveGames;
-        Runnable checkLiveChannels = PlatformListener::checkLiveChannels;
-        Runnable messageFactory = PlatformListener::messageFactory;
-        Runnable discordListener = PlatformListener::commandWorker;
-
-        int initialDelay = 10; // Wait this long to start (2 seconds is ample when starting up the bot)
-        int period = 60; // Run this task every {x} seconds
-
-        logger.info("Starting the executor tasks");
-
-        try {
-            executor.submit(discordListener);
-            executor.submit(checkLiveChannels);
-            executor.submit(checkLiveGames);
-            executor.submit(messageFactory);
-        } catch (Exception e) {
-            logger.info("******************* Caught an exception while keeping the executors active ", e);
-            logger.info("Attempting to restart the executors...");
-            new PlatformListener();
-        }
-    }
 
     /**
      * Incoming message handler.

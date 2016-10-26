@@ -131,7 +131,9 @@ public interface En {
             + "\n\tchannel - The streamer's name"
             + "\n\tteam - The name of the streaming team (Twitch only)"
             + "\n\ttag - Word or group of words to search for in the stream title```";
-    String STREAMS_HELP = "```Ruby\nSTREAMS:  I'll send you a list of active streams as a PM.\nUSAGE:  "
+    String STREAMS_HELP = "```Ruby\nSTREAMS:  I'll send you a list of active streams as a PM. (NOTE: You will likely " +
+            "receive several private messages using this command, depending on how many streams your Discord " +
+            "monitors!)\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " streams```";

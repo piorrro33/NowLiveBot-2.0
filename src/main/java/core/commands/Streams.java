@@ -11,6 +11,7 @@ import util.database.calls.Tracker;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.concurrent.TimeUnit;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
 import static platform.discord.controller.DiscordController.sendToPm;
@@ -76,6 +77,11 @@ public class Streams implements Command {
                             result.getString("game") + "**" + Const.ON + "**" + result.getString("platform") + "**" +
                             "!\n\t" + Const.WATCH_THEM_HERE + "__*" + result.getString("link") +
                             result.getString("channel") + "*__\n\n";
+                    if (outputMessage.length() >= 1700) {
+                        sendToPm(event, outputMessage);
+                        outputMessage = "";
+                        TimeUnit.MILLISECONDS.sleep(1100);
+                    }
                 }
                 // TODO: Add DB value to offer preference to user to send pm vs send to channel
                 sendToPm(event, outputMessage);

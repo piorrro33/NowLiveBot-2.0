@@ -158,7 +158,6 @@ public class GuildJoin {
                     pStatement = connection.prepareStatement(query);
                     pStatement.setString(1, guildId);
                     pStatement.setInt(2, level);
-                    System.out.println(pStatement);
                     result = pStatement.executeUpdate();
                 } catch (SQLException e) {
                     e.printStackTrace();

@@ -1,9 +1,13 @@
 package platform.generic.listener;
 
+import net.dv8tion.jda.JDA;
+import net.dv8tion.jda.events.DisconnectEvent;
+import net.dv8tion.jda.events.Event;
+import net.dv8tion.jda.events.ReadyEvent;
+import net.dv8tion.jda.hooks.EventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import platform.discord.controller.DiscordController;
-import platform.discord.listener.DiscordListener;
 import platform.twitch.controller.TwitchController;
 import util.database.Database;
 
@@ -15,50 +19,71 @@ import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software by Ague Mort
  */
-public class PlatformListener {
+public class PlatformListener implements EventListener {
     private static Logger logger = LoggerFactory.getLogger(PlatformListener.class);
     private static Connection connection;
     private static PreparedStatement pStatement;
     private static String query;
     private static ResultSet result;
+    private static JDA jda = null;
+    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    private boolean running;
 
     public PlatformListener() {
-        /*ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
-        Runnable checkLiveGames = PlatformListener::checkLiveGames;
-        Runnable checkLiveChannels = PlatformListener::checkLiveChannels;
-        Runnable messageFactory = PlatformListener::messageFactory;
-        Runnable discordListener = PlatformListener::commandWorker;
-
-        int initialDelay = 10; // Wait this long to start (2 seconds is ample when starting up the bot)
-        int period = 60; // Run this task every {x} seconds
-
-        logger.info("Starting the executor tasks");
 
         try {
-            executor.submit(discordListener);
-            executor.scheduleWithFixedDelay(checkLiveChannels.get(), initialDelay, 10, TimeUnit.SECONDS);
-            executor.scheduleWithFixedDelay(checkLiveGames, initialDelay + 1, 10, TimeUnit.SECONDS);
-            executor.scheduleWithFixedDelay(messageFactory.get(), initialDelay + 2, 10, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::checkLiveChannels, 5, 60, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::checkLiveGames, 10, 60, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::messageFactory, 15, 30, TimeUnit.SECONDS);
         } catch (Exception e) {
             logger.info("******************* Caught an exception while keeping the executors active ", e);
             logger.info("Attempting to restart the executors...");
-            new PlatformListener();
-        }*/
+        }
     }
 
-    public static synchronized void commandWorker() {
-        //new DiscordListener();
+    @Override
+    public void onEvent(Event event) {
+        if (event instanceof ReadyEvent) {
+            logger.info("Init Complete!");
+
+            jda = event.getJDA();
+            if (!running) {
+                scheduleTasks();
+                running = true;
+            }
+        }
+
+        if (event instanceof DisconnectEvent) {
+            logger.info("Got disconnected!!");
+            if (!executor.isShutdown() || !executor.isTerminated()) {
+                executor.shutdownNow();
+                jda = null;
+                running = false;
+            }
+        }
+
     }
 
-    public static synchronized void checkLiveChannels() {
+    private void scheduleTasks() {
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        if (jda != null) {
+            logger.info("Starting the executor tasks");
+            executor.scheduleWithFixedDelay(this::checkLiveChannels, 0, 15, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::checkLiveGames, 0, 15, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::messageFactory, 0, 1, TimeUnit.SECONDS);
+        } else {
+            logger.info("We are way too early...");
+        }
+    }
+
+    private synchronized void checkLiveChannels() {
         LocalDateTime timeNow = LocalDateTime.now();
         logger.info("Checking for live channels...  " + timeNow);
 
@@ -92,8 +117,9 @@ public class PlatformListener {
         }
     }
 
-    public static synchronized void checkLiveGames() {
-        logger.info("Checking for live games...");
+    private synchronized void checkLiveGames() {
+        LocalDateTime timeNow = LocalDateTime.now();
+        logger.info("Checking for live games... " + timeNow);
         try {
             query = "SELECT * FROM `game` ORDER BY `guildId` ASC";
             connection = Database.getInstance().getConnection();
@@ -123,7 +149,9 @@ public class PlatformListener {
         }
     }
 
-    public static synchronized void messageFactory() {
+    private synchronized void messageFactory() {
+        LocalDateTime timeNow = LocalDateTime.now();
+        logger.info("Checking to see if I need to make any announcements...  " + timeNow);
         try {
             connection = Database.getInstance().getConnection();
             query = "SELECT * FROM `queue`";

@@ -20,6 +20,9 @@ public class PlatformController {
     private static Logger logger = LoggerFactory.getLogger(PlatformController.class);
     private static PreparedStatement pStatement;
     private static PreparedStatement cqtStatement;
+    private static PreparedStatement atsStatement;
+    private static PreparedStatement dfqStatement;
+    private static PreparedStatement cstStatement;
     private static String query;
     private static ResultSet resultSet;
     private static ResultSet checkStream;
@@ -31,18 +34,16 @@ public class PlatformController {
             connection = Database.getInstance().getConnection();
             query = "DELETE FROM `queue` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
 
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            pStatement.setInt(2, platformId);
-            pStatement.setString(3, channelName);
-
-            pStatement.executeUpdate();
-
+            dfqStatement = connection.prepareStatement(query);
+            dfqStatement.setString(1, guildId);
+            dfqStatement.setInt(2, platformId);
+            dfqStatement.setString(3, channelName);
+            dfqStatement.executeUpdate();
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(pStatement, connection);
+            cleanUp(dfqStatement, connection);
         }
         return false;
     }
@@ -64,20 +65,22 @@ public class PlatformController {
         try {
             connection = Database.getInstance().getConnection();
             if (connection != null) {
-                pStatement = connection.prepareStatement(query);
-                pStatement.setString(1, guildId);
-                pStatement.setInt(2, platformId);
-                pStatement.setString(3, channelName);
-                pStatement.setString(4, streamTitle);
-                pStatement.setString(5, gameName);
-
-                pStatement.executeUpdate();
+                if (gameName == null || "".equals(gameName)) {
+                    gameName = "Some Game";
+                }
+                atsStatement = connection.prepareStatement(query);
+                atsStatement.setString(1, guildId);
+                atsStatement.setInt(2, platformId);
+                atsStatement.setString(3, channelName);
+                atsStatement.setString(4, streamTitle);
+                atsStatement.setString(5, gameName);
+                atsStatement.executeUpdate();
                 return true;
             }
         } catch (SQLException e) {
             logger.info("I threw an exception here", e);
         } finally {
-            cleanUp(pStatement, connection);
+            cleanUp(atsStatement, connection);
         }
 
         return false;
@@ -96,22 +99,67 @@ public class PlatformController {
             connection = Database.getInstance().getConnection();
             query = "SELECT COUNT(*) AS `count` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` " +
                     "= ?";
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            pStatement.setInt(2, platformId);
-            pStatement.setString(3, channelName);
-            checkStream = pStatement.executeQuery();
+            cstStatement = connection.prepareStatement(query);
+            cstStatement.setString(1, guildId);
+            cstStatement.setInt(2, platformId);
+            cstStatement.setString(3, channelName);
+            checkStream = cstStatement.executeQuery();
             while (checkStream.next()) {
                 if (checkStream.getInt("count") == 0) {
                     return false; // Not in the stream table
                 }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(checkStream, pStatement, connection);
+            cleanUp(checkStream, cstStatement, connection);
         }
         return true; // Found in the stream table
+    }
+
+    public static synchronized String getMessageId(String guildId, Integer platformId, String channelName) {
+
+        try {
+            connection = Database.getInstance().getConnection();
+            query = "SELECT `messageId` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            pStatement.setInt(2, platformId);
+            pStatement.setString(3, channelName);
+            resultSet = pStatement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString("messageId");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(resultSet, pStatement, connection);
+        }
+        return "";
+    }
+
+    public static synchronized boolean deleteFromStream(String guildId, Integer platformId, String channelName) {
+        if (checkStreamTable(guildId, platformId, channelName)) {
+            try {
+                connection = Database.getInstance().getConnection();
+                query = "DELETE FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
+                pStatement = connection.prepareStatement(query);
+                pStatement.setString(1, guildId);
+                pStatement.setInt(2, platformId);
+                pStatement.setString(3, channelName);
+
+                pStatement.executeUpdate();
+                logger.info("Stream deleted from the stream table");
+                return true;
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                cleanUp(pStatement, connection);
+            }
+        }
+        return false;
     }
 
     public synchronized void onlineStreamHandler(String guildId, Integer platformId, String channelName, String
@@ -126,19 +174,11 @@ public class PlatformController {
     }
 
     public synchronized void offlineStreamHandler(String guildId, Integer platformId, String channelName) {
-        String messageId = getMessageId(guildId, platformId, channelName);
-
-        if (checkStreamTable(guildId, platformId, channelName) && null != messageId) {
-            logger.info(channelName + " has gone offline.");
-            deleteFromStream(guildId, platformId, channelName);
-
-            if (checkQueueTable(guildId, platformId, channelName)) {
-                logger.info("Stream is present in the queue table.");
-                updateQueueOffline(guildId, platformId, channelName);
-            } else {
-                // Not really setting it online, just don't want a different named method with the same content
-                setOnline(guildId, platformId, channelName, null, null, 0);
-            }
+        if (checkQueueTable(guildId, platformId, channelName)) {
+            updateQueueOffline(guildId, platformId, channelName);
+        } else if (checkStreamTable(guildId, platformId, channelName) && !checkQueueTable(guildId, platformId, channelName)) {
+            // Not really setting it online, just don't want a different named method with the same content
+            setOnline(guildId, platformId, channelName, null, null, 0);
         }
     }
 
@@ -194,54 +234,6 @@ public class PlatformController {
             logger.error("setOnline() error: ", e);
         } finally {
             cleanUp(pStatement, connection);
-        }
-        return false;
-    }
-
-    private synchronized String getMessageId(String guildId, Integer platformId, String channelName) {
-
-        try {
-            connection = Database.getInstance().getConnection();
-            query = "SELECT `messageId` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            pStatement.setInt(2, platformId);
-            pStatement.setString(3, channelName);
-            resultSet = pStatement.executeQuery();
-            if (resultSet.next()) {
-                return resultSet.getString("messageId");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(resultSet, pStatement, connection);
-        }
-        return "";
-    }
-
-    private synchronized boolean deleteFromStream(String guildId, Integer platformId, String channelName) {
-        if (checkStreamTable(guildId, platformId, channelName)) {
-            logger.info(channelName + " is still in the STREAM table.  Deleting them now");
-
-            try {
-                connection = Database.getInstance().getConnection();
-                query = "DELETE FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
-                pStatement = connection.prepareStatement(query);
-                pStatement.setString(1, guildId);
-                pStatement.setInt(2, platformId);
-                pStatement.setString(3, channelName);
-
-                pStatement.executeUpdate();
-                logger.info("Stream deleted from the stream table");
-                return true;
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } finally {
-                cleanUp(pStatement, connection);
-            }
-        } else {
-            logger.info(channelName + " is not in the STREAM table");
         }
         return false;
     }

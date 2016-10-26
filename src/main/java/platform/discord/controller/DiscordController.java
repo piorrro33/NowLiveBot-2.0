@@ -21,9 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static platform.generic.controller.PlatformController.addToStream;
-import static platform.generic.controller.PlatformController.checkStreamTable;
-import static platform.generic.controller.PlatformController.deleteFromQueue;
+import static platform.generic.controller.PlatformController.*;
 import static util.database.Database.cleanUp;
 
 /**
@@ -76,19 +74,72 @@ public class DiscordController {
 
     public static void sendToPm(MessageReceivedEvent event, String message) {
         event.getAuthor().getPrivateChannel().sendMessage(message);
+        logger.info("Private message sent to " + event.getAuthor().getUsername());
     }
 
     public static synchronized void messageHandler(String guildId, Integer platformId, String channelName, String
             streamTitle, String gameName, Integer online) {
         switch (online) {
-            case 1:
+            case 1: // Stream is online
+                logger.info("Stream is online");
                 if (!checkStreamTable(guildId, platformId, channelName)) {
+                    logger.info("Adding stream to the Stream table.");
                     addToStream(guildId, platformId, channelName, streamTitle, gameName);
+                    logger.info("Deleting stream from the Queue table.");
                     deleteFromQueue(guildId, platformId, channelName);
+                    logger.info("Announcing the stream");
                     announceStream(guildId, platformId, channelName, streamTitle, gameName);
                 }
                 break;
-            default:
+            default: // Stream is offline
+                if (checkStreamTable(guildId, platformId, channelName)) {
+                    logger.info("Stream is offline.");
+                    try {
+                        connection = Database.getInstance().getConnection();
+                        query = "SELECT `cleanup`, `channelId` FROM `guild` WHERE `guildId` = ?";
+                        pStatement = connection.prepareStatement(query);
+                        pStatement.setString(1, guildId);
+                        result = pStatement.executeQuery();
+
+                        while (result.next()) {
+                            logger.info("Got the channelID and cleanup code");
+                            String channelId = result.getString("channelId");
+                            String messageId;
+                            switch (result.getInt("cleanup")) {
+                                case 1:
+                                    logger.info("This guild is set to edit announcements");
+                                    messageId = getMessageId(guildId, platformId, channelName);
+                                    logger.info("messageId = " + messageId);
+
+                                    String oldMessage = Main.jda.getGuildById(guildId).getJDA().getTextChannelById
+                                            (channelId).getMessageById(messageId).getRawContent();
+                                    logger.info("Old message was: " + oldMessage);
+
+                                    String newMessage = oldMessage.replaceFirst("NOW LIVE", "OFFLINE");
+
+                                    Main.jda.getGuildById(guildId).getJDA().getTextChannelById(channelId)
+                                            .getMessageById(messageId).updateMessageAsync(newMessage, null);
+
+                                    break;
+                                case 2:
+                                    messageId = getMessageId(guildId, platformId, channelName);
+                                    Main.jda.getGuildById(guildId).getJDA().getTextChannelById(channelId)
+                                            .getMessageById(messageId).deleteMessage();
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    } finally {
+                        cleanUp(result, pStatement, connection);
+                    }
+                    logger.info("Deleting offline stream from the Stream table.");
+                    deleteFromStream(guildId, platformId, channelName);
+                }
+                logger.info("Deleting offline stream from the Queue table.");
+                deleteFromQueue(guildId, platformId, channelName);
 
                 break;
         }
@@ -103,8 +154,8 @@ public class DiscordController {
 
             // Get the base link for the platform
             String platformLink = getPlatformLink(platformId);
-            String message = "***NOW LIVE!***\t**" + channelName + "** is playing some **"
-                    + gameName + "**!\n\t*" + streamTitle + "*\n\tWatch " + channelName + " here: " + platformLink +
+            String message = "***NOW LIVE!***\n\t**" + channelName + "** is playing some **"
+                    + gameName + "**!\n\t\t*" + streamTitle + "*\n\t\tWatch " + channelName + " here: " + platformLink +
                     channelName + " :heart_eyes_cat: :heart_eyes_cat:";
 
             Message msg = Main.jda.getTextChannelById(channelId).sendMessage(message);

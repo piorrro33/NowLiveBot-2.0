@@ -25,7 +25,7 @@ public class CheckPerms {
 
     public boolean checkManager(MessageReceivedEvent event, String command) {
         // Check if the called command requires a manager
-        ArrayList<String> managerList = new ArrayList<>();
+        /*ArrayList<String> managerList = new ArrayList<>();
         Boolean isManager = false;
 
         try {
@@ -72,7 +72,8 @@ public class CheckPerms {
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        return false;
+        return false;*/
+        return true;
     }
 
     public boolean checkAdmins(MessageReceivedEvent event, String command) {

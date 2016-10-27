@@ -29,8 +29,8 @@ public class Main {
 
     public static final CommandParser parser = new CommandParser();
     public static JDA jda;
-    private static Logger logger = LoggerFactory.getLogger(Main.class);
     public static Database data;
+    private static Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws PropertyVetoException, IOException, SQLException {
         // Verify the database is there on startup
@@ -50,7 +50,7 @@ public class Main {
                     .setBulkDeleteSplittingEnabled(false)
                     .setBotToken(PropReader.getInstance().getProp().getProperty("discord.token"))
                     .addListener(new DiscordListener())
-                    .useSharding(2, 3)
+                    //.useSharding(2, 3)
                     .buildBlocking();
 
             jda.getAccountManager().setGame(Const.PLAYING); // Set the 'Playing...'

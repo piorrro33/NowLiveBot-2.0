@@ -46,30 +46,8 @@ public class DiscordController {
     }
 
     public static void sendToChannel(MessageReceivedEvent event, String message) {
-        try {
-            query = "SELECT `channelId` FROM `guild` WHERE `guildId` = ?";
 
-            connection = Database.getInstance().getConnection();
-            if (connection != null) {
-                pStatement = connection.prepareStatement(query);
-                pStatement.setString(1, event.getGuild().getId());
-
-                result = pStatement.executeQuery();
-                String channelId;
-                if (result.next()) {
-                    channelId = result.getString(1);
-                } else {
-                    channelId = event.getGuild().getPublicChannel().getId();
-                }
-                // TODO: CHECK PERMISSIONS
-                event.getJDA().getTextChannelById(channelId).sendMessage(message);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(result, pStatement, connection);
-        }
+            event.getMessage().getChannel().sendMessage(message);
     }
 
     public static void sendToPm(MessageReceivedEvent event, String message) {

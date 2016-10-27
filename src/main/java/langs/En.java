@@ -23,7 +23,7 @@ public interface En {
     String EMPTY_COMMAND = "Next time you wake me up, please send a command as well.";
     String HELP_PM = "Hey there!  I heard you needed some help.  Below is the list of commands I recognize.\n\n";
     String INCORRECT_ARGS = "You passed incorrect or missing arguments to me.  Check the help command for more info.";
-    String PING = "Surprise, motherfucker!";
+    String PING = "When I was in China on the All-American Ping Pong team, I just loved playing ping-pong with my Flexolite ping pong paddle.";
     String PRIVATE_MESSAGE_REPLY = "I'm sorry, but the bot you are trying to reach has a voice mail box that has not " +
             "been setup yet.  Please try your PM again later.";
     String TYPE_ONCE = "You only need to type that part once, silly.";
@@ -137,5 +137,5 @@ public interface En {
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " streams```";
-    String STATUS_HELP = "";
+    String STATUS_HELP = "Haven't started working on this command yet";
 }

@@ -88,7 +88,7 @@ public class Add implements Command {
 
         DiscordController dController = new DiscordController(event);
 
-        String guildId = dController.getguildId();
+        String guildId = dController.getGuildId();
 
         for (String s : this.options) {
             if (this.option.equals(s) && !this.option.equals("help")) {

@@ -37,7 +37,6 @@ public class DiscordController {
     private static ResultSet level;
     private String guildIdMessageEvent;
     private String mentionedUsersId;
-    private JDA jda = Main.jda;
 
     public DiscordController(MessageReceivedEvent event) {
 
@@ -46,8 +45,7 @@ public class DiscordController {
     }
 
     public static void sendToChannel(MessageReceivedEvent event, String message) {
-
-            event.getMessage().getChannel().sendMessage(message);
+        event.getMessage().getChannel().sendMessage(message);
     }
 
     public static void sendToPm(MessageReceivedEvent event, String message) {
@@ -130,13 +128,17 @@ public class DiscordController {
             // Send the message to the appropriate channel
             String channelId = getChannelId(guildId);
 
-            // Get the base link for the platform
-            String platformLink = getPlatformLink(platformId);
-            String message = "***NOW LIVE!***\n\t**" + channelName + "** is playing some **"
-                    + gameName + "**!\n\t\t*" + streamTitle + "*\n\t\tWatch " + channelName + " here: " + platformLink +
-                    channelName + " :heart_eyes_cat: :heart_eyes_cat:";
+            MessageBuilder message = new MessageBuilder();
 
-            Message msg = Main.jda.getTextChannelById(channelId).sendMessage(message);
+            message.appendString("***NOW LIVE!***\n\t");
+            notifyLevel(guildId, message);
+            message.appendString("**" + channelName + "** is playing some **" + gameName + "**!\n");
+            message.appendString("\t\t*" + streamTitle + "*\n");
+            message.appendString("\t\tWatch " + channelName + " here: " + getPlatformLink(platformId) + channelName);
+            checkEmoji(guildId, message);
+            //message.build();
+
+            Message msg = Main.jda.getTextChannelById(channelId).sendMessage(message.build());
             // Grab the message ID
             String msgId = msg.getId();
 
@@ -155,6 +157,36 @@ public class DiscordController {
         } finally {
             cleanUp(pStatement, connection);
         }
+    }
+
+    private static synchronized MessageBuilder checkEmoji(String guildId, MessageBuilder message) {
+        try {
+            connection = Database.getInstance().getConnection();
+            query = "SELECT `emoji` FROM `guild` WHERE `guildId` = ?";
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            result = pStatement.executeQuery();
+
+            // Checking to see how emoji are passed from Discord
+            /*for(Emote emote : Main.jda.getGuildById(guildId).getEmotes()) {
+                System.out.println(emote);
+            }*/
+
+            while (result.next()) {
+                if (result.getString("emoji") != null) {
+                    message.appendString(" ");
+                    message.appendString(result.getString("emoji"));
+                    message.appendString(" ");
+                    message.appendString(result.getString("emoji"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
+        }
+        message.appendString("");
+        return message;
     }
 
     private static synchronized String getChannelId(String guildId) {
@@ -198,11 +230,11 @@ public class DiscordController {
         return "";
     }
 
-    private synchronized void notifyLevel(String guildId, MessageBuilder message) {
-        String query = "SELECT `level`, `userId` FROM `notification` WHERE `guildId` = ?";
+    private static synchronized MessageBuilder notifyLevel(String guildId, MessageBuilder message) {
         try {
-            connection = Database.getInstance().getConnection();
             if (connection != null) {
+                connection = Database.getInstance().getConnection();
+                String query = "SELECT `level`, `userId` FROM `notification` WHERE `guildId` = ?";
                 pStatement = connection.prepareStatement(query);
                 pStatement.setString(1, guildId);
                 level = pStatement.executeQuery();
@@ -211,17 +243,20 @@ public class DiscordController {
                     switch (level.getInt("level")) {
                         case 1: // User wants a @User mention
                             String userId = level.getString("userId");
-                            User user = this.jda.getUserById(userId);
+                            User user = Main.jda.getUserById(userId);
+                            message.appendString("Hey ");
                             message.appendMention(user);
-                            message.appendString("  ");
+                            message.appendString(",  ");
                             break;
                         case 2: // User wants @here mention
+                            message.appendString("Hey ");
                             message.appendHereMention();
-                            message.appendString("  ");
+                            message.appendString(",  ");
                             break;
                         case 3: // User wants @everyone mention
+                            message.appendString("Hey ");
                             message.appendEveryoneMention();
-                            message.appendString("  ");
+                            message.appendString(",  ");
                             break;
                         default: // No mention
                             message.appendString("");
@@ -234,6 +269,7 @@ public class DiscordController {
         } finally {
             cleanUp(level, pStatement, connection);
         }
+        return message;
     }
 
 
@@ -248,7 +284,7 @@ public class DiscordController {
         return this.mentionedUsersId;
     }
 
-    public String getguildId() {
+    public String getGuildId() {
         return this.guildIdMessageEvent;
     }
 }

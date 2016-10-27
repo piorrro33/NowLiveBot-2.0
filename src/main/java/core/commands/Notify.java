@@ -37,7 +37,8 @@ public class Notify implements Command {
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
         if (args != null && !"".equals(args)) {
-            if ("me".equals(args) || "here".equals(args) || "every9one".equals(args) || "help".equals(args)) {
+            if ("none".equals(args) || "me".equals(args) || "here".equals(args) || "everyone".equals(args) || "help"
+                    .equals(args)) {
                 return true;
             } else {
                 sendToChannel(event, Const.INCORRECT_ARGS);
@@ -58,8 +59,7 @@ public class Notify implements Command {
      */
     @Override
     public void action(String args, MessageReceivedEvent event) {
-
-
+        System.out.println(args);
         switch (args.toLowerCase()) {
             case "none":
                 if (update(event, 0)) {
@@ -112,21 +112,21 @@ public class Notify implements Command {
 
     private boolean update(MessageReceivedEvent event, Integer level) {
         try {
-            connection = Database.getInstance().getConnection();
             String uId;
 
             if (level == 1) {
-                uId = "'" + event.getAuthor().getId() + "'";
+                uId = event.getAuthor().getId();
             } else {
                 uId = null;
             }
 
+            connection = Database.getInstance().getConnection();
             query = "UPDATE `notification` SET `userId` = ?, `level` = ? WHERE `guildId` = ?";
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, uId);
             pStatement.setInt(2, level);
             pStatement.setString(3, event.getGuild().getId());
-
+System.out.println(pStatement);
             result = pStatement.executeUpdate();
 
             if (result > 0) {

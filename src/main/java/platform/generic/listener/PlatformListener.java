@@ -39,9 +39,9 @@ public class PlatformListener implements EventListener {
 
 
         try {
-            executor.scheduleWithFixedDelay(this::checkLiveChannels, 5, 90, TimeUnit.SECONDS);
-            executor.scheduleWithFixedDelay(this::checkLiveGames, 10, 90, TimeUnit.SECONDS);
-            executor.scheduleWithFixedDelay(this::messageFactory, 15, 45, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::checkLiveChannels, 5, 30, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::checkLiveGames, 10, 30, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::messageFactory, 15, 5, TimeUnit.SECONDS);
         } catch (Exception e) {
             logger.info("******************* Caught an exception while keeping the executors active ", e);
             logger.info("Attempting to restart the executors...");

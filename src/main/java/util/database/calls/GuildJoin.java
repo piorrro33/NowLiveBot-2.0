@@ -95,11 +95,12 @@ public class GuildJoin {
             case "guild":
                 try {
                     connection = Database.getInstance().getConnection();
-                    query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `isActive`, `cleanup`) " +
-                            "VALUES (?, ?, 0, 0, 0)";
+                    query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `isActive`, `cleanup`, " +
+                            "`emoji`) VALUES (?, ?, 0, 0, 0, ?)";
                     pStatement = connection.prepareStatement(query);
                     pStatement.setString(1, guildId);
                     pStatement.setString(2, defaultChannel);
+                    pStatement.setString(3, ":heart_eyes_cat:");
                     result = pStatement.executeUpdate();
                 } catch (SQLException e) {
                     e.printStackTrace();

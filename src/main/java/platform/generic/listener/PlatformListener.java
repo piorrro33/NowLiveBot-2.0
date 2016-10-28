@@ -88,17 +88,19 @@ public class PlatformListener implements EventListener {
 
         try {
             connection = Database.getInstance().getConnection();
-            query = "SELECT `isEnabled` FROM `guild` WHERE `guildId` = ?";
+            query = "SELECT `isActive` FROM `guild` WHERE `guildId` = ?";
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
             ceResult = pStatement.executeQuery();
-            while (result.next()) {
-                if (result.getInt("isEnabled") == 1) {
+            while (ceResult.next()) {
+                if (ceResult.getInt("isActive") == 1) {
                     return true;
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            cleanUp(ceResult, pStatement, connection);
         }
         return false;
     }

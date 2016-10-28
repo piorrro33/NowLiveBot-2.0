@@ -126,7 +126,6 @@ public class Notify implements Command {
             pStatement.setString(1, uId);
             pStatement.setInt(2, level);
             pStatement.setString(3, event.getGuild().getId());
-System.out.println(pStatement);
             result = pStatement.executeUpdate();
 
             if (result > 0) {

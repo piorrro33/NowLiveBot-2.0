@@ -29,6 +29,7 @@ public class PlatformListener implements EventListener {
     private static Logger logger = LoggerFactory.getLogger(PlatformListener.class);
     private static Connection connection;
     private static PreparedStatement pStatement;
+    private static ResultSet ceResult;
     private static String query;
     private static ResultSet result;
     private static JDA jda = null;
@@ -83,6 +84,25 @@ public class PlatformListener implements EventListener {
         }
     }
 
+    private synchronized boolean checkEnabled(String guildId) {
+
+        try {
+            connection = Database.getInstance().getConnection();
+            query = "SELECT `isEnabled` FROM `guild` WHERE `guildId` = ?";
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            ceResult = pStatement.executeQuery();
+            while (result.next()) {
+                if (result.getInt("isEnabled") == 1) {
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     private synchronized void checkLiveChannels() {
         LocalDateTime timeNow = LocalDateTime.now();
         logger.info("Checking for live channels...  " + timeNow);
@@ -98,15 +118,20 @@ public class PlatformListener implements EventListener {
                 TwitchController twitch = new TwitchController();
 
                 while (result.next()) {
-                    switch (result.getInt("platformId")) {
-                        case 1:
-                            // Send info to Twitch Controller
-                            twitch.checkChannel(result.getString("name"), result.getString("guildId"), result.getInt
-                                    ("platformId"));
-                            break;
+                    if (checkEnabled(result.getString("guildId"))) {
+                        switch (result.getInt("platformId")) {
+                            case 1:
+                                // Send info to Twitch Controller
+                                twitch.checkChannel(result.getString("name"), result.getString("guildId"), result.getInt
+                                        ("platformId"));
+                                break;
 
-                        default:
-                            break;
+                            default:
+                                break;
+                        }
+                    } else {
+                        logger.info("Guild " + result.getString("guildId") + " is not enabled.  Going on to the next " +
+                                "guild.");
                     }
                 }
             }
@@ -128,16 +153,18 @@ public class PlatformListener implements EventListener {
                 result = pStatement.executeQuery();
 
                 while (result.next()) {
-                    switch (result.getInt("platformId")) {
-                        case 1:
-                            // Send info to Twitch Controller
-                            TwitchController twitch = new TwitchController();
-                            twitch.checkGame(result.getString("name"), result.getString("guildId"), result.getInt
-                                    ("platformId"));
-                            break;
+                    if (checkEnabled(result.getString("guildId"))) {
+                        switch (result.getInt("platformId")) {
+                            case 1:
+                                // Send info to Twitch Controller
+                                TwitchController twitch = new TwitchController();
+                                twitch.checkGame(result.getString("name"), result.getString("guildId"), result.getInt
+                                        ("platformId"));
+                                break;
 
-                        default:
-                            break;
+                            default:
+                                break;
+                        }
                     }
                 }
             }
@@ -158,15 +185,17 @@ public class PlatformListener implements EventListener {
             pStatement = connection.prepareStatement(query);
             result = pStatement.executeQuery();
             while (result.next()) {
-                String guildId = result.getString("guildId");
-                Integer platformId = result.getInt("platformId");
-                String channelName = result.getString("channelName");
-                String streamTitle = result.getString("streamTitle");
-                String gameName = result.getString("gameName");
-                Integer online = result.getInt("online");
+                if (checkEnabled(result.getString("guildId"))) {
+                    String guildId = result.getString("guildId");
+                    Integer platformId = result.getInt("platformId");
+                    String channelName = result.getString("channelName");
+                    String streamTitle = result.getString("streamTitle");
+                    String gameName = result.getString("gameName");
+                    Integer online = result.getInt("online");
 
-                DiscordController.messageHandler(guildId, platformId, channelName, streamTitle, gameName, online);
-                TimeUnit.MILLISECONDS.sleep(1100);
+                    DiscordController.messageHandler(guildId, platformId, channelName, streamTitle, gameName, online);
+                    TimeUnit.MILLISECONDS.sleep(1100);
+                }
             }
         } catch (SQLException | InterruptedException e) {
             e.printStackTrace();

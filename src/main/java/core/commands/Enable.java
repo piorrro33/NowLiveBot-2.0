@@ -42,12 +42,11 @@ public class Enable implements Command {
     @Override
     public void action(String args, MessageReceivedEvent event) {
         try {
-            String query = "UPDATE `guild` SET `isActive` = 1 WHERE `guildId` = ?";
             connection = Database.getInstance().getConnection();
+            String query = "UPDATE `guild` SET `isActive` = 1 WHERE `guildId` = ?";
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, event.getGuild().getId());
-
-            result = pStatement.executeUpdate(query);
+            result = pStatement.executeUpdate();
 
             if (result.equals(1)) {
                 sendToChannel(event, Const.ENABLE_SUCCESS);

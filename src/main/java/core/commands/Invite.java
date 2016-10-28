@@ -33,7 +33,9 @@ public class Invite implements Command {
 
     @Override
     public void action(String args, MessageReceivedEvent event) {
-        sendToChannel(event, Const.INVITE);
+        sendToChannel(event, "Nice try buster, but I'm not ready to be added to other servers.  Contact Ague for more" +
+                " infoz!!");
+        //sendToChannel(event, Const.INVITE);
     }
 
     @Override

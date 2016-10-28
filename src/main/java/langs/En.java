@@ -62,6 +62,10 @@ public interface En {
     String ADMIN_OVERRIDE = "*Permission of this command have been overridden by a bot developer.*";
     String WATCH_THEM_HERE = "Watch them here: ";
     String NOW_LIVE = "NOW LIVE!\n\n";
+    String CANT_REMOVE_OWNER = "Silly human, you can't remove the server owner from the manager list. :laughing: :laughing:";
+    String NO_BOT_MANAGER = "It's against the Discord Bot Union By-Laws for bots to manage me. Sorry, try and find a " +
+            "suitable human for the job. :thumbsup:";
+    String NEED_ONE_MANAGER = "If you remove that one, who will manage me?  ";
 
     // Command specific text
     String ADD_HELP = "```Ruby\nADD:  Used to add something to my database.\nUSAGE:  "

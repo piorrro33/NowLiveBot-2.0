@@ -50,6 +50,9 @@ public class Const {
     public static final String NOT_AN_ADMIN = En.NOT_AN_ADMIN;
     public static final String ADMIN_OVERRIDE = En.ADMIN_OVERRIDE;
     public static final String NOW_LIVE = En.NOW_LIVE;
+    public static final String CANT_REMOVE_OWNER = En.CANT_REMOVE_OWNER;
+    public static final String NO_BOT_MANAGER = En.NO_BOT_MANAGER;
+    public static final String NEED_ONE_MANAGER = En.NEED_ONE_MANAGER;
 
     // Command specific text
     public static final String ANNOUNCE_HELP = En.ANNOUNCE_HELP;

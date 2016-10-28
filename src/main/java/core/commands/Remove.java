@@ -11,6 +11,7 @@ import util.database.calls.Tracker;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static core.commands.Add.*;
@@ -29,6 +30,7 @@ public class Remove implements Command {
     private Connection connection;
     private PreparedStatement pStatement;
     private String query;
+    private ResultSet result;
     private Integer resultInt;
     private String[] options = new String[]{"channel", "game", "manager", "tag", "team", "help"};
 
@@ -76,17 +78,25 @@ public class Remove implements Command {
 
                 // Check to see if the entry already exists in the db for that guild
                 if (this.option.equals("manager")) {
-                    try {
-                        connection = Database.getInstance().getConnection();
-                        query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `userId` = ?";
-                        pStatement = connection.prepareStatement(query);
-                        pStatement.setString(1, guildId);
-                        pStatement.setString(2, dController.getMentionedUsersId());
-                        resultInt = pStatement.executeUpdate();
-                    } catch (SQLException e) {
-                        logger.error("Error when deleting info from the " + this.option + " table: ", e);
-                    } finally {
-                        cleanUp(pStatement, connection);
+                    if (!event.getGuild().getOwnerId().equals(String.valueOf(dController.getMentionedUsersId()))) {
+                        if (managerCount(guildId)) {
+                            try {
+                                connection = Database.getInstance().getConnection();
+                                query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `userId` = ?";
+                                pStatement = connection.prepareStatement(query);
+                                pStatement.setString(1, guildId);
+                                pStatement.setString(2, dController.getMentionedUsersId());
+                                resultInt = pStatement.executeUpdate();
+                            } catch (SQLException e) {
+                                logger.error("Error when deleting info from the " + this.option + " table: ", e);
+                            } finally {
+                                cleanUp(pStatement, connection);
+                            }
+                        } else {
+                            sendToChannel(event, Const.NEED_ONE_MANAGER);
+                        }
+                    } else {
+                        sendToChannel(event, Const.CANT_REMOVE_OWNER);
                     }
                 } else {
                     query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
@@ -140,16 +150,17 @@ public class Remove implements Command {
                             break;
                     }
                 }
-
-                if (resultInt > 0) {
-                    sendToChannel(event, "Removed `" + this.option + "` " + this.argument);
-                    logger.info("Successfully removed " + this.argument + " from the database for guildId: " +
-                            guildId + ".");
-                } else {
-                    sendToChannel(event, "I can't remove `" + this.option + "` " + this.argument + " because " +
-                            "it's not in my database.");
-                    logger.info("Failed to remove " + this.option + " " + this.argument + " from the database" +
-                            " for guildId: " + guildId + ".");
+                if (!event.getGuild().getOwnerId().equals(String.valueOf(dController.getMentionedUsersId()))) {
+                    if (resultInt > 0) {
+                        sendToChannel(event, "Removed `" + this.option + "` " + this.argument);
+                        logger.info("Successfully removed " + this.argument + " from the database for guildId: " +
+                                guildId + ".");
+                    } else {
+                        sendToChannel(event, "I can't remove `" + this.option + "` " + this.argument + " because " +
+                                "it's not in my database.");
+                        logger.info("Failed to remove " + this.option + " " + this.argument + " from the database" +
+                                " for guildId: " + guildId + ".");
+                    }
                 }
             }
         }
@@ -163,5 +174,25 @@ public class Remove implements Command {
     @Override
     public void executed(boolean success, MessageReceivedEvent event) {
         new Tracker("Remove");
+    }
+
+    private boolean managerCount(String guildId) {
+        try {
+            connection = Database.getInstance().getConnection();
+            query = "SELECT COUNT(*) AS `count` FROM `manager` WHERE `guildId` = ?";
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            result = pStatement.executeQuery();
+            while (result.next()) {
+                if ((result.getInt("count") - 1) == 0) {
+                    return false; // Unable to remove the manager because there's only one manager
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
+        }
+        return true; // There are ample managers to remove this one
     }
 }

@@ -85,33 +85,42 @@ public class Add implements Command {
 
     @Override
     public void action(String args, MessageReceivedEvent event) {
+        // TODO: add clauses to check for things that shouldn't be done & Luis' nickname fix
 
         DiscordController dController = new DiscordController(event);
 
         String guildId = dController.getGuildId();
 
         for (String s : this.options) {
+            logger.info(args);
             if (this.option.equals(s) && !this.option.equals("help")) {
                 Integer platformId = 1; // platformId is always 1 for Twitch until other platforms are added
                 this.argument = this.argument.replace("'", "''");
 
                 // Check to see if the game already exists in the db for that guild
                 if (this.option.equals("manager")) {
-                    // TODO: Do a bot check to make sure bots don't get added to the manager list
+
                     logger.info("Checking to see if " + dController.getMentionedUsersId()
                             + " already exists for guild: " + guildId);
 
-                    try {
-                        connection = Database.getInstance().getConnection();
-                        query = "SELECT `userId` FROM `" + this.option + "` WHERE `guildId` = ? AND `userId` = ?";
-                        pStatement = connection.prepareStatement(query);
-                        pStatement.setString(1, guildId);
-                        pStatement.setString(2, String.valueOf(dController.getMentionedUsersId()));
-                        resultSet = pStatement.executeQuery();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    } finally {
-                        cleanUp(resultSet, pStatement, connection);
+                    // Check to make sure the user is not a bot
+                    if (!event.getJDA().getUserById(String.valueOf(dController.getMentionedUsersId())).isBot()) {
+                        logger.info("Made it inside the bot check");
+                        try {
+                            connection = Database.getInstance().getConnection();
+                            query = "SELECT `userId` FROM `" + this.option + "` WHERE `guildId` = ? AND `userId` = ?";
+                            pStatement = connection.prepareStatement(query);
+                            pStatement.setString(1, guildId);
+                            pStatement.setString(2, String.valueOf(dController.getMentionedUsersId()));
+                            logger.info("" + pStatement);
+                            resultSet = pStatement.executeQuery();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        } finally {
+                            cleanUp(resultSet, pStatement, connection);
+                        }
+                    } else {
+                        sendToChannel(event, Const.NO_BOT_MANAGER);
                     }
                 } else {
                     logger.info("Checking to see if the " + this.option + " already exists for guild: " + guildId);

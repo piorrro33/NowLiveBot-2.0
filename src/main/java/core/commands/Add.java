@@ -56,7 +56,6 @@ public class Add implements Command {
 
     @Override
     public boolean called(String args, MessageReceivedEvent event) {
-
         for (String s : this.options) { // Iterate through the available options for this command
             if (args != null && !args.isEmpty()) {
                 if (optionCheck(args, s)) {
@@ -86,7 +85,6 @@ public class Add implements Command {
 
     @Override
     public void action(String args, MessageReceivedEvent event) {
-        // TODO: add clauses to check for things that shouldn't be done & Luis' nickname fix
 
         dController = new DiscordController(event);
 

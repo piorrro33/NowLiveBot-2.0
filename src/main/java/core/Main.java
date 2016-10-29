@@ -45,7 +45,6 @@ public class Main {
 
             // TODO: Double check JDA docs IRT buildBlocking() vs buildAsync()
             jda = new JDABuilder()
-                    .setAutoReconnect(true) // Ensure JDA auto-reconnects
                     .setAudioEnabled(false) // Turn off JDA audio support
                     .setBulkDeleteSplittingEnabled(false)
                     .setBotToken(PropReader.getInstance().getProp().getProperty("discord.token"))

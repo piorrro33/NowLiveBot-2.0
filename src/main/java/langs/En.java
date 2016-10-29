@@ -111,6 +111,15 @@ public interface En {
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " invite\n\tInvite NowLive bot to your Discord Server.```";
+    String LIST_HELP = "```Ruby\nLIST:  Used to list things from my database.\nUSAGE:  "
+            + Const.COMMAND_PREFIX
+            + Const.COMMAND
+            + " list <option>"
+            + "\n\t<option>"
+            + "\n\tgame - List the games that I'm tracking for you"
+            + "\n\tchannel - I'll list out all of the individual stream channels you want me to watch"
+            + "\n\tteam - I'll show which Twitch teams I'm watching"
+            + "\n\ttag - I'll show which tags you want me to keep an eye out for```";
     String MOVE_HELP = "```Ruby\nMOVE:  Change where I make my announcements.\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND

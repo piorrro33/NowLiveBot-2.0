@@ -35,6 +35,7 @@ public class CommandParser {
         commands.put("disable", new Disable());
         commands.put("enable", new Enable());
         commands.put("help", new Help());
+        commands.put("list", new List());
         commands.put("invite", new Invite());
         commands.put("move", new Move());
         commands.put("notify", new Notify());

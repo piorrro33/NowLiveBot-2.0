@@ -31,7 +31,6 @@ public class Const {
     public static final String EMPTY_COMMAND = En.EMPTY_COMMAND;
     public static final String EMPTY_ARGS = En.EMPTY_ARGS;
     public static final String PRIVATE_MESSAGE_REPLY = En.PRIVATE_MESSAGE_REPLY;
-    public static final String ADD_HELP = En.ADD_HELP;
     public static final String ALREADY_EXISTS = En.ALREADY_EXISTS;
     public static final String DOESNT_EXIST = En.DOESNT_EXIST;
     public static final String NONE_ONLINE = En.NONE_ONLINE;
@@ -55,6 +54,7 @@ public class Const {
     public static final String NEED_ONE_MANAGER = En.NEED_ONE_MANAGER;
 
     // Command specific text
+    public static final String ADD_HELP = En.ADD_HELP;
     public static final String ANNOUNCE_HELP = En.ANNOUNCE_HELP;
     public static final String CLEANUP_HELP = En.CLEANUP_HELP;
     public static final String CLEANUP_SUCCESS_NONE = En.CLEANUP_SUCCESS_NONE;
@@ -73,6 +73,7 @@ public class Const {
     public static final String ENABLE_FAIL = En.ENABLE_FAIL;
     public static final String INVITE = En.INVITE;
     public static final String INVITE_HELP = En.INVITE_HELP;
+    public static final String LIST_HELP = En.LIST_HELP;
     public static final String MOVE_DONT_OWN_CHANNEL = En.MOVE_DONT_OWN_CHANNEL;
     public static final String MOVE_FAILURE = En.MOVE_FAILURE;
     public static final String MOVE_HELP = En.MOVE_HELP;

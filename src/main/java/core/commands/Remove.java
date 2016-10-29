@@ -79,7 +79,8 @@ public class Remove implements Command {
                 // Check to see if the entry already exists in the db for that guild
                 if (this.option.equals("manager")) {
                     if (!event.getGuild().getOwnerId().equals(String.valueOf(dController.getMentionedUsersId()))) {
-                        if (managerCount(guildId)) {
+                        logger.info("managerCount:  " + managerCount(guildId));
+                        if (managerCount(guildId)) { // Make sure there is going to be enough managers
                             try {
                                 connection = Database.getInstance().getConnection();
                                 query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `userId` = ?";
@@ -87,6 +88,8 @@ public class Remove implements Command {
                                 pStatement.setString(1, guildId);
                                 pStatement.setString(2, dController.getMentionedUsersId());
                                 resultInt = pStatement.executeUpdate();
+                                logger.info("resultInt: " + resultInt);
+                                removeResponse(event, guildId, resultInt);
                             } catch (SQLException e) {
                                 logger.error("Error when deleting info from the " + this.option + " table: ", e);
                             } finally {
@@ -107,6 +110,7 @@ public class Remove implements Command {
                         pStatement.setInt(2, platformId);
                         pStatement.setString(3, this.argument);
                         resultInt = pStatement.executeUpdate();
+                        logger.info("resultInt: " + resultInt);
                     } catch (SQLException e) {
                         logger.error("Error when deleting info from the " + this.option + " table: ", e);
                     } finally {
@@ -123,7 +127,9 @@ public class Remove implements Command {
                                 pStatement.setString(1, guildId);
                                 pStatement.setInt(2, platformId);
                                 pStatement.setString(3, this.argument);
-                                pStatement.executeUpdate();
+                                resultInt = pStatement.executeUpdate();
+                                logger.info("resultInt: " + resultInt);
+                                removeResponse(event, guildId, resultInt);
                             } catch (SQLException e) {
                                 logger.error("Error when deleting the channel info from the queue table: ", e);
                             } finally {
@@ -139,7 +145,9 @@ public class Remove implements Command {
                                 pStatement.setString(1, guildId);
                                 pStatement.setInt(2, platformId);
                                 pStatement.setString(3, this.argument);
-                                pStatement.executeUpdate();
+                                resultInt = pStatement.executeUpdate();
+                                logger.info("resultInt: " + resultInt);
+                                removeResponse(event, guildId, resultInt);
                             } catch (SQLException e) {
                                 logger.error("Error when deleting the game info from the queue table: ", e);
                             } finally {
@@ -150,19 +158,20 @@ public class Remove implements Command {
                             break;
                     }
                 }
-                if (!event.getGuild().getOwnerId().equals(String.valueOf(dController.getMentionedUsersId()))) {
-                    if (resultInt > 0) {
-                        sendToChannel(event, "Removed `" + this.option + "` " + this.argument);
-                        logger.info("Successfully removed " + this.argument + " from the database for guildId: " +
-                                guildId + ".");
-                    } else {
-                        sendToChannel(event, "I can't remove `" + this.option + "` " + this.argument + " because " +
-                                "it's not in my database.");
-                        logger.info("Failed to remove " + this.option + " " + this.argument + " from the database" +
-                                " for guildId: " + guildId + ".");
-                    }
-                }
             }
+        }
+    }
+
+    private void removeResponse(MessageReceivedEvent event, String guildId, Integer resultInt) {
+        if (resultInt > 0) {
+            sendToChannel(event, "Removed `" + this.option + "` " + this.argument);
+            logger.info("Successfully removed " + this.argument + " from the database for guildId: " +
+                    guildId + ".");
+        } else {
+            sendToChannel(event, "I can't remove `" + this.option + "` " + this.argument + " because " +
+                    "it's not in my database.");
+            logger.info("Failed to remove " + this.option + " " + this.argument + " from the database" +
+                    " for guildId: " + guildId + ".");
         }
     }
 
@@ -182,10 +191,12 @@ public class Remove implements Command {
             query = "SELECT COUNT(*) AS `count` FROM `manager` WHERE `guildId` = ?";
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
+            logger.info("" + pStatement);
             result = pStatement.executeQuery();
             while (result.next()) {
-                if ((result.getInt("count") - 1) == 0) {
-                    return false; // Unable to remove the manager because there's only one manager
+                logger.info("Result Count:  " + result.getInt("count"));
+                if (result.getInt("count") > 1) {
+                    return true; // There are ample managers to remove this one
                 }
             }
         } catch (SQLException e) {
@@ -193,6 +204,6 @@ public class Remove implements Command {
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        return true; // There are ample managers to remove this one
+        return false; // Unable to remove the manager because there's only one manager
     }
 }

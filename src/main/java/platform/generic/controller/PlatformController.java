@@ -16,7 +16,7 @@ import static util.database.Database.cleanUp;
  */
 public class PlatformController {
 
-    public static Connection connection;
+    private static Connection connection;
     private static Logger logger = LoggerFactory.getLogger(PlatformController.class);
     private static PreparedStatement pStatement;
     private static PreparedStatement cqtStatement;
@@ -65,15 +65,16 @@ public class PlatformController {
         try {
             connection = Database.getInstance().getConnection();
             if (connection != null) {
-                if (gameName == null || "".equals(gameName)) {
-                    gameName = "Some Game";
+                String game = gameName;
+                if (game == null || "".equals(game)) {
+                    game = "Some Game";
                 }
                 atsStatement = connection.prepareStatement(query);
                 atsStatement.setString(1, guildId);
                 atsStatement.setInt(2, platformId);
                 atsStatement.setString(3, channelName);
                 atsStatement.setString(4, streamTitle);
-                atsStatement.setString(5, gameName);
+                atsStatement.setString(5, game);
                 atsStatement.executeUpdate();
                 return true;
             }
@@ -162,18 +163,15 @@ public class PlatformController {
         return false;
     }
 
-    public synchronized void onlineStreamHandler(String guildId, Integer platformId, String channelName, String
+    public final synchronized void onlineStreamHandler(String guildId, Integer platformId, String channelName, String
             streamTitle, String gameName) {
-        if (!checkStreamTable(guildId, platformId, channelName)) {
-            // Streamer has not been announced
-            if (!checkQueueTable(guildId, platformId, channelName)) {
-                // Streamer has not been queued yet
-                setOnline(guildId, platformId, channelName, streamTitle, gameName, 1);
-            }
+        if (!checkStreamTable(guildId, platformId, channelName) && !checkQueueTable(guildId, platformId, channelName)) {
+            //       Streamer has not been announced            &&             Streamer has not been queued yet
+            setOnline(guildId, platformId, channelName, streamTitle, gameName, 1);
         }
     }
 
-    public synchronized void offlineStreamHandler(String guildId, Integer platformId, String channelName) {
+    public final synchronized void offlineStreamHandler(String guildId, Integer platformId, String channelName) {
         if (checkQueueTable(guildId, platformId, channelName)) {
             updateQueueOffline(guildId, platformId, channelName);
         } else if (checkStreamTable(guildId, platformId, channelName) && !checkQueueTable(guildId, platformId, channelName)) {
@@ -202,10 +200,8 @@ public class PlatformController {
             cqtStatement.setInt(2, platformId);
             cqtStatement.setString(3, channelName);
             checkQueue = cqtStatement.executeQuery();
-            if (checkQueue.next()) {
-                if (checkQueue.getInt("count") == 0) {
-                    return false; // Streamer has not been queued.
-                }
+            if (checkQueue.next() && checkQueue.getInt("count") == 0) {
+                return false; // Streamer has not been queued.
             }
         } catch (SQLException e) {
             logger.error("checkQueueTable() error: ", e);

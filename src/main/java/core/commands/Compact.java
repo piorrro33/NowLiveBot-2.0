@@ -21,9 +21,10 @@ public class Compact implements Command {
     private Connection connection;
     private PreparedStatement pStatement;
     private Integer result;
+    private String query;
 
     @Override
-    public boolean called(String args, MessageReceivedEvent event) {
+    public final boolean called(String args, MessageReceivedEvent event) {
         String[] options = new String[]{"on", "off", "help"};
 
         for (String s : options) {
@@ -46,7 +47,7 @@ public class Compact implements Command {
     }
 
     @Override
-    public void action(String args, MessageReceivedEvent event) {
+    public final void action(String args, MessageReceivedEvent event) {
         Integer intArg = -1;
         // Make sure that on/off are transposed properly for DB insertion
         switch (args) {
@@ -63,9 +64,8 @@ public class Compact implements Command {
 
         if (intArg.equals(1) || intArg.equals(0)) {
             try {
-                String query = "UPDATE `guild` SET `isCompact` = ? WHERE `guildId` = ?";
-
                 connection = Database.getInstance().getConnection();
+                query = "UPDATE `guild` SET `isCompact` = ? WHERE `guildId` = ?";
                 pStatement = connection.prepareStatement(query);
                 pStatement.setInt(1, intArg);
                 pStatement.setString(2, event.getGuild().getId());
@@ -91,12 +91,12 @@ public class Compact implements Command {
     }
 
     @Override
-    public void help(MessageReceivedEvent event) {
+    public final void help(MessageReceivedEvent event) {
         sendToChannel(event, Const.COMPACT_HELP);
     }
 
     @Override
-    public void executed(boolean success, MessageReceivedEvent event) {
+    public final void executed(boolean success, MessageReceivedEvent event) {
         new Tracker("Compact");
     }
 

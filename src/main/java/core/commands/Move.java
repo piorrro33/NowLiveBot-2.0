@@ -27,7 +27,7 @@ public class Move implements Command {
     private Integer result;
 
     @Override
-    public boolean called(String args, MessageReceivedEvent event) {
+    public final boolean called(String args, MessageReceivedEvent event) {
         if (args != null && !args.isEmpty()) {
             if (args.substring(0, 1).equals("#") && !args.contains(" ")) {
                 return true;
@@ -44,7 +44,7 @@ public class Move implements Command {
     }
 
     @Override
-    public void action(String args, MessageReceivedEvent event) {
+    public final void action(String args, MessageReceivedEvent event) {
         // Get the channelID from the guild and insert into the DB
 
         for (TextChannel textChannel : event.getJDA().getTextChannelsByName(args.substring(1))) {
@@ -77,12 +77,12 @@ public class Move implements Command {
     }
 
     @Override
-    public void help(MessageReceivedEvent event) {
+    public final void help(MessageReceivedEvent event) {
         sendToChannel(event, Const.MOVE_HELP);
     }
 
     @Override
-    public void executed(boolean success, MessageReceivedEvent event) {
+    public final void executed(boolean success, MessageReceivedEvent event) {
         new Tracker("Move");
     }
 }

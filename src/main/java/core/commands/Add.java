@@ -31,15 +31,14 @@ import static util.database.Database.cleanUp;
 public class Add implements Command {
 
     private static final Logger logger = LoggerFactory.getLogger(Add.class);
-    public String help;
-    public String option;
-    public String argument;
-    public Connection connection;
-    public PreparedStatement pStatement;
-    public String query;
-    public ResultSet resultSet;
-    public Integer resultInt;
-    DiscordController dController;
+    private String option;
+    private String argument;
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private String query;
+    private ResultSet resultSet;
+    private Integer resultInt;
+    private DiscordController dController;
     private String[] options = new String[]{"channel", "game", "manager", "tag", "team", "help"};
 
     public static boolean optionCheck(String args, String option) {
@@ -47,7 +46,7 @@ public class Add implements Command {
     }
 
     public static boolean argumentCheck(String args, Integer spaceLocation) {
-        return args.indexOf(" ") == spaceLocation && args.length() >= args.indexOf(" ") + 1;
+        return args.indexOf(' ') == spaceLocation && args.length() >= args.indexOf(' ') + 1;
     }
 
     public static void missingArguments(MessageReceivedEvent event) {
@@ -55,7 +54,7 @@ public class Add implements Command {
     }
 
     @Override
-    public boolean called(String args, MessageReceivedEvent event) {
+    public final boolean called(String args, MessageReceivedEvent event) {
         for (String s : this.options) { // Iterate through the available options for this command
             if (args != null && !args.isEmpty()) {
                 if (optionCheck(args, s)) {
@@ -84,7 +83,7 @@ public class Add implements Command {
     }
 
     @Override
-    public void action(String args, MessageReceivedEvent event) {
+    public final void action(String args, MessageReceivedEvent event) {
 
         dController = new DiscordController(event);
 
@@ -141,7 +140,7 @@ public class Add implements Command {
         }
     }
 
-    private void returnStatement(String guildId, Integer resultInt, MessageReceivedEvent event) {
+    private void returnStatement(String guildId, MessageReceivedEvent event) {
         if (resultInt > 0) {
             sendToChannel(event, "Added `" + this.option + "` " + this.argument);
             logger.info("Successfully added " + this.argument + " to the database for guildId: " +
@@ -163,7 +162,7 @@ public class Add implements Command {
             pStatement.setInt(2, platformId);
             pStatement.setString(3, this.argument);
             resultInt = pStatement.executeUpdate();
-            returnStatement(guildId, resultInt, event);
+            returnStatement(guildId, event);
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -180,7 +179,7 @@ public class Add implements Command {
             pStatement.setString(1, guildId);
             pStatement.setString(2, String.valueOf(dController.getMentionedUsersId()));
             resultInt = pStatement.executeUpdate();
-            returnStatement(guildId, resultInt, event);
+            returnStatement(guildId, event);
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -189,12 +188,12 @@ public class Add implements Command {
     }
 
     @Override
-    public void help(MessageReceivedEvent event) {
+    public final void help(MessageReceivedEvent event) {
         sendToChannel(event, Const.ADD_HELP);
     }
 
     @Override
-    public void executed(boolean success, MessageReceivedEvent event) {
+    public final void executed(boolean success, MessageReceivedEvent event) {
         new Tracker("Add");
 
     }

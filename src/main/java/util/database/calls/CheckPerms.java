@@ -20,16 +20,15 @@ public class CheckPerms {
 
     private Connection connection;
     private PreparedStatement pStatement;
-    private String query;
     private ResultSet result;
 
-    public boolean checkManager(MessageReceivedEvent event, String command) {
+    public final boolean checkManager(MessageReceivedEvent event, String command) {
         // Check if the called command requires a manager
         /*ArrayList<String> managerList = new ArrayList<>();
         Boolean isManager = false;
 
         try {
-            query = "SELECT `name` AS `command` FROM `command` ORDER BY `command` ASC";
+            String query = "SELECT `name` AS `command` FROM `command` ORDER BY `command` ASC";
             connection = Database.getInstance().getConnection();
             if (connection != null) {
                 pStatement = connection.prepareStatement(query);
@@ -49,7 +48,7 @@ public class CheckPerms {
         }
 
         try {
-            query = "SELECT `userId` FROM `manager` WHERE `guildId` = ?";
+            String query = "SELECT `userId` FROM `manager` WHERE `guildId` = ?";
             connection = Database.getInstance().getConnection();
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, event.getGuild().getId());
@@ -76,14 +75,14 @@ public class CheckPerms {
         return true;
     }
 
-    public boolean checkAdmins(MessageReceivedEvent event, String command) {
+    public final boolean checkAdmins(MessageReceivedEvent event, String command) {
         ArrayList<String> adminList = new ArrayList<>();
         Boolean isAdmin = false;
 
         adminList.add("announce");
 
         try {
-            query = "SELECT `userId` FROM `admins`";
+            String query = "SELECT `userId` FROM `admins`";
             connection = Database.getInstance().getConnection();
             if (connection != null) {
                 pStatement = connection.prepareStatement(query);

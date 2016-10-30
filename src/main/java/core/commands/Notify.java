@@ -25,7 +25,6 @@ public class Notify implements Command {
     private Connection connection;
     private PreparedStatement pStatement;
     private Integer result;
-    private String query;
 
     /**
      * Used to determine if appropriate arguments exist
@@ -35,15 +34,19 @@ public class Notify implements Command {
      * @return boolean true if criteria is met, false if criteria not met
      */
     @Override
-    public boolean called(String args, MessageReceivedEvent event) {
+    public final boolean called(String args, MessageReceivedEvent event) {
         if (args != null && !"".equals(args)) {
-            if ("none".equals(args) || "me".equals(args) || "here".equals(args) || "everyone".equals(args) || "help"
-                    .equals(args)) {
-                return true;
-            } else {
-                sendToChannel(event, Const.INCORRECT_ARGS);
-                logger.info(Const.INCORRECT_ARGS);
-                return false;
+            switch (args) {
+                case "none":
+                case "me":
+                case "here":
+                case "everyone":
+                case "help":
+                    return true;
+                default:
+                    sendToChannel(event, Const.INCORRECT_ARGS);
+                    logger.info(Const.INCORRECT_ARGS);
+                    return false;
             }
         } else {
             sendToChannel(event, Const.EMPTY_ARGS);
@@ -58,8 +61,7 @@ public class Notify implements Command {
      * @param event From JDA: MessageReceivedEvent
      */
     @Override
-    public void action(String args, MessageReceivedEvent event) {
-        System.out.println(args);
+    public final void action(String args, MessageReceivedEvent event) {
         switch (args.toLowerCase()) {
             case "none":
                 if (update(event, 0)) {
@@ -95,7 +97,7 @@ public class Notify implements Command {
      * @param event From JDA: MessageReceivedEvent
      */
     @Override
-    public void help(MessageReceivedEvent event) {
+    public final void help(MessageReceivedEvent event) {
         sendToChannel(event, Const.NOTIFY_HELP);
     }
 
@@ -106,7 +108,7 @@ public class Notify implements Command {
      * @param event   From JDA: MessageReceivedEvent
      */
     @Override
-    public void executed(boolean success, MessageReceivedEvent event) {
+    public final void executed(boolean success, MessageReceivedEvent event) {
         new Tracker("Notify");
     }
 
@@ -121,7 +123,7 @@ public class Notify implements Command {
             }
 
             connection = Database.getInstance().getConnection();
-            query = "UPDATE `notification` SET `userId` = ?, `level` = ? WHERE `guildId` = ?";
+            String query = "UPDATE `notification` SET `userId` = ?, `level` = ? WHERE `guildId` = ?";
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, uId);
             pStatement.setInt(2, level);

@@ -28,13 +28,15 @@ import java.sql.SQLException;
 public class Main {
 
     public static final CommandParser parser = new CommandParser();
-    public static JDA jda;
-    public static Database data;
+    private static JDA jda;
     private static Logger logger = LoggerFactory.getLogger(Main.class);
+
+    public static JDA getJDA() {
+        return jda;
+    }
 
     public static void main(String[] args) throws PropertyVetoException, IOException, SQLException {
         // Verify the database is there on startup
-        data = Database.getInstance();
         Database.checkDatabase();
 
         // Run mode~
@@ -42,8 +44,6 @@ public class Main {
 
         // Instantiate the JDA Object
         try {
-
-            // TODO: Double check JDA docs IRT buildBlocking() vs buildAsync()
             jda = new JDABuilder()
                     .setAudioEnabled(false) // Turn off JDA audio support
                     .setBulkDeleteSplittingEnabled(false)

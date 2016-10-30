@@ -29,7 +29,7 @@ public class Enable implements Command {
      * @return boolean true if criteria is met, false if criteria not met
      */
     @Override
-    public boolean called(String args, MessageReceivedEvent event) {
+    public final boolean called(String args, MessageReceivedEvent event) {
         return true;
     }
 
@@ -40,7 +40,7 @@ public class Enable implements Command {
      * @param event From JDA: MessageReceivedEvent
      */
     @Override
-    public void action(String args, MessageReceivedEvent event) {
+    public final void action(String args, MessageReceivedEvent event) {
         try {
             connection = Database.getInstance().getConnection();
             String query = "UPDATE `guild` SET `isActive` = 1 WHERE `guildId` = ?";
@@ -67,7 +67,7 @@ public class Enable implements Command {
      * @param event From JDA: MessageReceivedEvent
      */
     @Override
-    public void help(MessageReceivedEvent event) {
+    public final void help(MessageReceivedEvent event) {
         sendToChannel(event, Const.ENABLE_HELP);
     }
 
@@ -78,7 +78,7 @@ public class Enable implements Command {
      * @param event   From JDA: MessageReceivedEvent
      */
     @Override
-    public void executed(boolean success, MessageReceivedEvent event) {
+    public final void executed(boolean success, MessageReceivedEvent event) {
         new Tracker("Enable");
     }
 }

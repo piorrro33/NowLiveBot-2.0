@@ -14,6 +14,7 @@ import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
 
@@ -21,7 +22,7 @@ import static platform.discord.controller.DiscordController.sendToChannel;
  * @author keesh
  */
 public class CommandParser {
-    private static HashMap<String, Command> commands = new HashMap<>();
+    private static Map<String, Command> commands = new HashMap<>();
 
     private static CheckPerms perms = new CheckPerms();
 
@@ -48,7 +49,7 @@ public class CommandParser {
     /**
      * @return the core.commands
      */
-    public static HashMap<String, Command> getCommands() {
+    public static Map<String, Command> getCommands() {
 
         return commands;
     }
@@ -56,7 +57,7 @@ public class CommandParser {
     /**
      * @param aCommands the core.commands to set
      */
-    public static void setCommands(HashMap<String, Command> aCommands) {
+    public static void setCommands(Map<String, Command> aCommands) {
 
         commands = aCommands;
     }
@@ -98,7 +99,7 @@ public class CommandParser {
         }
     }
 
-    public CommandContainer parse(String raw, MessageReceivedEvent event) {
+    public final CommandContainer parse(String raw, MessageReceivedEvent event) {
         String beheaded = raw.replaceFirst(Const.COMMAND_PREFIX, "");  // Remove COMMAND_PREFIX
 
         String removeCommand;
@@ -106,11 +107,11 @@ public class CommandParser {
         String args = "";
 
         if (beheaded.contains(" ")) {
-            removeCommand = beheaded.substring(beheaded.indexOf(" ") + 1); // Remove Const.COMMAND {add opt opt}
+            removeCommand = beheaded.substring(beheaded.indexOf(' ') + 1); // Remove Const.COMMAND {add opt opt}
 
             if (removeCommand.contains(" ")) {
-                invoke = removeCommand.substring(0, removeCommand.indexOf(" ")); // Return just the command
-                args = removeCommand.substring(removeCommand.indexOf(" ") + 1);
+                invoke = removeCommand.substring(0, removeCommand.indexOf(' ')); // Return just the command
+                args = removeCommand.substring(removeCommand.indexOf(' ') + 1);
             } else {
                 // Send to commands with no args
                 invoke = removeCommand;
@@ -127,14 +128,14 @@ public class CommandParser {
 
     private static class CommandContainer {
 
-        public final String args;
-        public final MessageReceivedEvent event;
+        private final String args;
+        private final MessageReceivedEvent event;
         private final String invoke;
 
-        CommandContainer(String invoke, String args, MessageReceivedEvent event) {
-            this.invoke = invoke.toLowerCase(); // The Command (ensure the command is always passes as lowercase)
-            this.args = args; // Command Arguments
-            this.event = event; // The Event
+        CommandContainer(String passedInvoke, String passedArgs, MessageReceivedEvent passedEvent) {
+            this.invoke = passedInvoke.toLowerCase(); // The Command (ensure the command is always passes as lowercase)
+            this.args = passedArgs; // Command Arguments
+            this.event = passedEvent; // The Event
         }
     }
 }

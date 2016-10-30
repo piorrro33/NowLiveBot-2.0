@@ -20,7 +20,6 @@ public class CleanUp implements Command {
 
     private Connection connection;
     private PreparedStatement pStatement;
-    private String query;
     private Integer result;
 
 
@@ -32,7 +31,7 @@ public class CleanUp implements Command {
      * @return boolean true if criteria is met, false if criteria not met
      */
     @Override
-    public boolean called(String args, MessageReceivedEvent event) {
+    public final boolean called(String args, MessageReceivedEvent event) {
         if (args != null && !args.isEmpty()) {
             return "none".equals(args) || "edit".equals(args) || "delete".equals(args) || "help".equals(args);
         } else {
@@ -48,9 +47,9 @@ public class CleanUp implements Command {
      * @param event From JDA: MessageReceivedEvent
      */
     @Override
-    public void action(String args, MessageReceivedEvent event) {
+    public final void action(String args, MessageReceivedEvent event) {
         String returnStatement;
-
+        String query;
         switch (args) {
             case "none":
                 query = "UPDATE `guild` SET `cleanup` = 0 WHERE `guildId` = ?";
@@ -91,7 +90,7 @@ public class CleanUp implements Command {
      * @param event From JDA: MessageReceivedEvent
      */
     @Override
-    public void help(MessageReceivedEvent event) {
+    public final void help(MessageReceivedEvent event) {
         sendToChannel(event, Const.CLEANUP_HELP);
     }
 
@@ -102,7 +101,7 @@ public class CleanUp implements Command {
      * @param event   From JDA: MessageReceivedEvent
      */
     @Override
-    public void executed(boolean success, MessageReceivedEvent event) {
+    public final void executed(boolean success, MessageReceivedEvent event) {
         new Tracker("Cleanup");
     }
 }

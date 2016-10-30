@@ -32,8 +32,8 @@ public class PlatformListener implements EventListener {
     private static ResultSet ceResult;
     private static String query;
     private static ResultSet result;
-    private static JDA jda = null;
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    private JDA jda = null;
     private boolean running;
 
     public PlatformListener() {
@@ -77,8 +77,8 @@ public class PlatformListener implements EventListener {
         if (jda != null) {
             logger.info("Starting the executor tasks");
             executor.scheduleWithFixedDelay(this::checkLiveChannels, 0, 15, TimeUnit.SECONDS);
-            executor.scheduleWithFixedDelay(this::checkLiveGames, 0, 15, TimeUnit.SECONDS);
-            executor.scheduleWithFixedDelay(this::messageFactory, 0, 1, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::checkLiveGames, 5, 15, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::messageFactory, 10, 1, TimeUnit.SECONDS);
         } else {
             logger.info("We are way too early...");
         }

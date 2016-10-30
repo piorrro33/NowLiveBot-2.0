@@ -13,12 +13,12 @@ import static platform.discord.controller.DiscordController.sendToChannel;
 public class Help implements Command {
 
     @Override
-    public boolean called(String args, MessageReceivedEvent event) {
+    public final boolean called(String args, MessageReceivedEvent event) {
         return true;
     }
 
     @Override
-    public void action(String args, MessageReceivedEvent event) {
+    public final void action(String args, MessageReceivedEvent event) {
         // TODO: need to revamp how help is done bc 2,000 character limit
         StringBuilder message = new StringBuilder();
         message.append("Hey there, " + event.getAuthor().getUsername() + "!\n\n");
@@ -31,30 +31,16 @@ public class Help implements Command {
                 "of the commands listed may not be working just yet!  But their help is working.  Bear with the guy, " +
                 "he's working hard to get things right!\n\n\t~~" + Const.BOT_NAME);
         message.append("\n\n*P.S. I don't monitor this mailbox, so please don't send me any messages through PM*");
-        /*StringBuilder message = new StringBuilder();
-        Field[] c = Const.class.getDeclaredFields();
-        for (Field field : c) {
-            Const nullObject = new Const();
-            try {
-                Object value = field.get(nullObject);
-                if (value.toString().contains("USAGE")) {
-                    message.append(value.toString());
-                }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }*/
-        //event.getAuthor().getPrivateChannel().sendMessage(Const.HELP_PM + message);
         event.getAuthor().getPrivateChannel().sendMessage(String.valueOf(message));
     }
 
     @Override
-    public void help(MessageReceivedEvent event) {
+    public final void help(MessageReceivedEvent event) {
         sendToChannel(event, Const.TYPE_ONCE);
     }
 
     @Override
-    public void executed(boolean success, MessageReceivedEvent event) {
+    public final void executed(boolean success, MessageReceivedEvent event) {
         new Tracker("Help");
     }
 }

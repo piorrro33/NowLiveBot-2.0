@@ -18,25 +18,25 @@ import static platform.discord.controller.DiscordController.sendToChannel;
 public class Ping implements Command {
 
     @Override
-    public boolean called(String args, MessageReceivedEvent event) {
+    public final boolean called(String args, MessageReceivedEvent event) {
 
         return true;
     }
 
     @Override
-    public void action(String args, MessageReceivedEvent event) {
+    public final void action(String args, MessageReceivedEvent event) {
         // TODO: Add ping times to the bot and the database and finish working on checking status of pooled connections
         //Database.getInstance().checkPooledStatus();
         sendToChannel(event, Const.PING);
     }
 
     @Override
-    public void help(MessageReceivedEvent event) {
+    public final void help(MessageReceivedEvent event) {
         sendToChannel(event, Const.PING_HELP);
     }
 
     @Override
-    public void executed(boolean success, MessageReceivedEvent event) {
+    public final void executed(boolean success, MessageReceivedEvent event) {
         new Tracker("Ping");
     }
 

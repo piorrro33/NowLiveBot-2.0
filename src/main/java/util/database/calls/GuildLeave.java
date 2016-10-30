@@ -8,17 +8,24 @@ import util.database.Database;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
+import java.util.List;
+
+import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software by Ague Mort
  */
-public class GuildLeave {
+public final class GuildLeave {
     public static final Logger logger = LoggerFactory.getLogger(GuildLeave.class);
-    private static ArrayList<String> tableList = new ArrayList<>();
+    private static List<String> tableList = new ArrayList<>();
     private static Connection connection = null;
     private static PreparedStatement pStatement = null;
     private static Integer result = 0;
     private static String query;
+
+    private GuildLeave() {
+
+    }
 
     public static void leaveGuild(GuildLeaveEvent gEvent) {
         tableList.add("channel");
@@ -48,7 +55,7 @@ public class GuildLeave {
         } catch (Exception e) {
             logger.error("Failed to remove info from Guild " + gEvent.getGuild().getId() + ".");
         } finally {
-            Database.cleanUp(pStatement, connection);
+            cleanUp(pStatement, connection);
         }
 
     }

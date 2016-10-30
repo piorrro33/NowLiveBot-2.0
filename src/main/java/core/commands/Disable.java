@@ -16,7 +16,7 @@ import static util.database.Database.cleanUp;
 /**
  * @author Veteran Software by Ague Mort
  */
-public class Disable extends Enable implements Command {
+public class Disable implements Command {
     private Connection connection;
     private PreparedStatement pStatement;
     private Integer result;
@@ -32,9 +32,8 @@ public class Disable extends Enable implements Command {
 //    public boolean called(String args, MessageReceivedEvent event) {
 //        return super.called(args, event);
 //    }
-
     @Override
-    public boolean called(String args, MessageReceivedEvent event) {
+    public final boolean called(String args, MessageReceivedEvent event) {
         return true;
     }
 
@@ -45,12 +44,14 @@ public class Disable extends Enable implements Command {
      * @param event From JDA: MessageReceivedEvent
      */
     @Override
-    public void action(String args, MessageReceivedEvent event) {
+    public final void action(String args, MessageReceivedEvent event) {
         try {
             String query = "UPDATE `guild` SET `isActive` = 0 WHERE `guildId` = ?";
 
             connection = Database.getInstance().getConnection();
-            pStatement = connection.prepareStatement(query);
+            if (connection != null) {
+                pStatement = connection.prepareStatement(query);
+            }
             pStatement.setString(1, event.getGuild().getId());
             result = pStatement.executeUpdate();
 
@@ -73,7 +74,7 @@ public class Disable extends Enable implements Command {
      * @param event From JDA: MessageReceivedEvent
      */
     @Override
-    public void help(MessageReceivedEvent event) {
+    public final void help(MessageReceivedEvent event) {
         sendToChannel(event, Const.DISABLE_HELP);
     }
 
@@ -84,7 +85,7 @@ public class Disable extends Enable implements Command {
      * @param event   From JDA: MessageReceivedEvent
      */
     @Override
-    public void executed(boolean success, MessageReceivedEvent event) {
+    public final void executed(boolean success, MessageReceivedEvent event) {
         new Tracker("Disable");
     }
 }

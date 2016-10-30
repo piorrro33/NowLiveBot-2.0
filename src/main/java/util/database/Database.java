@@ -31,11 +31,10 @@ public class Database {
     private static final String MYSQL_USERNAME = prop.getProp().getProperty("mysql.username");
     private static final String MYSQL_PASSWORD = prop.getProp().getProperty("mysql.password");
     private static Database database;
-    private static ComboPooledDataSource cpds;
+    private static ComboPooledDataSource cpds = new ComboPooledDataSource();
 
     public Database() {
         // c3p0 connection pooling instantiation
-        cpds = new ComboPooledDataSource();
         try {
             cpds.setDriverClass(JDBC_DRIVER);
         } catch (PropertyVetoException e) {
@@ -109,7 +108,7 @@ public class Database {
         }
     }
 
-    public Connection getConnection() {
+    public final Connection getConnection() {
         try {
             return cpds.getConnection();
         } catch (SQLException e) {
@@ -118,7 +117,7 @@ public class Database {
         return null;
     }
 
-    public void checkPooledStatus() {
+    public final void checkPooledStatus() {
         try {
             Context initContext = new InitialContext();
             // TODO: Figure out the JNDI name of the database

@@ -1,13 +1,10 @@
 package core.commands;
 
 import core.Command;
-import core.Main;
 import net.dv8tion.jda.MessageBuilder;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import platform.discord.controller.DiscordController;
 import util.Const;
 import util.database.Database;
@@ -26,15 +23,49 @@ import static util.database.Database.cleanUp;
  */
 public class List implements Command {
 
-    private static final Logger logger = LoggerFactory.getLogger(Add.class);
-    public String help;
-    public String option;
-    public Connection connection;
-    public PreparedStatement pStatement;
-    public String query;
-    public ResultSet resultSet;
-    private DiscordController dController;
+    private static Connection connection;
+    private static PreparedStatement pStatement;
+    private static ResultSet resultSet;
+    private String option;
+    private String query;
+    private String guildId;
     private String[] options = new String[]{"channel", "game", "manager", "tag", "team", "help"};
+
+    private Message createNotificationMessage(MessageBuilder message, MessageReceivedEvent event) {
+        try {
+            connection = Database.getInstance().getConnection();
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            resultSet = pStatement.executeQuery();
+            if (resultSet.isBeforeFirst()) {
+                while (resultSet.next()) {
+                    message.appendString("\n\t");
+                    if (!option.equals("manager")) {
+                        message.appendString(resultSet.getString(1));
+                        switch (resultSet.getInt(2)) {
+                            case 1:
+                                message.appendString(" on Twitch.tv");
+                                break;
+                            default:
+                                break;
+                        }
+                    } else {
+                        String userId = resultSet.getString("userId");
+                        User user = event.getJDA().getUserById(userId);
+                        String userName = user.getUsername();
+                        message.appendString(userName);
+                    }
+                }
+            } else {
+                message.appendString("\n\tRuh Roh!  I can't seem to find anything here...");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(resultSet, pStatement, connection);
+        }
+        return message.build();
+    }
 
     /**
      * Used to determine if appropriate arguments exist
@@ -44,12 +75,12 @@ public class List implements Command {
      * @return boolean true if criteria is met, false if criteria not met
      */
     @Override
-    public boolean called(String args, MessageReceivedEvent event) {
+    public final boolean called(String args, MessageReceivedEvent event) {
         for (String s : this.options) { // Iterate through the available options for this command
             if (args != null && !args.isEmpty()) {
                 if (args.equals(s)) {
                     // Sets the class scope variables that will be used by action()
-                    this.option = s;
+                    option = s;
                     return true;
                 } else if ("help".equals(args)) {
                     // If the help argument is the only argument that is passed
@@ -72,17 +103,16 @@ public class List implements Command {
      * @param event From JDA: MessageReceivedEvent
      */
     @Override
-    public void action(String args, MessageReceivedEvent event) {
-        dController = new DiscordController(event);
+    public final void action(String args, MessageReceivedEvent event) {
+        DiscordController dController = new DiscordController(event);
 
-        String guildId = dController.getGuildId();
+        guildId = dController.getGuildId();
 
         MessageBuilder message = new MessageBuilder();
-        message.appendString("Heya!  Here's a list of " + this.option + "s that this Discord server is keeping " +
+        message.appendString("Heya!  Here's a list of " + option + "s that this Discord server is keeping " +
                 "tabs on:\n");
 
-        connection = Database.getInstance().getConnection();
-        switch (this.option) {
+        switch (option) {
             case "channel":
                 query = "SELECT `name`, `platformId` FROM `channel` WHERE `guildId` = ? ORDER BY " +
                         "`platformId` ASC, `name` ASC";
@@ -105,39 +135,8 @@ public class List implements Command {
             default:
                 break;
         }
-        try {
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            resultSet = pStatement.executeQuery();
-            if (resultSet.isBeforeFirst()) {
-                while (resultSet.next()) {
-                    message.appendString("\n\t");
-                    if (!this.option.equals("manager")) {
-                        message.appendString(resultSet.getString(1));
-                        switch (resultSet.getInt(2)) {
-                            case 1:
-                                message.appendString(" on Twitch.tv");
-                                break;
-                            default:
-                                break;
-                        }
-                    } else {
-                        String userId = resultSet.getString("userId");
-                        User user = event.getJDA().getUserById(userId);
-                        String userName = user.getUsername();
-                        message.appendString(userName);
-                    }
-                }
-            } else {
-                message.appendString("\n\tRuh Roh!  I can't seem to find anything here...");
-            }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(resultSet, pStatement, connection);
-        }
-        Message msg = event.getAuthor().getPrivateChannel().sendMessage(message.build());
+        event.getAuthor().getPrivateChannel().sendMessage(createNotificationMessage(message, event));
     }
 
     /**
@@ -146,7 +145,7 @@ public class List implements Command {
      * @param event From JDA: MessageReceivedEvent
      */
     @Override
-    public void help(MessageReceivedEvent event) {
+    public final void help(MessageReceivedEvent event) {
         sendToChannel(event, Const.LIST_HELP);
     }
 
@@ -157,7 +156,7 @@ public class List implements Command {
      * @param event   From JDA: MessageReceivedEvent
      */
     @Override
-    public void executed(boolean success, MessageReceivedEvent event) {
+    public final void executed(boolean success, MessageReceivedEvent event) {
         new Tracker("List");
     }
 }

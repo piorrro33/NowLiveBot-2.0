@@ -18,7 +18,7 @@ import static platform.discord.controller.DiscordController.sendToChannel;
 public class Invite implements Command {
 
     @Override
-    public boolean called(String args, MessageReceivedEvent event) {
+    public final boolean called(String args, MessageReceivedEvent event) {
 
         if (args != null && !args.isEmpty()) {
             if ("help".equals(args)) { // If the help argument is the only argument that is passed
@@ -32,19 +32,19 @@ public class Invite implements Command {
     }
 
     @Override
-    public void action(String args, MessageReceivedEvent event) {
+    public final void action(String args, MessageReceivedEvent event) {
         sendToChannel(event, "Nice try buster, but I'm not ready to be added to other servers.  Contact Ague for more" +
                 " infoz!!");
         //sendToChannel(event, Const.INVITE);
     }
 
     @Override
-    public void help(MessageReceivedEvent event) {
+    public final void help(MessageReceivedEvent event) {
         sendToChannel(event, Const.INVITE_HELP);
     }
 
     @Override
-    public void executed(boolean success, MessageReceivedEvent event) {
+    public final void executed(boolean success, MessageReceivedEvent event) {
         new Tracker("Invite");
     }
 }

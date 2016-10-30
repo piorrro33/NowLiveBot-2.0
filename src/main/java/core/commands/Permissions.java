@@ -16,7 +16,7 @@ public class Permissions implements Command {
      * @return boolean true if criteria is met, false if criteria not met
      */
     @Override
-    public boolean called(String args, MessageReceivedEvent event) {
+    public final boolean called(String args, MessageReceivedEvent event) {
         return true;
     }
 
@@ -27,7 +27,7 @@ public class Permissions implements Command {
      * @param event From JDA: MessageReceivedEvent
      */
     @Override
-    public void action(String args, MessageReceivedEvent event) {
+    public final void action(String args, MessageReceivedEvent event) {
 
     }
 
@@ -37,7 +37,7 @@ public class Permissions implements Command {
      * @param event From JDA: MessageReceivedEvent
      */
     @Override
-    public void help(MessageReceivedEvent event) {
+    public final void help(MessageReceivedEvent event) {
 
     }
 
@@ -48,7 +48,7 @@ public class Permissions implements Command {
      * @param event   From JDA: MessageReceivedEvent
      */
     @Override
-    public void executed(boolean success, MessageReceivedEvent event) {
+    public final void executed(boolean success, MessageReceivedEvent event) {
 
     }
 }

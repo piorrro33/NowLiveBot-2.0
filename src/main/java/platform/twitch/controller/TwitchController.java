@@ -30,21 +30,15 @@ public class TwitchController extends Twitch {
         this.setClientId(PropReader.getInstance().getProp().getProperty("twitch.client.id"));
     }
 
-    public synchronized void checkChannel(String channelName, String guildId, Integer platformId) {
+    public final synchronized void checkChannel(String channelName, String guildId, Integer platformId) {
 
         // Grab the stream info
         this.streams().get(channelName, new StreamResponseHandler() {
-
             @Override
             public void onSuccess(Stream stream) { // If the stream has been found
                 if (stream != null) { // check if the stream is online
-                    String channelName = stream.getChannel().getDisplayName();
-                    String streamTitle = stream.getChannel().getStatus();
-                    String gameName = stream.getGame();
-
-                    // Send the stream info to the stream queue
-                    //pController.setOnline(guildId, platformId, channelName, streamTitle, gameName, 1);
-                    pController.onlineStreamHandler(guildId, platformId, channelName, streamTitle, gameName);
+                    pController.onlineStreamHandler(guildId, platformId, stream.getChannel().getDisplayName(),
+                            stream.getChannel().getStatus(), stream.getGame()); // Send the stream info to the stream queue
                 } else {
                     pController.offlineStreamHandler(guildId, platformId, channelName);
                 }
@@ -60,7 +54,7 @@ public class TwitchController extends Twitch {
         });
     }
 
-    public synchronized void checkGame(String gameName, String guildId, Integer platformId) {
+    public final synchronized void checkGame(String gameName, String guildId, Integer platformId) {
 
         // Grab the stream info
         for (Integer offset = 0; offset <= 1000; offset += 100) {

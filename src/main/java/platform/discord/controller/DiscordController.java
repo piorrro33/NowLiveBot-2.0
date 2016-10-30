@@ -47,7 +47,7 @@ public class DiscordController {
         event.getMessage().getChannel().sendMessage(message);
     }
 
-    public static void sendToPm(MessageReceivedEvent event, String message) {
+    public static void sendToPm(MessageReceivedEvent event, Message message) {
         event.getAuthor().getPrivateChannel().sendMessage(message);
         logger.info("Private message sent to " + event.getAuthor().getUsername());
     }
@@ -86,19 +86,19 @@ public class DiscordController {
                                     messageId = getMessageId(guildId, platformId, channelName);
                                     logger.info("messageId = " + messageId);
 
-                                    String oldMessage = Main.jda.getGuildById(guildId).getJDA().getTextChannelById
+                                    String oldMessage = Main.getJDA().getGuildById(guildId).getJDA().getTextChannelById
                                             (channelId).getMessageById(messageId).getRawContent();
                                     logger.info("Old message was: " + oldMessage);
 
                                     String newMessage = oldMessage.replaceFirst("NOW LIVE", "OFFLINE");
 
-                                    Main.jda.getGuildById(guildId).getJDA().getTextChannelById(channelId)
+                                    Main.getJDA().getGuildById(guildId).getJDA().getTextChannelById(channelId)
                                             .getMessageById(messageId).updateMessageAsync(newMessage, null);
 
                                     break;
                                 case 2:
                                     messageId = getMessageId(guildId, platformId, channelName);
-                                    Main.jda.getGuildById(guildId).getJDA().getTextChannelById(channelId)
+                                    Main.getJDA().getGuildById(guildId).getJDA().getTextChannelById(channelId)
                                             .getMessageById(messageId).deleteMessage();
                                     break;
                                 default:
@@ -137,7 +137,7 @@ public class DiscordController {
             checkEmoji(guildId, message);
             //message.build();
 
-            Message msg = Main.jda.getTextChannelById(channelId).sendMessage(message.build());
+            Message msg = Main.getJDA().getTextChannelById(channelId).sendMessage(message.build());
             // Grab the message ID
             String msgId = msg.getId();
 
@@ -233,7 +233,7 @@ public class DiscordController {
         try {
             if (connection != null) {
                 connection = Database.getInstance().getConnection();
-                String query = "SELECT `level`, `userId` FROM `notification` WHERE `guildId` = ?";
+                query = "SELECT `level`, `userId` FROM `notification` WHERE `guildId` = ?";
                 pStatement = connection.prepareStatement(query);
                 pStatement.setString(1, guildId);
                 level = pStatement.executeQuery();
@@ -242,7 +242,7 @@ public class DiscordController {
                     switch (level.getInt("level")) {
                         case 1: // User wants a @User mention
                             String userId = level.getString("userId");
-                            User user = Main.jda.getUserById(userId);
+                            User user = Main.getJDA().getUserById(userId);
                             message.appendString("Hey ");
                             message.appendMention(user);
                             message.appendString(",  ");
@@ -279,11 +279,11 @@ public class DiscordController {
         }
     }
 
-    public String getMentionedUsersId() {
+    public final String getMentionedUsersId() {
         return this.mentionedUsersId;
     }
 
-    public String getGuildId() {
+    public final String getGuildId() {
         return this.guildIdMessageEvent;
     }
 }

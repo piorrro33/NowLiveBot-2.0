@@ -7,7 +7,6 @@ package platform.discord.listener;
 
 import core.CommandParser;
 import core.Main;
-import net.dv8tion.jda.events.guild.GuildAvailableEvent;
 import net.dv8tion.jda.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
@@ -33,7 +32,7 @@ public class DiscordListener extends ListenerAdapter {
      * @param event JDA MessageReceivedEvent
      */
     @Override
-    public void onMessageReceived(MessageReceivedEvent event) {
+    public final void onMessageReceived(MessageReceivedEvent event) {
         // Log message to console
         if (event.isPrivate()) {
             // PM's are not Guild specific, so don't request Guild and/or channel specific info
@@ -45,10 +44,13 @@ public class DiscordListener extends ListenerAdapter {
                 event.getAuthor().getPrivateChannel().sendMessage(Const.PRIVATE_MESSAGE_REPLY);
             }
         } else {
-            System.out.printf("[%s][%s][%s] : %s%n",
+            System.out.printf("[%s:%s][%s:%s][%s:%s] : %s%n",
                     event.getGuild().getName(),
+                    event.getGuild().getId(),
                     event.getTextChannel().getName(),
+                    event.getTextChannel().getId(),
                     event.getAuthor().getUsername(),
+                    event.getAuthor().getId(),
                     event.getMessage().getContent());
         }
 
@@ -66,24 +68,21 @@ public class DiscordListener extends ListenerAdapter {
     }
 
     @Override
-    public void onGuildJoin(GuildJoinEvent event) {
+    public final void onGuildJoin(GuildJoinEvent event) {
         GuildJoin.joinGuild(event);
     }
 
     @Override
-    public void onGuildLeave(GuildLeaveEvent event) {
+    public final void onGuildLeave(GuildLeaveEvent event) {
         GuildLeave.leaveGuild(event);
         logger.info("NowLive bot has been dismissed from: " + event.getGuild().getName() + "(Id: " + event.getGuild
                 ().getId() + ")");
     }
 
-    private void commandFilter(String cntMsg, MessageReceivedEvent event) throws PropertyVetoException, IOException, SQLException {
+    private void commandFilter(String cntMsg, MessageReceivedEvent event)
+            throws PropertyVetoException, IOException, SQLException {
         if (cntMsg.startsWith("ping", 1) || cntMsg.startsWith(Const.COMMAND, 1)) {
             CommandParser.handleCommand(Main.parser.parse(cntMsg, event));
         }
-    }
-
-    public void onGuildAvailble(GuildAvailableEvent event) {
-        //DiscordController.
     }
 }

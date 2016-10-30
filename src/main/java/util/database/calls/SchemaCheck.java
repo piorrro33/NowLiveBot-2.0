@@ -93,6 +93,8 @@ public class SchemaCheck extends Database {
             if (pStatement.execute("USE `" + MYSQL_SCHEMA + "`")) {
                 logger.info("Now using schema: " + MYSQL_SCHEMA);
             }
+        } catch (SQLException e) {
+            logger.error("SQLException error.  No clue what.", e);
         } finally {
             cleanUp(pStatement, connection);
         }

@@ -13,14 +13,17 @@ import static util.database.Database.cleanUp;
 /**
  * @author Veteran Software by Ague Mort
  */
-public class Tracker {
+public final class Tracker {
     public static final Logger logger = LoggerFactory.getLogger(Tracker.class);
-    private Connection connection;
-    private PreparedStatement pStatement;
-    private Integer result;
+    private static Connection connection;
+    private static PreparedStatement pStatement;
 
     public Tracker(String command) {
         super();
+        doStuff(command);
+    }
+
+    private static void doStuff(String command) {
         try {
             String query = "INSERT INTO `commandtracker` (`commandName`, `commandCount`) VALUES (?, 1) " +
                     "ON DUPLICATE KEY UPDATE `commandCount` = `commandCount` + 1";
@@ -28,7 +31,7 @@ public class Tracker {
             if (connection != null) {
                 pStatement = connection.prepareStatement(query);
                 pStatement.setString(1, command);
-                result = pStatement.executeUpdate();
+                pStatement.executeUpdate();
             }
         } catch (SQLException e) {
             logger.warn("There was a problem updating the count for commands in my database.");

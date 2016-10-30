@@ -16,7 +16,7 @@ import java.util.Properties;
 /**
  * @author keesh
  */
-public class PropReader {
+public final class PropReader {
 
     private static final String fileName = "./config.properties";
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(PropReader.class);
@@ -58,7 +58,7 @@ public class PropReader {
         return prop;
     }
 
-    public void setProp(Properties prop) {
-        this.prop = prop;
+    public void setProp(Properties property) {
+        this.prop = property;
     }
 }

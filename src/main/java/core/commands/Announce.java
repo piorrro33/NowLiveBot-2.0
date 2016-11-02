@@ -43,6 +43,7 @@ public class Announce implements Command {
             connection = Database.getInstance().getConnection();
             String query = "SELECT `guildId` FROM `guild` ORDER BY `guildId` ASC";
             pStatement = connection.prepareStatement(query);
+
             result = pStatement.executeQuery();
             while (result.next()) {
                 event.getJDA().getGuildById(result.getString("guildId")).getPublicChannel()

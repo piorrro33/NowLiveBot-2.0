@@ -29,11 +29,27 @@ import static util.database.Database.cleanUp;
 public class DiscordController {
 
     private static final Logger logger = LoggerFactory.getLogger(DiscordController.class);
-    private static Connection connection;
+    private static Connection nlConnection;
+    private static Connection mhConnection;
+    private static Connection asConnection;
+    private static Connection ceConnection;
+    private static Connection gciConnection;
+    private static Connection gplConnection;
+    private static Connection ccConnection;
+    private static PreparedStatement nlStatement;
+    private static PreparedStatement mhStatement;
+    private static PreparedStatement asStatement;
+    private static PreparedStatement ceStatement;
+    private static PreparedStatement gciStatement;
+    private static PreparedStatement gplStatement;
     private static PreparedStatement pStatement;
     private static String query;
+    private static ResultSet gplResult;
+    private static ResultSet mhResult;
+    private static ResultSet ceResult;
+    private static ResultSet gciResult;
+    private static ResultSet nlResult;
     private static ResultSet result;
-    private static ResultSet level;
     private String guildIdMessageEvent;
     private String mentionedUsersId;
 
@@ -70,25 +86,23 @@ public class DiscordController {
                 if (checkStreamTable(guildId, platformId, channelName)) {
                     logger.info("Stream is offline.");
                     try {
-                        connection = Database.getInstance().getConnection();
+                        mhConnection = Database.getInstance().getConnection();
                         query = "SELECT `cleanup`, `channelId` FROM `guild` WHERE `guildId` = ?";
-                        pStatement = connection.prepareStatement(query);
-                        pStatement.setString(1, guildId);
-                        result = pStatement.executeQuery();
 
-                        while (result.next()) {
-                            logger.info("Got the channelID and cleanup code");
-                            String channelId = result.getString("channelId");
+                        mhStatement = mhConnection.prepareStatement(query);
+
+                        mhStatement.setString(1, guildId);
+                        mhResult = mhStatement.executeQuery();
+
+                        while (mhResult.next()) {
+                            String channelId = mhResult.getString("channelId");
                             String messageId;
-                            switch (result.getInt("cleanup")) {
+                            switch (mhResult.getInt("cleanup")) {
                                 case 1:
-                                    logger.info("This guild is set to edit announcements");
                                     messageId = getMessageId(guildId, platformId, channelName);
-                                    logger.info("messageId = " + messageId);
 
                                     String oldMessage = Main.getJDA().getGuildById(guildId).getJDA().getTextChannelById
                                             (channelId).getMessageById(messageId).getRawContent();
-                                    logger.info("Old message was: " + oldMessage);
 
                                     String newMessage = oldMessage.replaceFirst("NOW LIVE", "OFFLINE");
 
@@ -108,14 +122,13 @@ public class DiscordController {
                     } catch (SQLException e) {
                         e.printStackTrace();
                     } finally {
-                        cleanUp(result, pStatement, connection);
+                        cleanUp(mhResult, mhStatement, mhConnection);
                     }
                     logger.info("Deleting offline stream from the Stream table.");
                     deleteFromStream(guildId, platformId, channelName);
                 }
                 logger.info("Deleting offline stream from the Queue table.");
                 deleteFromQueue(guildId, platformId, channelName);
-
                 break;
         }
     }
@@ -129,144 +142,169 @@ public class DiscordController {
 
             MessageBuilder message = new MessageBuilder();
 
-            message.appendString("***NOW LIVE!***\n\t");
+            message.appendString("***NOW LIVE!***\n");
+
             notifyLevel(guildId, message);
-            message.appendString("**" + channelName + "** is playing some **" + gameName + "**!\n");
-            message.appendString("\t\t*" + streamTitle + "*\n");
-            message.appendString("\t\tWatch " + channelName + " here: " + getPlatformLink(platformId) + channelName);
+
+            if (checkCompact(guildId).equals(1)) {
+                message.appendString("**" + channelName + "** is playing some **" + gameName + "** at ");
+                message.appendString("<" + getPlatformLink(platformId) + channelName + ">");
+            } else {
+                message.appendString("\t**" + channelName + "** is playing some **" + gameName + "**!\n");
+                message.appendString("\t\t*" + streamTitle + "*\n");
+                message.appendString("\t\tWatch " + channelName + " here: " + getPlatformLink(platformId) + channelName);
+            }
             checkEmoji(guildId, message);
-            //message.build();
 
             Message msg = Main.getJDA().getTextChannelById(channelId).sendMessage(message.build());
+
             // Grab the message ID
             String msgId = msg.getId();
 
+            asConnection = Database.getInstance().getConnection();
             query = "UPDATE `stream` SET `messageId` = ? WHERE `guildId` = ? AND `platformId` = ? AND `channelName` =" +
                     " ?";
-            connection = Database.getInstance().getConnection();
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, msgId);
-            pStatement.setString(2, guildId);
-            pStatement.setInt(3, platformId);
-            pStatement.setString(4, channelName);
-            pStatement.executeUpdate();
+            asStatement = asConnection.prepareStatement(query);
+            asStatement.setString(1, msgId);
+            asStatement.setString(2, guildId);
+            asStatement.setInt(3, platformId);
+            asStatement.setString(4, channelName);
+            asStatement.executeUpdate();
             new Tracker("Streams Announced");
         } catch (SQLException e) {
             logger.error("There was an SQL Exception", e);
         } finally {
-            cleanUp(pStatement, connection);
+            cleanUp(asStatement, asConnection);
         }
+    }
+
+    private static synchronized Integer checkCompact (String guildId) {
+        try {
+            ccConnection = Database.getInstance().getConnection();
+            query = "SELECT `isCompact` FROM `guild` WHERE `guildId` = ?";
+            pStatement = ccConnection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            result = pStatement.executeQuery();
+
+            while (result.next()) {
+                return result.getInt("isCompact");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, ccConnection);
+        }
+        return -1;
     }
 
     private static synchronized MessageBuilder checkEmoji(String guildId, MessageBuilder message) {
         try {
-            connection = Database.getInstance().getConnection();
+            ceConnection = Database.getInstance().getConnection();
             query = "SELECT `emoji` FROM `guild` WHERE `guildId` = ?";
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            result = pStatement.executeQuery();
+            ceStatement = ceConnection.prepareStatement(query);
+            ceStatement.setString(1, guildId);
+            ceResult = ceStatement.executeQuery();
 
-            // Checking to see how emoji are passed from Discord
-            /*for(Emote emote : Main.jda.getGuildById(guildId).getEmotes()) {
-                System.out.println(emote);
-            }*/
-
-            while (result.next()) {
-                if (result.getString("emoji") != null) {
+            while (ceResult.next()) {
+                if (ceResult.getString("emoji") != null) {
                     message.appendString(" ");
-                    message.appendString(result.getString("emoji"));
+                    message.appendString(ceResult.getString("emoji"));
                     message.appendString(" ");
-                    message.appendString(result.getString("emoji"));
+                    message.appendString(ceResult.getString("emoji"));
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(result, pStatement, connection);
+            cleanUp(ceResult, ceStatement, ceConnection);
         }
         message.appendString("");
         return message;
     }
 
     private static synchronized String getChannelId(String guildId) {
-        query = "SELECT `channelId` FROM `guild` WHERE `guildId` = ?";
         try {
-            connection = Database.getInstance().getConnection();
-            if (connection != null) {
-                pStatement = connection.prepareStatement(query);
-                pStatement.setString(1, guildId);
+            gciConnection = Database.getInstance().getConnection();
+            query = "SELECT `channelId` FROM `guild` WHERE `guildId` = ?";
+            gciStatement = gciConnection.prepareStatement(query);
+            gciStatement.setString(1, guildId);
 
-                result = pStatement.executeQuery();
-                while (result.next()) {
-                    return result.getString("channelId");
+            gciResult = gciStatement.executeQuery();
+            while (gciResult.next()) {
+                String channelId = gciResult.getString("channelId");
+                if (!"".equals(channelId)) {
+                    return channelId;
                 }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(result, pStatement, connection);
+            cleanUp(gciResult, gciStatement, gciConnection);
         }
         return "";
     }
 
     private static synchronized String getPlatformLink(Integer platformId) {
-        query = "SELECT `baseLink` FROM `platform` WHERE `id` = ?";
         try {
-            connection = Database.getInstance().getConnection();
-            if (connection != null) {
-                pStatement = connection.prepareStatement(query);
-                pStatement.setInt(1, platformId);
-                result = pStatement.executeQuery();
-                while (result.next()) {
-                    return result.getString("baseLink");
+            gplConnection = Database.getInstance().getConnection();
+            query = "SELECT `baseLink` FROM `platform` WHERE `id` = ?";
+            gplStatement = gplConnection.prepareStatement(query);
+            gplStatement.setInt(1, platformId);
+            gplResult = gplStatement.executeQuery();
+            while (gplResult.next()) {
+                String baseLink = gplResult.getString("baseLink");
+                if (!"".equals(baseLink)) {
+                    return baseLink;
                 }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(result, pStatement, connection);
+            cleanUp(gplResult, gplStatement, gplConnection);
         }
         return "";
     }
 
     private static synchronized MessageBuilder notifyLevel(String guildId, MessageBuilder message) {
         try {
-            if (connection != null) {
-                connection = Database.getInstance().getConnection();
-                query = "SELECT `level`, `userId` FROM `notification` WHERE `guildId` = ?";
-                pStatement = connection.prepareStatement(query);
-                pStatement.setString(1, guildId);
-                level = pStatement.executeQuery();
+            nlConnection = Database.getInstance().getConnection();
+            query = "SELECT `level`, `userId` FROM `notification` WHERE `guildId` = ?";
+            nlStatement = nlConnection.prepareStatement(query);
 
-                while (level.next()) {
-                    switch (level.getInt("level")) {
-                        case 1: // User wants a @User mention
-                            String userId = level.getString("userId");
-                            User user = Main.getJDA().getUserById(userId);
-                            message.appendString("Hey ");
-                            message.appendMention(user);
-                            message.appendString(",  ");
-                            break;
-                        case 2: // User wants @here mention
-                            message.appendString("Hey ");
-                            message.appendHereMention();
-                            message.appendString(",  ");
-                            break;
-                        case 3: // User wants @everyone mention
-                            message.appendString("Hey ");
-                            message.appendEveryoneMention();
-                            message.appendString(",  ");
-                            break;
-                        default: // No mention
-                            message.appendString("");
-                            break;
-                    }
+            nlStatement.setString(1, guildId);
+            nlResult = nlStatement.executeQuery();
+
+            while (nlResult.next()) {
+                switch (nlResult.getInt("level")) {
+                    case 1: // User wants a @User mention
+                        String userId = nlResult.getString("userId");
+                        User user = Main.getJDA().getUserById(userId);
+                        message.appendString("Hey ");
+                        message.appendMention(user);
+                        message.appendString(",  ");
+                        break;
+                    case 2: // User wants @here mention
+                        message.appendString("Hey ");
+                        message.appendHereMention();
+                        message.appendString(",  ");
+                        break;
+                    case 3: // User wants @everyone mention
+                        message.appendString("Hey ");
+                        message.appendEveryoneMention();
+                        message.appendString(",  ");
+                        break;
+                    default: // No mention
+                        message.appendString("");
+                        break;
                 }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(level, pStatement, connection);
+            cleanUp(nlResult, nlStatement, nlConnection);
         }
         return message;
     }

@@ -55,6 +55,7 @@ public class Move implements Command {
                     connection = Database.getInstance().getConnection();
                     pStatement = connection.prepareStatement(query);
 
+
                     pStatement.setString(1, textChannel.getId());
                     pStatement.setString(2, event.getGuild().getId());
 

@@ -69,6 +69,7 @@ public class CleanUp implements Command {
         try {
             connection = Database.getInstance().getConnection();
             pStatement = connection.prepareStatement(query);
+
             pStatement.setString(1, event.getGuild().getId());
             result = pStatement.executeUpdate();
 

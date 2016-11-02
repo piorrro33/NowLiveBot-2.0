@@ -83,7 +83,9 @@ public class Remove implements Command {
                             try {
                                 connection = Database.getInstance().getConnection();
                                 query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `userId` = ?";
+
                                 pStatement = connection.prepareStatement(query);
+
                                 pStatement.setString(1, guildId);
                                 pStatement.setString(2, dController.getMentionedUsersId());
                                 resultInt = pStatement.executeUpdate();
@@ -103,9 +105,8 @@ public class Remove implements Command {
                     query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
                     try {
                         connection = Database.getInstance().getConnection();
-                        if (connection != null) {
-                            pStatement = connection.prepareStatement(query);
-                        }
+                        pStatement = connection.prepareStatement(query);
+
                         pStatement.setString(1, guildId);
                         pStatement.setInt(2, platformId);
                         pStatement.setString(3, this.argument);
@@ -122,9 +123,8 @@ public class Remove implements Command {
                                 connection = Database.getInstance().getConnection();
                                 query = "DELETE FROM `queue` WHERE `guildId` = ? AND `platformId` = ? AND " +
                                         "`channelName` = ?";
-                                if (connection != null) {
-                                    pStatement = connection.prepareStatement(query);
-                                }
+                                pStatement = connection.prepareStatement(query);
+
                                 pStatement.setString(1, guildId);
                                 pStatement.setInt(2, platformId);
                                 pStatement.setString(3, this.argument);
@@ -142,9 +142,8 @@ public class Remove implements Command {
                                 connection = Database.getInstance().getConnection();
                                 query = "DELETE FROM `queue` WHERE `guildId` = ? AND `platformId` = ? AND " +
                                         "`gameName` = ?";
-                                if (connection != null) {
-                                    pStatement = connection.prepareStatement(query);
-                                }
+                                pStatement = connection.prepareStatement(query);
+
                                 pStatement.setString(1, guildId);
                                 pStatement.setInt(2, platformId);
                                 pStatement.setString(3, this.argument);
@@ -192,9 +191,8 @@ public class Remove implements Command {
         try {
             connection = Database.getInstance().getConnection();
             query = "SELECT COUNT(*) AS `count` FROM `manager` WHERE `guildId` = ?";
-            if (connection != null) {
-                pStatement = connection.prepareStatement(query);
-            }
+            pStatement = connection.prepareStatement(query);
+
             pStatement.setString(1, guildId);
             logger.info("" + pStatement);
             result = pStatement.executeQuery();

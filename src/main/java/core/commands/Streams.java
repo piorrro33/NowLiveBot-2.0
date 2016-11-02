@@ -48,7 +48,9 @@ public class Streams implements Command {
         try {
             connection = Database.getInstance().getConnection();
             String query = "SELECT COUNT(*) as `rowCount` FROM `stream` WHERE `guildId` = ?";
+
             pStatement = connection.prepareStatement(query);
+
             pStatement.setString(1, event.getGuild().getId());
             result = pStatement.executeQuery();
 
@@ -69,7 +71,9 @@ public class Streams implements Command {
                     "INNER JOIN `platform` " +
                     "ON `stream`.`platformId` = `platform`.`id` " +
                     "WHERE `stream`.`guildId` = ? ORDER BY `stream`.`channelName`";
+            connection = Database.getInstance().getConnection();
             pStatement = connection.prepareStatement(query);
+
             pStatement.setString(1, event.getGuild().getId());
             result = pStatement.executeQuery();
 

@@ -44,12 +44,12 @@ public class Database {
         cpds.setUser(MYSQL_USERNAME);
         cpds.setPassword(MYSQL_PASSWORD);
         // Optional c3p0 settings below
-        cpds.setInitialPoolSize(3);
+        cpds.setInitialPoolSize(2);
         cpds.setMaxPoolSize(20);
-        cpds.setMaxIdleTime(5);
+        cpds.setMaxIdleTime(10);
         cpds.setMinPoolSize(2);
-        cpds.setAcquireIncrement(1);
-        cpds.setNumHelperThreads(5);
+        cpds.setAcquireIncrement(3);
+        cpds.setNumHelperThreads(2);
         cpds.setMaxStatements(0);
     }
 

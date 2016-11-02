@@ -30,13 +30,11 @@ public class CheckPerms {
         try {
             String query = "SELECT `name` AS `command` FROM `command` ORDER BY `command` ASC";
             connection = Database.getInstance().getConnection();
-            if (connection != null) {
                 pStatement = connection.prepareStatement(query);
                 result = pStatement.executeQuery();
                 while (result.next()) {
                     managerList.add(result.getString("command"));
                 }
-            }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -84,23 +82,21 @@ public class CheckPerms {
         try {
             String query = "SELECT `userId` FROM `admins`";
             connection = Database.getInstance().getConnection();
-            if (connection != null) {
-                pStatement = connection.prepareStatement(query);
-                result = pStatement.executeQuery();
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
 
-                // Iterate through the result set looking to see if the author is a bot admin
-                String userId = event.getAuthor().getId();
-                while (result.next()) {
-                    if (userId.equals(result.getString("userId"))) {
-                        isAdmin = true;
-                    }
+            // Iterate through the result set looking to see if the author is a bot admin
+            String userId = event.getAuthor().getId();
+            while (result.next()) {
+                if (userId.equals(result.getString("userId"))) {
+                    isAdmin = true;
                 }
-                if (!adminList.contains(command) && isAdmin.equals(true)) {
-                    sendToChannel(event, Const.ADMIN_OVERRIDE);
-                    return true;
-                } else if (adminList.contains(command) && isAdmin.equals(true)) {
-                    return true;
-                }
+            }
+            if (!adminList.contains(command) && isAdmin.equals(true)) {
+                sendToChannel(event, Const.ADMIN_OVERRIDE);
+                return true;
+            } else if (adminList.contains(command) && isAdmin.equals(true)) {
+                return true;
             }
         } catch (SQLException e) {
             e.printStackTrace();

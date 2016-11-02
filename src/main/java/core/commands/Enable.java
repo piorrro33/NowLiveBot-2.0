@@ -45,6 +45,7 @@ public class Enable implements Command {
             connection = Database.getInstance().getConnection();
             String query = "UPDATE `guild` SET `isActive` = 1 WHERE `guildId` = ?";
             pStatement = connection.prepareStatement(query);
+
             pStatement.setString(1, event.getGuild().getId());
             result = pStatement.executeUpdate();
 

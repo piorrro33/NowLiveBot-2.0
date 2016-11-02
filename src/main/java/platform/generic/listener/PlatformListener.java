@@ -27,17 +27,24 @@ import static util.database.Database.cleanUp;
  */
 public class PlatformListener implements EventListener {
     private static Logger logger = LoggerFactory.getLogger(PlatformListener.class);
-    private static Connection connection;
-    private static PreparedStatement pStatement;
+    private static Connection mfConnection;
+    private static Connection ceConnection;
+    private static Connection clcConnection;
+    private static Connection clgConnection;
+    private static PreparedStatement mfStatement;
+    private static PreparedStatement ceStatement;
+    private static PreparedStatement clcStatement;
+    private static PreparedStatement clgStatement;
     private static ResultSet ceResult;
+    private static ResultSet clcResult;
+    private static ResultSet clgResult;
+    private static ResultSet mfResult;
     private static String query;
-    private static ResultSet result;
-    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
     private JDA jda = null;
     private boolean running;
 
     public PlatformListener() {
-
 
         try {
             executor.scheduleWithFixedDelay(this::checkLiveChannels, 5, 30, TimeUnit.SECONDS);
@@ -64,12 +71,27 @@ public class PlatformListener implements EventListener {
         if (event instanceof DisconnectEvent) {
             logger.info("Got disconnected!!");
             if (!executor.isShutdown() || !executor.isTerminated()) {
-                executor.shutdownNow();
-                jda = null;
-                running = false;
+                try {
+                    System.out.println("attempt to shutdown executor");
+                    executor.shutdown();
+                    executor.awaitTermination(5, TimeUnit.SECONDS);
+                    jda = null;
+                    running = false;
+                }
+                catch (InterruptedException e) {
+                    System.err.println("tasks interrupted");
+                }
+                finally {
+                    if (!executor.isTerminated()) {
+                        System.err.println("cancel non-finished tasks");
+                    }
+                    executor.shutdownNow();
+                    System.out.println("shutdown finished");
+                }
+                executor.shutdown();
+
             }
         }
-
     }
 
     private void scheduleTasks() {
@@ -85,13 +107,13 @@ public class PlatformListener implements EventListener {
     }
 
     private synchronized boolean checkEnabled(String guildId) {
-
         try {
-            connection = Database.getInstance().getConnection();
+            ceConnection = Database.getInstance().getConnection();
             query = "SELECT `isActive` FROM `guild` WHERE `guildId` = ?";
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            ceResult = pStatement.executeQuery();
+            ceStatement = ceConnection.prepareStatement(query);
+
+            ceStatement.setString(1, guildId);
+            ceResult = ceStatement.executeQuery();
             while (ceResult.next()) {
                 if (ceResult.getInt("isActive") == 1) {
                     return true;
@@ -100,7 +122,7 @@ public class PlatformListener implements EventListener {
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(ceResult, pStatement, connection);
+            cleanUp(ceResult, ceStatement, ceConnection);
         }
         return false;
     }
@@ -110,37 +132,33 @@ public class PlatformListener implements EventListener {
         logger.info("Checking for live channels...  " + timeNow);
 
         try {
+            clcConnection = Database.getInstance().getConnection();
             query = "SELECT `guildId`, `name`, `platformId` FROM `channel` ORDER BY `guildId` ASC";
+            clcStatement = clcConnection.prepareStatement(query);
 
-            connection = Database.getInstance().getConnection();
-            if (connection != null) {
-                pStatement = connection.prepareStatement(query);
+            clcResult = clcStatement.executeQuery();
+            TwitchController twitch = new TwitchController();
 
-                result = pStatement.executeQuery();
-                TwitchController twitch = new TwitchController();
+            while (clcResult.next()) {
+                if (checkEnabled(clcResult.getString("guildId"))) {
+                    switch (clcResult.getInt("platformId")) {
+                        case 1:
+                            // Send info to Twitch Controller
+                            twitch.checkChannel(clcResult.getString("name"), clcResult.getString("guildId"), clcResult.getInt
+                                    ("platformId"));
+                            break;
 
-                while (result.next()) {
-                    if (checkEnabled(result.getString("guildId"))) {
-                        switch (result.getInt("platformId")) {
-                            case 1:
-                                // Send info to Twitch Controller
-                                twitch.checkChannel(result.getString("name"), result.getString("guildId"), result.getInt
-                                        ("platformId"));
-                                break;
-
-                            default:
-                                break;
-                        }
-                    } else {
-                        logger.info("Guild " + result.getString("guildId") + " is not enabled.  Going on to the next " +
-                                "guild.");
+                        default:
+                            break;
                     }
+                } else {
+                    logger.info("Guild " + clcResult.getString("guildId") + " is not enabled.");
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(result, pStatement, connection);
+            cleanUp(clcResult, clcStatement, clcConnection);
         }
     }
 
@@ -149,32 +167,28 @@ public class PlatformListener implements EventListener {
         logger.info("Checking for live games... " + timeNow);
         try {
             query = "SELECT * FROM `game` ORDER BY `guildId` ASC";
-            connection = Database.getInstance().getConnection();
-            if (connection != null) {
-                pStatement = connection.prepareStatement(query);
-                result = pStatement.executeQuery();
+            clgConnection = Database.getInstance().getConnection();
+            clgStatement = clgConnection.prepareStatement(query);
+            clgResult = clgStatement.executeQuery();
 
-                while (result.next()) {
-                    if (checkEnabled(result.getString("guildId"))) {
-                        switch (result.getInt("platformId")) {
-                            case 1:
-                                // Send info to Twitch Controller
-                                TwitchController twitch = new TwitchController();
-                                twitch.checkGame(result.getString("name"), result.getString("guildId"), result.getInt
-                                        ("platformId"));
-                                break;
-
-                            default:
-                                break;
-                        }
+            while (clgResult.next()) {
+                if (checkEnabled(clgResult.getString("guildId"))) {
+                    switch (clgResult.getInt("platformId")) {
+                        case 1:
+                            // Send info to Twitch Controller
+                            TwitchController twitch = new TwitchController();
+                            twitch.checkGame(clgResult.getString("name"), clgResult.getString("guildId"), clgResult.getInt
+                                    ("platformId"));
+                            break;
+                        default:
+                            break;
                     }
                 }
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(result, pStatement, connection);
+            cleanUp(clgResult, clgStatement, clgConnection);
         }
     }
 
@@ -182,18 +196,19 @@ public class PlatformListener implements EventListener {
         LocalDateTime timeNow = LocalDateTime.now();
         logger.info("Checking to see if I need to make any announcements...  " + timeNow);
         try {
-            connection = Database.getInstance().getConnection();
+            mfConnection = Database.getInstance().getConnection();
             query = "SELECT * FROM `queue`";
-            pStatement = connection.prepareStatement(query);
-            result = pStatement.executeQuery();
-            while (result.next()) {
-                if (checkEnabled(result.getString("guildId"))) {
-                    String guildId = result.getString("guildId");
-                    Integer platformId = result.getInt("platformId");
-                    String channelName = result.getString("channelName");
-                    String streamTitle = result.getString("streamTitle");
-                    String gameName = result.getString("gameName");
-                    Integer online = result.getInt("online");
+            mfStatement = mfConnection.prepareStatement(query);
+
+            mfResult = mfStatement.executeQuery();
+            while (mfResult.next()) {
+                if (checkEnabled(mfResult.getString("guildId"))) {
+                    String guildId = mfResult.getString("guildId");
+                    Integer platformId = mfResult.getInt("platformId");
+                    String channelName = mfResult.getString("channelName");
+                    String streamTitle = mfResult.getString("streamTitle");
+                    String gameName = mfResult.getString("gameName");
+                    Integer online = mfResult.getInt("online");
 
                     DiscordController.messageHandler(guildId, platformId, channelName, streamTitle, gameName, online);
                     TimeUnit.MILLISECONDS.sleep(1100);
@@ -202,7 +217,7 @@ public class PlatformListener implements EventListener {
         } catch (SQLException | InterruptedException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(result, pStatement, connection);
+            cleanUp(mfResult, mfStatement, mfConnection);
         }
     }
 }

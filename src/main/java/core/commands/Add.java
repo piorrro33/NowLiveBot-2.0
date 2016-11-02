@@ -119,8 +119,8 @@ public class Add implements Command {
                         connection = Database.getInstance().getConnection();
                         query = "SELECT `name` FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? " +
                                 "AND `name` = ?";
-                        logger.info(query);
                         pStatement = connection.prepareStatement(query);
+
                         pStatement.setString(1, guildId);
                         pStatement.setInt(2, platformId);
                         pStatement.setString(3, this.argument);
@@ -158,6 +158,7 @@ public class Add implements Command {
             query = "INSERT INTO `" + this.option + "` (`id`, `guildId`, `platformId`, `name`) VALUES " +
                     "(null, ?, ?, ?)";
             pStatement = connection.prepareStatement(query);
+
             pStatement.setString(1, guildId);
             pStatement.setInt(2, platformId);
             pStatement.setString(3, this.argument);
@@ -176,6 +177,7 @@ public class Add implements Command {
             query = "INSERT INTO `" + this.option + "` (`id`, `guildId`, `userId`) VALUES " +
                     "(null, ?, ?)";
             pStatement = connection.prepareStatement(query);
+
             pStatement.setString(1, guildId);
             pStatement.setString(2, String.valueOf(dController.getMentionedUsersId()));
             resultInt = pStatement.executeUpdate();
@@ -203,6 +205,7 @@ public class Add implements Command {
             connection = Database.getInstance().getConnection();
             query = "SELECT COUNT(*) AS `count` FROM `manager` WHERE `guildId` = ? AND `userId` = ?";
             pStatement = connection.prepareStatement(query);
+
             pStatement.setString(1, guildId);
             pStatement.setString(2, userId);
             resultSet = pStatement.executeQuery();

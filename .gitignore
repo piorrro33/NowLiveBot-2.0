@@ -64,3 +64,9 @@ gradle/
 gradlew
 gradlew.bat
 libs/
+*.txt
+config.properties
+output.txt
+output1.txt
+restart.sh
+start.sh

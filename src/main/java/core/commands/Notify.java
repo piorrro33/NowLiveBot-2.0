@@ -124,7 +124,9 @@ public class Notify implements Command {
 
             connection = Database.getInstance().getConnection();
             String query = "UPDATE `notification` SET `userId` = ?, `level` = ? WHERE `guildId` = ?";
+
             pStatement = connection.prepareStatement(query);
+
             pStatement.setString(1, uId);
             pStatement.setInt(2, level);
             pStatement.setString(3, event.getGuild().getId());

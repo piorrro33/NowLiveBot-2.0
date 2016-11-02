@@ -33,7 +33,7 @@ public final class GuildJoin {
     private static String defaultChannel;
     private static List<String> userIds;
 
-    private GuildJoin() {
+    private static void populateArray() {
         tableList.add("channel");
         tableList.add("game");
         tableList.add("guild");
@@ -48,6 +48,7 @@ public final class GuildJoin {
 
     public static void joinGuild(GuildJoinEvent gEvent) {
 
+        populateArray();
 
         guildId = gEvent.getGuild().getId();
         defaultChannel = gEvent.getGuild().getPublicChannel().getId();
@@ -65,9 +66,9 @@ public final class GuildJoin {
 
                 if (resultSet.next()) {
                     // If there's still remnants or possible corrupt data, remove it
+                    logger.warn("This guild has data remnants in my database!");
                     try {
                         connection = Database.getInstance().getConnection();
-                        logger.warn("This guild has data remnants in my database!");
                         query = "DELETE FROM `" + s + "` WHERE `guildId` = ?";
                         pStatement = connection.prepareStatement(query);
                         pStatement.setString(1, guildId);
@@ -109,6 +110,7 @@ public final class GuildJoin {
                     query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `isActive`, `cleanup`, " +
                             "`emoji`) VALUES (?, ?, 0, 0, 0, ?)";
                     pStatement = connection.prepareStatement(query);
+
                     pStatement.setString(1, guildId);
                     pStatement.setString(2, defaultChannel);
                     pStatement.setString(3, ":heart_eyes_cat:");
@@ -164,6 +166,7 @@ public final class GuildJoin {
                 connection = Database.getInstance().getConnection();
                 query = "INSERT INTO `manager` (`guildId`, `userId`) VALUES (?, ?)";
                 pStatement = connection.prepareStatement(query);
+
                 pStatement.setString(1, guildId);
                 pStatement.setString(2, users);
                 result = pStatement.executeUpdate();
@@ -185,6 +188,7 @@ public final class GuildJoin {
             connection = Database.getInstance().getConnection();
             query = "INSERT INTO `notification` (`guildId`, `level`) VALUES (?, ?)";
             pStatement = connection.prepareStatement(query);
+
             pStatement.setString(1, guildId);
             pStatement.setInt(2, 0);
             return pStatement.executeUpdate();

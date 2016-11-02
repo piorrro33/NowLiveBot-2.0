@@ -28,11 +28,10 @@ public final class Tracker {
             String query = "INSERT INTO `commandtracker` (`commandName`, `commandCount`) VALUES (?, 1) " +
                     "ON DUPLICATE KEY UPDATE `commandCount` = `commandCount` + 1";
             connection = Database.getInstance().getConnection();
-            if (connection != null) {
-                pStatement = connection.prepareStatement(query);
-                pStatement.setString(1, command);
-                pStatement.executeUpdate();
-            }
+            pStatement = connection.prepareStatement(query);
+
+            pStatement.setString(1, command);
+            pStatement.executeUpdate();
         } catch (SQLException e) {
             logger.warn("There was a problem updating the count for commands in my database.");
         } finally {

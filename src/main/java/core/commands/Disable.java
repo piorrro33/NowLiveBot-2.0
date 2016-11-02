@@ -49,9 +49,7 @@ public class Disable implements Command {
             String query = "UPDATE `guild` SET `isActive` = 0 WHERE `guildId` = ?";
 
             connection = Database.getInstance().getConnection();
-            if (connection != null) {
-                pStatement = connection.prepareStatement(query);
-            }
+            pStatement = connection.prepareStatement(query);
             pStatement.setString(1, event.getGuild().getId());
             result = pStatement.executeUpdate();
 

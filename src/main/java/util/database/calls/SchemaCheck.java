@@ -33,20 +33,18 @@ public class SchemaCheck extends Database {
         try {
             String query = "SELECT `SCHEMA_NAME` FROM `information_schema`.`SCHEMATA` WHERE `SCHEMA_NAME` = ?";
             connection = Database.getInstance().getConnection();
-            if (connection != null) {
-                pStatement = connection.prepareStatement(query);
-                pStatement.setString(1, MYSQL_SCHEMA);
-                resultSet = pStatement.executeQuery();
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, MYSQL_SCHEMA);
+            resultSet = pStatement.executeQuery();
 
-                Boolean check = resultSet.last(); // Check to see if there's at least one row
+            Boolean check = resultSet.last(); // Check to see if there's at least one row
 
-                if (check) {
-                    logger.info("MySQL schema exists.");
-                } else {
-                    logger.info("MySQL schema does not exist.");
-                    // Load the raw SQL schema file in to the database
-                    uploadDatabase();
-                }
+            if (check) {
+                logger.info("MySQL schema exists.");
+            } else {
+                logger.info("MySQL schema does not exist.");
+                // Load the raw SQL schema file in to the database
+                uploadDatabase();
             }
         } catch (SQLSyntaxErrorException e) {
             logger.error("There is an error in the SQL syntax.", e);

@@ -40,7 +40,7 @@ public class List implements Command {
             if (resultSet.isBeforeFirst()) {
                 while (resultSet.next()) {
                     message.appendString("\n\t");
-                    if (!option.equals("manager")) {
+                    if (!"manager".equals(option)) {
                         message.appendString(resultSet.getString(1));
                         switch (resultSet.getInt(2)) {
                             case 1:

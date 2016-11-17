@@ -94,47 +94,49 @@ public class Add implements Command {
                 Integer platformId = 1; // platformId is always 1 for Twitch until other platforms are added
                 this.argument = this.argument.replace("'", "''");
 
-                if (this.option.equals("manager")) {
+                switch (this.option) {
+                    case "manager":
+                        logger.info("Checking to see if " + dController.getMentionedUsersId()
+                                + " already exists for guild: " + guildId);
 
-                    logger.info("Checking to see if " + dController.getMentionedUsersId()
-                            + " already exists for guild: " + guildId);
-
-                    // Check to make sure the user is not a bot
-                    if (!event.getJDA().getUserById(String.valueOf(dController.getMentionedUsersId())).isBot()) {
-                        logger.info("User is not a bot");
-                        if (!alreadyManager(guildId, String.valueOf(dController.getMentionedUsersId()))) {
-                            logger.info("User is currently not a manger.");
-                            addManager(guildId, event);
+                        // Check to make sure the user is not a bot
+                        if (!event.getJDA().getUserById(String.valueOf(dController.getMentionedUsersId())).isBot()) {
+                            logger.info("User is not a bot");
+                            if (!alreadyManager(guildId, String.valueOf(dController.getMentionedUsersId()))) {
+                                logger.info("User is currently not a manger.");
+                                addManager(guildId, event);
+                            } else {
+                                logger.info("User is currently a manager");
+                                sendToChannel(event, "It seems I've already hired that user as a manager.  Find moar " +
+                                        "humanz!");
+                            }
                         } else {
-                            logger.info("User is currently a manager");
-                            sendToChannel(event, "It seems I've already hired that user as a manager.  Find moar " +
-                                    "humanz!");
+                            sendToChannel(event, Const.NO_BOT_MANAGER);
                         }
-                    } else {
-                        sendToChannel(event, Const.NO_BOT_MANAGER);
-                    }
-                } else {
-                    logger.info("Checking to see if the " + this.option + " already exists for guild: " + guildId);
-                    try {
-                        connection = Database.getInstance().getConnection();
-                        query = "SELECT `name` FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? " +
-                                "AND `name` = ?";
-                        pStatement = connection.prepareStatement(query);
+                        break;
+                    default:
+                        logger.info("Checking to see if the " + this.option + " already exists for guild: " + guildId);
+                        try {
+                            connection = Database.getInstance().getConnection();
+                            query = "SELECT `name` FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? " +
+                                    "AND `name` = ?";
+                            pStatement = connection.prepareStatement(query);
 
-                        pStatement.setString(1, guildId);
-                        pStatement.setInt(2, platformId);
-                        pStatement.setString(3, this.argument);
-                        resultSet = pStatement.executeQuery();
-                        if (resultSet.isBeforeFirst()) {
-                            sendToChannel(event, Const.ALREADY_EXISTS);
-                        } else {
-                            addOther(guildId, platformId, event);
+                            pStatement.setString(1, guildId);
+                            pStatement.setInt(2, platformId);
+                            pStatement.setString(3, this.argument);
+                            resultSet = pStatement.executeQuery();
+                            if (resultSet.isBeforeFirst()) {
+                                sendToChannel(event, Const.ALREADY_EXISTS);
+                            } else {
+                                addOther(guildId, platformId, event);
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        } finally {
+                            cleanUp(resultSet, pStatement, connection);
                         }
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    } finally {
-                        cleanUp(resultSet, pStatement, connection);
-                    }
+                        break;
                 }
             }
         }

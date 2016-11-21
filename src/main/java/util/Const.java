@@ -5,16 +5,84 @@
  */
 package util;
 
+import langs.En;
+
 /**
+ * Common variables used throughout
  *
  * @author Veteran Software
  * @version 1.0
- * @since 09/28/2016
- *
- * Common variables used throughout.
+ * @since 10/1/2016
  */
-public class Const {
+public interface Const {
 
-    public static final String DISCORD_BOT_TOKEN = "";
-    public static final String TWITCH_CLIENT_ID = "";
+    // Commonly used Constants
+
+    String TWITCH_CLIENT_ID = "7713uzjnh50pdd9v2v0apto553xeo67";
+    String COMMAND_PREFIX = "-";// Requires single, regex safe character (at the moment) wahahahaha
+    String BOT_NAME = "nowlivebot";
+    String BOT_ID = "99852904504004608";
+    String COMMAND = "nl";
+    String PLAYING = "with streams";
+    // Language specific variables
+    // TODO:  Replace 'En' with the guild language from the DB (when it's setup that way)
+    String HELP_PM = En.HELP_PM;
+    String TYPE_ONCE = En.TYPE_ONCE;
+    String INCORRECT_ARGS = En.INCORRECT_ARGS;
+    String EMPTY_COMMAND = En.EMPTY_COMMAND;
+    String EMPTY_ARGS = En.EMPTY_ARGS;
+    String PRIVATE_MESSAGE_REPLY = En.PRIVATE_MESSAGE_REPLY;
+    String ALREADY_EXISTS = En.ALREADY_EXISTS;
+    String DOESNT_EXIST = En.DOESNT_EXIST;
+    String NONE_ONLINE = En.NONE_ONLINE;
+    String ONLINE_STREAM_PM_1 = En.ONLINE_STREAM_PM_1;
+    String ONLINE_STREAM_PM_2 = En.ONLINE_STREAM_PM_2;
+    String NOW_PLAYING_LOWER = En.NOW_PLAYING_LOWER;
+    String ON = En.ON;
+    String WATCH_THEM_HERE = En.WATCH_THEM_HERE;
+    String NOTIFY_NONE = En.NOTIFY_NONE;
+    String NOTIFY_ME = En.NOTIFY_ME;
+    String NOTIFY_HERE = En.NOTIFY_HERE;
+    String NOTIFY_EVERYONE = En.NOTIFY_EVERYONE;
+    String OOPS = En.OOPS;
+    String WRONG_COMMAND = En.WRONG_COMMAND;
+    String NOT_A_MANAGER = En.NOT_A_MANAGER;
+    String NOT_AN_ADMIN = En.NOT_AN_ADMIN;
+    String ADMIN_OVERRIDE = En.ADMIN_OVERRIDE;
+    String NOW_LIVE = En.NOW_LIVE;
+    String CANT_REMOVE_OWNER = En.CANT_REMOVE_OWNER;
+    String NO_BOT_MANAGER = En.NO_BOT_MANAGER;
+    String NEED_ONE_MANAGER = En.NEED_ONE_MANAGER;
+
+    // Command specific text
+    String ADD_HELP = En.ADD_HELP;
+    String ANNOUNCE_HELP = En.ANNOUNCE_HELP;
+    String CLEANUP_HELP = En.CLEANUP_HELP;
+    String CLEANUP_SUCCESS_NONE = En.CLEANUP_SUCCESS_NONE;
+    String CLEANUP_SUCCESS_EDIT = En.CLEANUP_SUCCESS_EDIT;
+    String CLEANUP_SUCCESS_DELETE = En.CLEANUP_SUCCESS_DELETE;
+    String CLEANUP_FAIL = En.CLEANUP_FAIL;
+    String COMPACT_HELP = En.COMPACT_HELP;
+    String COMPACT_FAILURE = En.COMPACT_FAILURE;
+    String COMPACT_MODE_ON = En.COMPACT_MODE_ON;
+    String COMPACT_MODE_OFF = En.COMPACT_MODE_OFF;
+    String DISABLE_HELP = En.DISABLE_HELP;
+    String DISABLE_SUCCESS = En.DISABLE_SUCCESS;
+    String DISABLE_FAIL = En.DISABLE_FAIL;
+    String ENABLE_HELP = En.ENABLE_HELP;
+    String ENABLE_SUCCESS = En.ENABLE_SUCCESS;
+    String ENABLE_FAIL = En.ENABLE_FAIL;
+    String INVITE = En.INVITE;
+    String INVITE_HELP = En.INVITE_HELP;
+    String LIST_HELP = En.LIST_HELP;
+    String MOVE_DONT_OWN_CHANNEL = En.MOVE_DONT_OWN_CHANNEL;
+    String MOVE_FAILURE = En.MOVE_FAILURE;
+    String MOVE_HELP = En.MOVE_HELP;
+    String MOVE_SUCCESS = En.MOVE_SUCCESS;
+    String NOTIFY_HELP = En.NOTIFY_HELP;
+    String PING = En.PING;
+    String PING_HELP = En.PING_HELP;
+    String REMOVE_HELP = En.REMOVE_HELP;
+    String STREAMS_HELP = En.STREAMS_HELP;
+    String STATUS_HELP = En.STATUS_HELP;
 }

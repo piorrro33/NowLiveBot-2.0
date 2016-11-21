@@ -1,14 +1,12 @@
 plugins {
     id 'java'
     id 'application'
+    id 'eclipse'
 }
 
 task wrapper(type: Wrapper) {
     gradleVersion = '3.1'
 }
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
 
 mainClassName = 'core.Main'
 
@@ -45,11 +43,11 @@ task fatJar(type: Jar) {
     }
     classifier = 'all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    {
-        exclude "META-INF/*.SF"
-        exclude "META-INF/*.DSA"
-        exclude "META-INF/*.RSA"
-    }
+            {
+                exclude "META-INF/*.SF"
+                exclude "META-INF/*.DSA"
+                exclude "META-INF/*.RSA"
+            }
     with jar
 }
 
@@ -62,13 +60,13 @@ repositories {
     jcenter()
     maven { url "https://jitpack.io" }
 }
-
 dependencies {
-    // Compile any included libraries
-    //compile fileTree(include: ['*jar'], dir: 'libs')
+    compile group: 'net.dv8tion', name: 'JDA', version: '3.0.BETA_91'
+    compile group: 'com.github.avluis', name: 'Java-Twitch-Api-Wrapper', version: '0.3.1'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.21'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.5'
+    compile group: 'com.mchange', name: 'c3p0', version: '0.9.5.2'
+    compile group: 'com.mchange', name: 'mchange-commons-java', version: '0.2.12'
     testCompile group: 'junit', name: 'junit', version: '4.10'
-    compile group: 'net.dv8tion', name: 'JDA', version: '2.2.1_353'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.3'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.8.3'
-    compile group: 'com.github.avluis', name: 'Java-Twitch-Api-Wrapper', version: 'bb5b9ff8e6'
 }

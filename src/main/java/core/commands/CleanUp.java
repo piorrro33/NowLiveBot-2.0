@@ -1,0 +1,86 @@
+package core.commands;
+
+import core.Command;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import util.Const;
+import util.database.calls.GetCleanUp;
+import util.database.calls.Tracker;
+
+import static platform.discord.controller.DiscordController.sendToChannel;
+
+/**
+ * @author Veteran Software by Ague Mort
+ */
+public class CleanUp implements Command {
+
+    /**
+     * Used to determine if appropriate arguments exist
+     *
+     * @param args  Arguments being passed
+     * @param event From JDA: GuildMessageReceivedEvent
+     * @return boolean true if criteria is met, false if criteria not met
+     */
+    @Override
+    public final boolean called(String args, GuildMessageReceivedEvent event) {
+        if (args != null && !args.isEmpty()) {
+            return "none".equals(args) || "edit".equals(args) || "delete".equals(args) || "help".equals(args);
+        } else {
+            sendToChannel(event, Const.EMPTY_ARGS);
+            return false;
+        }
+    }
+
+    /**
+     * Action taken after the command is verified
+     *
+     * @param args  Arguments being passed
+     * @param event From JDA: GuildMessageReceivedEvent
+     */
+    @Override
+    public final void action(String args, GuildMessageReceivedEvent event) {
+        String returnStatement;
+        String query;
+        switch (args) {
+            case "none":
+                query = "UPDATE `guild` SET `cleanup` = 0 WHERE `guildId` = ?";
+                returnStatement = Const.CLEANUP_SUCCESS_NONE;
+                break;
+            case "edit":
+                query = "UPDATE `guild` SET `cleanup` = 1 WHERE `guildId` = ?";
+                returnStatement = Const.CLEANUP_SUCCESS_EDIT;
+                break;
+            case "delete":
+                query = "UPDATE `guild` SET `cleanup` = 2 WHERE `guildId` = ?";
+                returnStatement = Const.CLEANUP_SUCCESS_DELETE;
+                break;
+            default:
+                return;
+        }
+        if (GetCleanUp.action(event.getGuild().getId(), query)) {
+            sendToChannel(event, returnStatement);
+        } else {
+            sendToChannel(event, Const.CLEANUP_FAIL);
+        }
+    }
+
+    /**
+     * Returns help info for the command
+     *
+     * @param event From JDA: GuildMessageReceivedEvent
+     */
+    @Override
+    public final void help(GuildMessageReceivedEvent event) {
+        sendToChannel(event, Const.CLEANUP_HELP);
+    }
+
+    /**
+     * Runs specified scripts which are determined by {success}
+     *
+     * @param success [boolean]
+     * @param event   From JDA: GuildMessageReceivedEvent
+     */
+    @Override
+    public final void executed(boolean success, GuildMessageReceivedEvent event) {
+        new Tracker("Cleanup");
+    }
+}

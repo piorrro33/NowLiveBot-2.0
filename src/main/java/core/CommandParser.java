@@ -3,6 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package core;
 
 import core.commands.*;
@@ -58,7 +59,7 @@ public class CommandParser {
     /**
      * @param aCommands the core.commands to set
      */
-    public static void setCommands(Map<String, Command> aCommands) {
+    public static void setCommands(final Map<String, Command> aCommands) {
 
         commands = aCommands;
     }
@@ -66,7 +67,8 @@ public class CommandParser {
     /**
      * @param cmd Object containing required arguments to invoke the command
      */
-    public static void handleCommand(CommandContainer cmd) throws PropertyVetoException, IOException, SQLException {
+    public static void handleCommand(CommandContainer cmd) throws PropertyVetoException, IOException,
+            SQLException {
 
         if (getCommands().containsKey(cmd.invoke)) {
 

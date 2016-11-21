@@ -148,6 +148,8 @@ public class PlatformController {
             switch (platform) {
                 case "twitch":
                     return 1;
+                default:
+                    break;
             }
         }
         return 0;

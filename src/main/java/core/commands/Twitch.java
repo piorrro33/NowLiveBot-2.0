@@ -62,6 +62,7 @@ public class Twitch implements Command {
                 }
                 break;
             default:
+                // This should never be used
                 break;
         }
     }

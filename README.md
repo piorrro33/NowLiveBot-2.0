@@ -1,7 +1,5 @@
 # Now Live
----
 > A Discord bot that announces streamers as they go live!
----
 
 ## Supported Platforms
 * Twitch

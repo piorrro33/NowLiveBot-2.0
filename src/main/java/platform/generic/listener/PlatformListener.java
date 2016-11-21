@@ -67,8 +67,8 @@ public class PlatformListener {
         }*/
 
         try {
-            executor.scheduleWithFixedDelay(this::checkLiveChannels, 0, 10, TimeUnit.SECONDS);
-            executor.scheduleWithFixedDelay(this::checkLiveGames, 0, 10, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::checkLiveChannels, 0, 30, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::checkLiveGames, 0, 30, TimeUnit.SECONDS);
         } catch (Exception e) {
             logger.info("******************* Caught an exception while keeping the executors active ", e);
             logger.info("Attempting to restart the executors...");

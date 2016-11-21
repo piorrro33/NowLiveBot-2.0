@@ -61,11 +61,17 @@ public interface En {
     String NOT_AN_ADMIN = "To whom it may concern:  I am your servant, but you are not my master.";
     String ADMIN_OVERRIDE = "*Permission of this command have been overridden by a bot developer.*";
     String WATCH_THEM_HERE = "Watch them here: ";
-    String NOW_LIVE = "NOW LIVE!\n\n";
+    String NOW_LIVE = "NOW LIVE!\n";
+    String OFFLINE = "OFFLINE!\n";
     String CANT_REMOVE_OWNER = "Silly human, you can't remove the server owner from the manager list. :laughing: :laughing:";
     String NO_BOT_MANAGER = "It's against the Discord Bot Union By-Laws for bots to manage me. Sorry, try and find a " +
             "suitable human for the job. :thumbsup:";
     String NEED_ONE_MANAGER = "If you remove that one, who will manage me?  ";
+    String GUILD_JOIN_SUCCESS = "Hi there!  I'm Now Live, the stream announcing bot!  Type `" + Const.COMMAND_PREFIX
+            + Const.COMMAND + " help for a list of my commands.\n\nIf you need some help setting me up, come join my " +
+            "Discord at https://discordapp.com/oauth2/authorize?&client_id="
+            + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=224256 " +
+            "and check out the how-to-setup and command-list channels for all the info!\n\nDon't forget to say hey!";
 
     // Command specific text
     String ADD_HELP = "```Ruby\nADD:  Used to add something to my database.\nUSAGE:  "

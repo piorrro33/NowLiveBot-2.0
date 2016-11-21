@@ -50,9 +50,11 @@ public interface Const {
     String NOT_AN_ADMIN = En.NOT_AN_ADMIN;
     String ADMIN_OVERRIDE = En.ADMIN_OVERRIDE;
     String NOW_LIVE = En.NOW_LIVE;
+    String OFFLINE = En.OFFLINE;
     String CANT_REMOVE_OWNER = En.CANT_REMOVE_OWNER;
     String NO_BOT_MANAGER = En.NO_BOT_MANAGER;
     String NEED_ONE_MANAGER = En.NEED_ONE_MANAGER;
+    String GUILD_JOIN_SUCCESS = En.GUILD_JOIN_SUCCESS;
 
     // Command specific text
     String ADD_HELP = En.ADD_HELP;

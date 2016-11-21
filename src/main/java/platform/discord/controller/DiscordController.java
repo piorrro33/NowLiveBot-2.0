@@ -17,6 +17,7 @@ import net.dv8tion.jda.core.requests.ErrorResponse;
 import net.dv8tion.jda.core.requests.RestAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
@@ -119,18 +120,20 @@ public class DiscordController {
     }
 
     public static void sendToPm(PrivateMessageReceivedEvent event, Message message) {
-        event.getAuthor().openPrivateChannel().queue(
-                success -> {
-                    event.getAuthor().getPrivateChannel().sendMessage(message).queue();
-                    System.out.printf("[BOT -> PM][%s:%s]: %s%n",
+        if (!event.getAuthor().isBot()) { // Prevents errors if a bot auto-sends PM's on join
+            event.getAuthor().openPrivateChannel().queue(
+                    success -> {
+                        event.getAuthor().getPrivateChannel().sendMessage(message).queue();
+                        System.out.printf("[BOT -> PM][%s:%s]: %s%n",
+                                event.getAuthor().getName(),
+                                event.getAuthor().getId(),
+                                message);
+                    },
+                    failure -> System.out.printf("[ERROR] Unable to send PM to author: %s:%s.%n",
                             event.getAuthor().getName(),
-                            event.getAuthor().getId(),
-                            message);
-                },
-                failure -> System.out.printf("[ERROR] Unable to send PM to author: %s:%s.%n",
-                        event.getAuthor().getName(),
-                        event.getAuthor().getId())
-        );
+                            event.getAuthor().getId())
+            );
+        }
     }
 
     public static synchronized void messageHandler(String guildId, Integer platformId, String channelName, String
@@ -179,8 +182,8 @@ public class DiscordController {
                                                 success -> {
 
                                                     // Replace the LIVE announcement with OFFLINE
-                                                    String rawContent = success.getRawContent().replace("NOW LIVE",
-                                                            "OFFLINE");
+                                                    String rawContent = success.getRawContent().replace(Const.NOW_LIVE,
+                                                            Const.OFFLINE);
 
                                                     // Update the old message
                                                     success.editMessage(rawContent).queue();
@@ -281,7 +284,7 @@ public class DiscordController {
 
         MessageBuilder message = new MessageBuilder();
 
-        message.appendString("***NOW LIVE!***\n");
+        message.appendString("***" + Const.NOW_LIVE + "***\n");
 
         notifyLevel(guildId, message);
 

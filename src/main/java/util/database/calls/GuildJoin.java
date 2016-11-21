@@ -6,6 +6,7 @@ import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.Const;
 import util.database.Database;
 
 import java.sql.Connection;
@@ -92,7 +93,7 @@ public final class GuildJoin {
             }
         }
         if (failed == 0) {
-            gEvent.getGuild().getPublicChannel().sendMessage("Your guild has been added!!").queue();
+            gEvent.getGuild().getPublicChannel().sendMessage(Const.GUILD_JOIN_SUCCESS).queue();
         } else {
             gEvent.getGuild().getPublicChannel().sendMessage("There was an error adding your guild!!").queue();
         }

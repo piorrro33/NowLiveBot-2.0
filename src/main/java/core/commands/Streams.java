@@ -93,8 +93,9 @@ public class Streams implements Command {
                     message.appendString("**" + result.getString("platform") + "**!\n\t");
                     message.appendString(Const.WATCH_THEM_HERE);
                     message.appendString("__*" + result.getString("link") + result.getString("channel") + "*__\n\n");
-                    if (message.getLength() >= 1750) {
+                    if (message.getLength() >= 1800) {
                         sendToPm(event, message.build());
+                        message = new MessageBuilder();
                     }
                 }
                 // TODO: Add DB value to offer preference to user to send pm vs send to channel

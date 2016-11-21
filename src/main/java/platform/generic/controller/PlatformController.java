@@ -21,7 +21,7 @@ public class PlatformController {
     private static Connection cstConnection;
     private static Connection gmiConnection;
     private static Connection dfsConnection;
-    private static Logger logger = LoggerFactory.getLogger(PlatformController.class);
+    private static Logger logger = LoggerFactory.getLogger("Platform Controller");
     private static PreparedStatement atsStatement;
     private static PreparedStatement cstStatement;
     private static PreparedStatement gmiStatement;
@@ -131,7 +131,6 @@ public class PlatformController {
                 dfsStatement.setString(3, channelName);
 
                 dfsStatement.executeUpdate();
-                logger.info("Stream deleted from the stream table");
                 return true;
 
             } catch (SQLException e) {
@@ -141,6 +140,17 @@ public class PlatformController {
             }
         }
         return false;
+    }
+
+    public static int getPlatformId(String args) {
+        if (args.contains("~")) {
+            String platform = args.substring(0, args.indexOf("~"));
+            switch (platform) {
+                case "twitch":
+                    return 1;
+            }
+        }
+        return 0;
     }
 
     public final synchronized void onlineStreamHandler(String guildId, Integer platformId, String channelName, String

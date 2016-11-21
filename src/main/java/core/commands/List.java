@@ -38,11 +38,12 @@ public class List implements Command {
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
             resultSet = pStatement.executeQuery();
+
             if (resultSet.isBeforeFirst()) {
                 while (resultSet.next()) {
                     message.appendString("\n\t");
                     if (!"manager".equals(option)) {
-                        message.appendString(resultSet.getString(1));
+                        message.appendString(resultSet.getString(1).replaceAll("''", "'"));
                         switch (resultSet.getInt(2)) {
                             case 1:
                                 message.appendString(" on Twitch.tv");
@@ -57,7 +58,7 @@ public class List implements Command {
                         message.appendString(userName);
                     }
                     // Large message handler
-                    if (message.getLength() > 1750) {
+                    if (message.getLength() > 1850) {
                         sendToPm(event, message.build());
                         message = new MessageBuilder();
                     }

@@ -44,15 +44,15 @@ public class Database {
         cpds.setUser(MYSQL_USERNAME);
         cpds.setPassword(MYSQL_PASSWORD);
         // Optional c3p0 settings below
-        cpds.setInitialPoolSize(5);
-        cpds.setMaxPoolSize(75);
-        cpds.setMaxIdleTime(10);
-        cpds.setMinPoolSize(5);
+        cpds.setInitialPoolSize(3);
+        cpds.setMaxPoolSize(100);
+        cpds.setMaxIdleTime(9);
+        cpds.setMinPoolSize(3);
         cpds.setAcquireIncrement(3);
         cpds.setNumHelperThreads(2);
         cpds.setMaxStatements(0);
         cpds.setPreferredTestQuery("SELECT 1");
-        cpds.setIdleConnectionTestPeriod(30);
+        cpds.setIdleConnectionTestPeriod(5);
         cpds.setTestConnectionOnCheckin(true);
     }
 

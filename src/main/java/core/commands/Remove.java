@@ -16,6 +16,7 @@ import java.sql.SQLException;
 
 import static core.commands.Add.*;
 import static platform.discord.controller.DiscordController.sendToChannel;
+import static platform.generic.controller.PlatformController.getPlatformId;
 import static util.database.Database.cleanUp;
 
 /**
@@ -30,8 +31,8 @@ public class Remove implements Command {
     private PreparedStatement pStatement;
     private String query;
     private ResultSet result;
-    private Integer resultInt;
-    private String[] options = new String[]{"channel", "game", "manager", "tag", "team", "help"};
+    private Integer platformId;
+    private String[] options = new String[]{"channel", "filter", "game", "manager", "tag", "team", "help"};
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
@@ -70,54 +71,69 @@ public class Remove implements Command {
 
         String guildId = dController.getGuildId();
 
+        if (getPlatformId(args) > 0) {
+            platformId = getPlatformId(args);
+            System.out.println("Associated platform ID: " + platformId);
+        } else {
+            platformId = 1;
+        }
+
+        if (platformId > 0) {
+            args = args.substring(args.indexOf("~") + 1);
+        }
+
         for (String s : this.options) {
             if (this.option.equals(s) && !this.option.equals("help")) {
-                Integer platformId = 1; // platformId is always 1 for Twitch until other platforms are added
+
                 this.argument = this.argument.replace("'", "''");
 
                 // Check to see if the entry already exists in the db for that guild
-                if (this.option.equals("manager")) {
-                    if (!event.getGuild().getOwner().getUser().getId().equals(String.valueOf(dController
-                            .getMentionedUsersId()))) {
-                        logger.info("managerCount:  " + managerCount(guildId));
-                        if (managerCount(guildId)) { // Make sure there is going to be enough managers
-                            try {
-                                connection = Database.getInstance().getConnection();
-                                query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `userId` = ?";
+                switch (this.option) {
+                    case "manager":
+                        if (!event.getGuild().getOwner().getUser().getId().equals(String.valueOf(dController
+                                .getMentionedUsersId()))) {
+                            logger.info("managerCount:  " + managerCount(guildId));
+                            if (managerCount(guildId)) { // Make sure there is going to be enough managers
+                                try {
+                                    connection = Database.getInstance().getConnection();
+                                    query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `userId` = ?";
 
-                                pStatement = connection.prepareStatement(query);
+                                    pStatement = connection.prepareStatement(query);
 
-                                pStatement.setString(1, guildId);
-                                pStatement.setString(2, dController.getMentionedUsersId());
-                                Integer removeManager = pStatement.executeUpdate();
-                                removeResponse(event, guildId, removeManager);
-                            } catch (SQLException e) {
-                                logger.error("Error when deleting info from the " + this.option + " table: ", e);
-                            } finally {
-                                cleanUp(pStatement, connection);
+                                    pStatement.setString(1, guildId);
+                                    pStatement.setString(2, dController.getMentionedUsersId());
+                                    Integer removeManager = pStatement.executeUpdate();
+                                    removeResponse(event, guildId, removeManager);
+                                } catch (SQLException e) {
+                                    logger.error("Error when deleting info from the " + this.option + " table: ", e);
+                                } finally {
+                                    cleanUp(pStatement, connection);
+                                }
+                            } else {
+                                sendToChannel(event, Const.NEED_ONE_MANAGER);
                             }
                         } else {
-                            sendToChannel(event, Const.NEED_ONE_MANAGER);
+                            sendToChannel(event, Const.CANT_REMOVE_OWNER);
                         }
-                    } else {
-                        sendToChannel(event, Const.CANT_REMOVE_OWNER);
-                    }
-                } else {
-                    query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
-                    try {
-                        connection = Database.getInstance().getConnection();
-                        pStatement = connection.prepareStatement(query);
+                        break;
 
-                        pStatement.setString(1, guildId);
-                        pStatement.setInt(2, platformId);
-                        pStatement.setString(3, this.argument);
-                        Integer removeOther = pStatement.executeUpdate();
-                        removeResponse(event, guildId, removeOther);
-                    } catch (SQLException e) {
-                        logger.error("Error when deleting info from the " + this.option + " table: ", e);
-                    } finally {
-                        cleanUp(pStatement, connection);
-                    }
+                    default:
+                        query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                        try {
+                            connection = Database.getInstance().getConnection();
+                            pStatement = connection.prepareStatement(query);
+
+                            pStatement.setString(1, guildId);
+                            pStatement.setInt(2, platformId);
+                            pStatement.setString(3, this.argument);
+                            Integer removeOther = pStatement.executeUpdate();
+                            removeResponse(event, guildId, removeOther);
+                        } catch (SQLException e) {
+                            logger.error("Error when deleting info from the " + this.option + " table: ", e);
+                        } finally {
+                            cleanUp(pStatement, connection);
+                        }
+                        break;
                 }
             }
         }

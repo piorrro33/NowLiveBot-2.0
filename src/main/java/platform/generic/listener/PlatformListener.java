@@ -23,7 +23,7 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public class PlatformListener {
-    private static Logger logger = LoggerFactory.getLogger("PlatformLogger");
+    private static Logger logger = LoggerFactory.getLogger("Platform Listener");
     private static Connection connection;
     private static Connection ceConnection;
     private static Connection clcConnection;
@@ -67,44 +67,12 @@ public class PlatformListener {
         }*/
 
         try {
-            executor.scheduleWithFixedDelay(this::checkLiveChannels, 0, 30, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::checkLiveChannels, 0, 10, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::checkLiveGames, 0, 10, TimeUnit.SECONDS);
         } catch (Exception e) {
             logger.info("******************* Caught an exception while keeping the executors active ", e);
             logger.info("Attempting to restart the executors...");
         }
-    }
-
-    public static void leaveGuild(String guildId) {
-        tableList.add("channel");
-        tableList.add("game");
-        tableList.add("guild");
-        tableList.add("manager");
-        tableList.add("notification");
-        tableList.add("permission");
-        tableList.add("queue");
-        tableList.add("stream");
-        tableList.add("tag");
-        tableList.add("team");
-
-        try {
-            connection = Database.getInstance().getConnection();
-            for (String s : tableList) {
-                query = "DELETE FROM `" + s + "` WHERE `guildId` = ?";
-                pStatement = connection.prepareStatement(query);
-                pStatement.setString(1, guildId);
-                Integer resultInt = pStatement.executeUpdate();
-                if (!resultInt.equals(0)) {
-                    logger.info("Successfully deleted all data for Guild " + guildId + " from the "
-                            + s.toUpperCase() + " table.");
-                }
-            }
-
-        } catch (Exception e) {
-            logger.error("Failed to remove info from Guild " + guildId + ".");
-        } finally {
-            cleanUp(pStatement, connection);
-        }
-
     }
 
     private static synchronized boolean checkEnabled(String guildId) {
@@ -140,7 +108,7 @@ public class PlatformListener {
             kcResult = kcStatement.executeQuery();
             while (kcResult.next()) {
                 if (kcResult.getString("USER").equals(PropReader.getInstance().getProp().getProperty("mysql.username"))) {
-                    if (kcResult.getInt("TIME") > 60) {
+                    if (kcResult.getInt("TIME") > 10) {
                         Integer processId = kcResult.getInt("ID");
                         query = "KILL CONNECTION " + processId;
                         kcStatement = kcConnection.prepareStatement(query);
@@ -160,7 +128,7 @@ public class PlatformListener {
 
     private synchronized void checkLiveChannels() {
         LocalDateTime timeNow = LocalDateTime.now();
-        logger.info("Checking for live channels...  " + timeNow);
+        System.out.println("[SYSTEM] Checking for live channels. " + timeNow);
 
         try {
             clcConnection = Database.getInstance().getConnection();
@@ -193,7 +161,7 @@ public class PlatformListener {
 
     private synchronized void checkLiveGames() {
         LocalDateTime timeNow = LocalDateTime.now();
-        logger.info("Checking for live games... " + timeNow);
+        System.out.println("[SYSTEM] Checking for live games. " + timeNow);
         try {
             clgConnection = Database.getInstance().getConnection();
             query = "SELECT * FROM `game` ORDER BY `guildId` ASC";
@@ -206,8 +174,8 @@ public class PlatformListener {
                         case 1:
                             // Send info to Twitch Controller
                             TwitchController twitch = new TwitchController();
-                            twitch.checkGame(clgResult.getString("name"), clgResult.getString("guildId"), clgResult.getInt
-                                    ("platformId"));
+                            twitch.checkGame(clgResult.getString("name").replaceAll("''", "'"), clgResult.getString
+                                    ("guildId"), clgResult.getInt("platformId"));
                             break;
                         default:
                             break;

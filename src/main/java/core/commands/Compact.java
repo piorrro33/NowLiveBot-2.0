@@ -3,25 +3,15 @@ package core.commands;
 import core.Command;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import util.Const;
-import util.database.Database;
+import util.database.calls.SetCompact;
 import util.database.calls.Tracker;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
 import static platform.discord.controller.DiscordController.sendToChannel;
-import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software by Ague Mort
  */
 public class Compact implements Command {
-
-    private Connection connection;
-    private PreparedStatement pStatement;
-    private Integer result;
-    private String query;
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
@@ -63,29 +53,18 @@ public class Compact implements Command {
         }
 
         if (intArg.equals(1) || intArg.equals(0)) {
-            try {
-                connection = Database.getInstance().getConnection();
-                query = "UPDATE `guild` SET `isCompact` = ? WHERE `guildId` = ?";
-                pStatement = connection.prepareStatement(query);
-                pStatement.setInt(1, intArg);
-                pStatement.setString(2, event.getGuild().getId());
-
-                result = pStatement.executeUpdate();
-
-                if (result.equals(1)) {
-                    if (intArg.equals(0)) {
+            if (SetCompact.action(event.getGuild().getId(), intArg)) {
+                switch (args) {
+                    case "off":
                         sendToChannel(event, Const.COMPACT_MODE_OFF);
-                    } else {
+                        break;
+                    case "on":
                         sendToChannel(event, Const.COMPACT_MODE_ON);
-                    }
-
-                } else {
-                    sendToChannel(event, Const.COMPACT_FAILURE);
+                        break;
+                    default:
+                        System.out.println("[ERROR] This statement should never be reached.");
+                        break;
                 }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } finally {
-                cleanUp(pStatement, connection);
             }
         }
     }

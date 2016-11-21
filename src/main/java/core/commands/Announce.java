@@ -22,9 +22,9 @@ import static util.database.Database.cleanUp;
 public class Announce implements Command {
 
     private static Logger logger = LoggerFactory.getLogger(Announce.class);
-    private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
+    private static ResultSet result;
+    private static PreparedStatement pStatement;
+    private static Connection connection;
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {

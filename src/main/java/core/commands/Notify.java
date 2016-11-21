@@ -38,7 +38,6 @@ public class Notify implements Command {
         if (args != null && !"".equals(args)) {
             switch (args) {
                 case "none":
-                case "me":
                 case "here":
                 case "everyone":
                 case "help":
@@ -68,11 +67,7 @@ public class Notify implements Command {
                     sendToChannel(event, Const.NOTIFY_NONE);
                 }
                 break;
-            case "me":
-                if (update(event, 1)) {
-                    sendToChannel(event, Const.NOTIFY_ME);
-                }
-                break;
+            // Removed option "me"
             case "here":
                 if (update(event, 2)) {
                     sendToChannel(event, Const.NOTIFY_HERE);
@@ -133,7 +128,8 @@ public class Notify implements Command {
             result = pStatement.executeUpdate();
 
             if (result > 0) {
-                logger.info("Guild: " + event.getGuild().getName() + " has set notification level.");
+                System.out.printf("[COMMAND-NOTIFY]Guild: %s has set notification level to %s.%n", event.getGuild()
+                        .getName(), level);
                 return true;
             } else {
                 sendToChannel(event, Const.OOPS);

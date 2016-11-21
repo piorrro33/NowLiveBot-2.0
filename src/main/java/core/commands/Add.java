@@ -11,16 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import platform.discord.controller.DiscordController;
 import util.Const;
-import util.database.Database;
-import util.database.calls.Tracker;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import util.database.calls.*;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
-import static util.database.Database.cleanUp;
+import static platform.generic.controller.PlatformController.getPlatformId;
 
 /**
  * Add Command.
@@ -33,12 +27,8 @@ public class Add implements Command {
     private static final Logger logger = LoggerFactory.getLogger(Add.class);
     private String option;
     private String argument;
-    private Connection connection;
-    private PreparedStatement pStatement;
-    private String query;
-    private ResultSet resultSet;
-    private Integer resultInt;
     private DiscordController dController;
+    private Integer platformId;
     private String[] options = new String[]{"channel", "filter", "game", "manager", "tag", "team", "help"};
 
     public static boolean optionCheck(String args, String option) {
@@ -89,52 +79,56 @@ public class Add implements Command {
 
         String guildId = dController.getGuildId();
 
+        if (getPlatformId(args) > 0) {
+            platformId = getPlatformId(args);
+        } else {
+            platformId = 1;
+        }
+
+        if (platformId > 0) {
+            args = args.substring(args.indexOf("~") + 1);
+        }
+
         for (String s : this.options) {
             if (this.option.equals(s) && !this.option.equals("help")) {
-                Integer platformId = 1; // platformId is always 1 for Twitch until other platforms are added
+
+                System.out.println(args);
+
                 this.argument = this.argument.replace("'", "''");
 
                 switch (this.option) {
                     case "manager":
-                        logger.info("Checking to see if " + dController.getMentionedUsersId()
-                                + " already exists for guild: " + guildId);
-
                         // Check to make sure the user is not a bot
-                        if (!event.getJDA().getUserById(String.valueOf(dController.getMentionedUsersId())).isBot()) {
-                            logger.info("User is not a bot");
-                            if (!alreadyManager(guildId, String.valueOf(dController.getMentionedUsersId()))) {
-                                logger.info("User is currently not a manger.");
-                                addManager(guildId, event);
+                        try {
+                            logger.info("Checking to see if " + dController.getMentionedUsersId() + " already exists " +
+                                    "for guild: " + guildId);
+                            if (!event.getJDA().getUserById(String.valueOf(dController.getMentionedUsersId())).isBot()) {
+                                logger.info("User is not a bot");
+                                if (!CountManagers.action(this.option, guildId, String.valueOf(dController
+                                        .getMentionedUsersId()))) {
+                                    logger.info("User is currently not a manger.");
+
+                                    returnStatement(AddManager.action(this.option, guildId, this.argument), guildId, event);
+                                } else {
+                                    logger.info("User is currently a manager");
+                                    sendToChannel(event, "It seems I've already hired that user as a manager.  Find moar " +
+                                            "humanz!");
+                                }
                             } else {
-                                logger.info("User is currently a manager");
-                                sendToChannel(event, "It seems I've already hired that user as a manager.  Find moar " +
-                                        "humanz!");
+                                sendToChannel(event, Const.NO_BOT_MANAGER);
                             }
-                        } else {
-                            sendToChannel(event, Const.NO_BOT_MANAGER);
+                        } catch (NullPointerException npe) {
+                            sendToChannel(event, "That person isn't a Discord user!  Try again!");
                         }
                         break;
                     default:
                         logger.info("Checking to see if the " + this.option + " already exists for guild: " + guildId);
-                        try {
-                            connection = Database.getInstance().getConnection();
-                            query = "SELECT `name` FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? " +
-                                    "AND `name` = ?";
-                            pStatement = connection.prepareStatement(query);
 
-                            pStatement.setString(1, guildId);
-                            pStatement.setInt(2, platformId);
-                            pStatement.setString(3, this.argument);
-                            resultSet = pStatement.executeQuery();
-                            if (resultSet.isBeforeFirst()) {
-                                sendToChannel(event, Const.ALREADY_EXISTS);
-                            } else {
-                                addOther(guildId, platformId, event);
-                            }
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        } finally {
-                            cleanUp(resultSet, pStatement, connection);
+                        if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
+                            sendToChannel(event, Const.ALREADY_EXISTS);
+                        } else {
+                            returnStatement(AddOther.action(this.option, guildId, platformId, this.argument),
+                                    guildId, event);
                         }
                         break;
                 }
@@ -142,8 +136,8 @@ public class Add implements Command {
         }
     }
 
-    private void returnStatement(String guildId, GuildMessageReceivedEvent event) {
-        if (resultInt > 0) {
+    private void returnStatement(Boolean success, String guildId, GuildMessageReceivedEvent event) {
+        if (success) {
             sendToChannel(event, "Added `" + this.option + "` " + this.argument);
             logger.info("Successfully added " + this.argument + " to the database for guildId: " +
                     guildId + ".");
@@ -151,43 +145,6 @@ public class Add implements Command {
             sendToChannel(event, "Failed to add `" + this.option + "` " + this.argument);
             logger.info("Failed to add " + this.option + " " + this.argument + " to the database for " +
                     "guildId: " + guildId + ".");
-        }
-    }
-
-    private void addOther(String guildId, Integer platformId, GuildMessageReceivedEvent event) {
-        try {
-            connection = Database.getInstance().getConnection();
-            query = "INSERT INTO `" + this.option + "` (`id`, `guildId`, `platformId`, `name`) VALUES " +
-                    "(null, ?, ?, ?)";
-            pStatement = connection.prepareStatement(query);
-
-            pStatement.setString(1, guildId);
-            pStatement.setInt(2, platformId);
-            pStatement.setString(3, this.argument);
-            resultInt = pStatement.executeUpdate();
-            returnStatement(guildId, event);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(pStatement, connection);
-        }
-    }
-
-    private void addManager(String guildId, GuildMessageReceivedEvent event) {
-        try {
-            connection = Database.getInstance().getConnection();
-            query = "INSERT INTO `" + this.option + "` (`id`, `guildId`, `userId`) VALUES " +
-                    "(null, ?, ?)";
-            pStatement = connection.prepareStatement(query);
-
-            pStatement.setString(1, guildId);
-            pStatement.setString(2, String.valueOf(dController.getMentionedUsersId()));
-            resultInt = pStatement.executeUpdate();
-            returnStatement(guildId, event);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(pStatement, connection);
         }
     }
 
@@ -200,28 +157,6 @@ public class Add implements Command {
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
         new Tracker("Add");
 
-    }
-
-    private boolean alreadyManager(String guildId, String userId) {
-        try {
-            connection = Database.getInstance().getConnection();
-            query = "SELECT COUNT(*) AS `count` FROM `manager` WHERE `guildId` = ? AND `userId` = ?";
-            pStatement = connection.prepareStatement(query);
-
-            pStatement.setString(1, guildId);
-            pStatement.setString(2, userId);
-            resultSet = pStatement.executeQuery();
-            while (resultSet.next()) {
-                if (resultSet.getInt("count") > 0) {
-                    return true; // If they are a manager already
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(resultSet, pStatement, connection);
-        }
-        return false; // If they're not a manger
     }
 
 }

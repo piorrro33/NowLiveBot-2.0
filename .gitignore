@@ -67,3 +67,4 @@ restart.sh
 start.sh
 OFFLINEconfig.properties
 ONLINEconfig.properties
+*.json

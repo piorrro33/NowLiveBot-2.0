@@ -16,7 +16,7 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public final class GuildLeave {
-    public static final Logger logger = LoggerFactory.getLogger("GuildLeave");
+    public static final Logger logger = LoggerFactory.getLogger("Guild Leave");
     private static List<String> tableList = new ArrayList<>();
     private static Connection connection = null;
     private static PreparedStatement pStatement = null;

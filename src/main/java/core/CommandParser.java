@@ -44,6 +44,7 @@ public class CommandParser {
         commands.put("ping", new Ping());
         commands.put("remove", new Remove());
         commands.put("streams", new Streams());
+        commands.put("twitch", new Twitch());
     }
 
     /**
@@ -77,15 +78,6 @@ public class CommandParser {
                 boolean safe = getCommands().get(cmd.invoke).called(cmd.args, cmd.event);
 
                 if (safe) {
-                    System.out.printf("[%s:%s][%s:%s][%s:%s] : %s%n",
-                            cmd.event.getGuild().getName(),
-                            cmd.event.getGuild().getId(),
-                            cmd.event.getChannel().getName(),
-                            cmd.event.getChannel().getId(),
-                            cmd.event.getAuthor().getName(),
-                            cmd.event.getAuthor().getId(),
-                            cmd.event.getMessage().getContent());
-
                     if (cmd.args != null && cmd.args.equals("help")) {
                         getCommands().get(cmd.invoke).help(cmd.event);
                     } else {

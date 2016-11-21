@@ -23,7 +23,7 @@ public interface Const {
     String BOT_NAME = "nowlivebot";
     String BOT_ID = "99852904504004608";
     String COMMAND = "nl";
-    String PLAYING = "Games";
+    String PLAYING = "with streams";
     // Language specific variables
     // TODO:  Replace 'En' with the guild language from the DB (when it's setup that way)
     String HELP_PM = En.HELP_PM;

@@ -73,8 +73,9 @@ public interface En {
             + Const.COMMAND
             + " add <option> <content>"
             + "\n\t<option>\t<content>"
-            + "\n\tgame - The name of the game exactly as it appears on the streaming platform"
             + "\n\tchannel - The streamer's name"
+            + "\n\tfilter - The game name that you want to filter streamers by"
+            + "\n\tgame - The name of the game exactly as it appears on the streaming platform"
             + "\n\tteam - The name of the streaming team (Twitch only)"
             + "\n\ttag - Word or group of words to search for in the stream title```";
     String ANNOUNCE_HELP = "```Ruby\nANNOUNCE:  Shhh...  I'm a secret...\nUSAGE:  "
@@ -140,8 +141,9 @@ public interface En {
             + Const.COMMAND
             + " remove <option> <content>"
             + "\n\t<option>\t<content>"
-            + "\n\tgame - The name of the game exactly as it appears on the streaming platform"
             + "\n\tchannel - The streamer's name"
+            + "\n\tfilter - The game name that you want to filter streamers by"
+            + "\n\tgame - The name of the game exactly as it appears on the streaming platform"
             + "\n\tteam - The name of the streaming team (Twitch only)"
             + "\n\ttag - Word or group of words to search for in the stream title```";
     String STREAMS_HELP = "```Ruby\nSTREAMS:  I'll send you a list of active streams as a PM. (NOTE: You will likely " +

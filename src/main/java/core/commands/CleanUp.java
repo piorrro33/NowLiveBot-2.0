@@ -3,25 +3,15 @@ package core.commands;
 import core.Command;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import util.Const;
-import util.database.Database;
+import util.database.calls.GetCleanUp;
 import util.database.calls.Tracker;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
 import static platform.discord.controller.DiscordController.sendToChannel;
-import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software by Ague Mort
  */
 public class CleanUp implements Command {
-
-    private Connection connection;
-    private PreparedStatement pStatement;
-    private Integer result;
-
 
     /**
      * Used to determine if appropriate arguments exist
@@ -66,22 +56,10 @@ public class CleanUp implements Command {
             default:
                 return;
         }
-        try {
-            connection = Database.getInstance().getConnection();
-            pStatement = connection.prepareStatement(query);
-
-            pStatement.setString(1, event.getGuild().getId());
-            result = pStatement.executeUpdate();
-
-            if (result.equals(1)) {
-                sendToChannel(event, returnStatement);
-            } else {
-                sendToChannel(event, Const.CLEANUP_FAIL);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(pStatement, connection);
+        if (GetCleanUp.action(event.getGuild().getId(), query)) {
+            sendToChannel(event, returnStatement);
+        } else {
+            sendToChannel(event, Const.CLEANUP_FAIL);
         }
     }
 

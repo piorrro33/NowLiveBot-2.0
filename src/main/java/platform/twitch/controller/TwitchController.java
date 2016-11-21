@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static util.database.Database.cleanUp;
@@ -33,10 +34,36 @@ public class TwitchController extends Twitch {
     private static PreparedStatement pStatement;
     private static ResultSet result;
     private PlatformController pController = new PlatformController();
-    private Logger logger = LoggerFactory.getLogger(TwitchController.class);
+    private Logger logger = LoggerFactory.getLogger("Twitch Controller");
 
     public TwitchController() {
         this.setClientId(PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+    }
+
+    private static synchronized List<String> checkFilters(String guildId) {
+        try {
+            String query = "SELECT * FROM `filter` WHERE `guildId` = ?";
+
+            connection = Database.getInstance().getConnection();
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            result = pStatement.executeQuery();
+
+            List<String> filters = new ArrayList<>();
+
+            if (result.isBeforeFirst()) {
+                while (result.next()) {
+                    filters.add(result.getString("name"));
+                }
+                return filters;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
+        }
+
+        return null;
     }
 
     public final synchronized void checkChannel(String channelName, String guildId, Integer platformId) {
@@ -49,11 +76,25 @@ public class TwitchController extends Twitch {
                 if (stream != null) {
                     // check if the status and game name are not null
                     if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
-
-                        pController.onlineStreamHandler(guildId, platformId, stream.getChannel().getDisplayName(),
-                                stream.getChannel().getStatus(), stream.getGame());
+                        // Checking filters
+                        List<String> filters = checkFilters(guildId);
+                        if (filters != null) {
+                            logger.info("Guild filters are present.  Checking to see if there's a match.");
+                            for (String filter : filters) {
+                                if (stream.getGame().equalsIgnoreCase(filter)) {
+                                    // If the game filter is equal to the game being played, announce the stream
+                                    pController.onlineStreamHandler(guildId, platformId, stream.getChannel().getDisplayName(),
+                                            stream.getChannel().getStatus(), stream.getGame());
+                                }
+                            }
+                        } else {
+                            // If no filters are set, announce the channel
+                            pController.onlineStreamHandler(guildId, platformId, stream.getChannel().getDisplayName(),
+                                    stream.getChannel().getStatus(), stream.getGame());
+                        }
                     }
                 } else {
+                    // If the stream is offline
                     pController.offlineStreamHandler(guildId, platformId, channelName);
                 }
             }
@@ -71,7 +112,7 @@ public class TwitchController extends Twitch {
     public final synchronized void checkGame(String gameName, String guildId, Integer platformId) {
 
         // Grab the stream info
-        for (Integer offset = 0; offset <= 1000; offset += 100) {
+        for (int offset = 0; offset <= 1000; offset += 100) {
             RequestParams params = new RequestParams();
             params.put("limit", 100);
             params.put("offset", offset);
@@ -81,30 +122,7 @@ public class TwitchController extends Twitch {
                 public void onSuccess(int total, List<Stream> list) {
                     for (Stream stream : list) {
                         if (stream.getGame().equalsIgnoreCase(gameName)) {
-                            try {
-                                String query = "SELECT `name` FROM `channel` WHERE `guildId` = ?";
-                                connection = Database.getInstance().getConnection();
-                                pStatement = connection.prepareStatement(query);
-                                pStatement.setString(1, guildId);
-                                result = pStatement.executeQuery();
-                                if (result.isBeforeFirst()) {
-                                    while (result.next()) {
-                                        if (result.getString("name").equalsIgnoreCase(stream.getChannel().getDisplayName())) {
-
-                                            pController.onlineStreamHandler(guildId, platformId, stream.getChannel().getDisplayName(),
-                                                    stream.getChannel().getStatus(), stream.getGame());
-                                        }
-                                    }
-                                } else {
-                                    pController.onlineStreamHandler(guildId, platformId, stream.getChannel().getDisplayName(),
-                                            stream.getChannel().getStatus(), stream.getGame());
-                                }
-                            } catch (SQLException e) {
-                                e.printStackTrace();
-                            } finally {
-                                cleanUp(result, pStatement, connection);
-                            }
-                            checkChannel(stream.getChannel().getDisplayName(), guildId, platformId);
+                            checkChannel(stream.getChannel().getName(), guildId, platformId);
                         }
                     }
                 }

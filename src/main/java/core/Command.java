@@ -3,6 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package core;
 
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;

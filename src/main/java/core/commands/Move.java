@@ -47,7 +47,7 @@ public class Move implements Command {
     public final void action(String args, GuildMessageReceivedEvent event) {
         // Get the channelID from the guild and insert into the DB
 
-        for (TextChannel textChannel : event.getJDA().getTextChannelsByName(args.substring(1), true)) {
+        for (TextChannel textChannel : event.getGuild().getTextChannelsByName(args.substring(1), true)) {
 
             if (textChannel.getGuild().getId().equals(event.getGuild().getId())) {
                 try {

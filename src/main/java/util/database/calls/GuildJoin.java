@@ -6,6 +6,7 @@ import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.Const;
 import util.database.Database;
 
 import java.sql.Connection;
@@ -92,7 +93,7 @@ public final class GuildJoin {
             }
         }
         if (failed == 0) {
-            gEvent.getGuild().getPublicChannel().sendMessage("Your guild has been added!!").queue();
+            gEvent.getGuild().getPublicChannel().sendMessage(Const.GUILD_JOIN_SUCCESS).queue();
         } else {
             gEvent.getGuild().getPublicChannel().sendMessage("There was an error adding your guild!!").queue();
         }
@@ -144,6 +145,7 @@ public final class GuildJoin {
 
     private static void addManager(GuildJoinEvent gEvent) {
         userIds = new ArrayList<>();
+        // Auto add the guild owner as a manager
         userIds.add(gEvent.getGuild().getOwner().getUser().getId());
         // Pull the roles from the guild
         for (Role role : gEvent.getGuild().getRoles()) {

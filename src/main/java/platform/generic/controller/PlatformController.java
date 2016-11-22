@@ -41,21 +41,22 @@ public class PlatformController {
      * @return Boolean
      */
     public static synchronized boolean addToStream(String guildId, Integer platformId, String channelName, String
-            streamTitle, String gameName) {
+            streamTitle, String gameName, String messageId) {
         try {
             String game = gameName;
             if (game == null || "".equals(game)) {
                 game = "Some Game";
             }
             atsConnection = Database.getInstance().getConnection();
-            query = "INSERT INTO `stream` (`guildId`, `platformId`, `channelName`, `streamTitle`, `gameName`) " +
-                    "VALUES (?,?,?,?,?)";
+            query = "INSERT INTO `stream` (`guildId`, `platformId`, `channelName`, `streamTitle`, `gameName`, " +
+                    "`messageId`) VALUES (?,?,?,?,?,?)";
             atsStatement = atsConnection.prepareStatement(query);
             atsStatement.setString(1, guildId);
             atsStatement.setInt(2, platformId);
             atsStatement.setString(3, channelName);
             atsStatement.setString(4, streamTitle);
             atsStatement.setString(5, game);
+            atsStatement.setString(6, messageId);
             atsStatement.executeUpdate();
             return true;
         } catch (SQLException e) {

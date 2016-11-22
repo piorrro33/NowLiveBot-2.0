@@ -17,6 +17,7 @@ import net.dv8tion.jda.core.requests.ErrorResponse;
 import net.dv8tion.jda.core.requests.RestAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
@@ -37,14 +38,12 @@ public class DiscordController {
     private static Connection connection;
     private static Connection nlConnection;
     private static Connection mhConnection;
-    private static Connection asConnection;
     private static Connection ceConnection;
     private static Connection gciConnection;
     private static Connection gplConnection;
     private static Connection ccConnection;
     private static PreparedStatement nlStatement;
     private static PreparedStatement mhStatement;
-    private static PreparedStatement asStatement;
     private static PreparedStatement ceStatement;
     private static PreparedStatement gciStatement;
     private static PreparedStatement gplStatement;
@@ -70,11 +69,12 @@ public class DiscordController {
         try {
             // Try sending to the channel it was moved to
             event.getMessage().getChannel().sendMessage(message).queue(
-                    success -> System.out.printf("[BOT -> GUILD][%s:%s][%s:%s]%n",
+                    success -> System.out.printf("[BOT -> GUILD][%s:%s][%s:%s]: %s%n",
                             event.getGuild().getName(),
                             event.getGuild().getId(),
                             event.getChannel().getName(),
-                            event.getChannel().getId()),
+                            event.getChannel().getId(),
+                            success.getContent()),
                     failure -> System.out.printf("[ERROR] Unable to send message to %s:%s %s:%s.  Trying public " +
                                     "channel.%n",
                             event.getGuild().getName(),
@@ -86,11 +86,12 @@ public class DiscordController {
         } catch (PermissionException ex) {
             // Try sending to the default channel
             event.getGuild().getPublicChannel().sendMessage(message).queue(
-                    success -> System.out.printf("[BOT -> GUILD][%s:%s][%s:%s]%n",
+                    success -> System.out.printf("[BOT -> GUILD][%s:%s][%s:%s]: %s%n",
                             event.getGuild().getName(),
                             event.getGuild().getId(),
                             event.getGuild().getPublicChannel().getName(),
-                            event.getGuild().getPublicChannel().getId()),
+                            event.getGuild().getPublicChannel().getId(),
+                            success.getContent()),
                     failure -> System.out.printf("[ERROR] Unable to send message to %s:%s, Public Channel: %s:%s.%n",
                             event.getGuild().getName(),
                             event.getGuild().getId(),
@@ -102,14 +103,15 @@ public class DiscordController {
 
     public static void sendToPm(GuildMessageReceivedEvent event, Message message) {
         event.getAuthor().openPrivateChannel().queue(
-                success -> {
-                    event.getAuthor().getPrivateChannel().sendMessage(message).queue();
-                    System.out.printf("[BOT -> PM][%s:%s][%s:%s]%n",
-                            event.getGuild().getName(),
-                            event.getGuild().getId(),
-                            event.getAuthor().getName(),
-                            event.getAuthor().getId());
-                },
+                success ->
+                        event.getAuthor().getPrivateChannel().sendMessage(message).queue(
+                                sentMessage -> System.out.printf("[BOT -> PM][%s:%s][%s:%s]: %s%n",
+                                        event.getGuild().getName(),
+                                        event.getGuild().getId(),
+                                        event.getAuthor().getName(),
+                                        event.getAuthor().getId(),
+                                        sentMessage.getContent())
+                        ),
                 failure -> System.out.printf("[ERROR] Unable to send PM to %s:%s, Author: %s:%s.%n",
                         event.getGuild().getName(),
                         event.getGuild().getId(),
@@ -119,18 +121,21 @@ public class DiscordController {
     }
 
     public static void sendToPm(PrivateMessageReceivedEvent event, Message message) {
-        event.getAuthor().openPrivateChannel().queue(
-                success -> {
-                    event.getAuthor().getPrivateChannel().sendMessage(message).queue();
-                    System.out.printf("[BOT -> PM][%s:%s]: %s%n",
+        if (!event.getAuthor().isBot()) { // Prevents errors if a bot auto-sends PM's on join
+            event.getAuthor().openPrivateChannel().queue(
+                    success -> {
+                        event.getAuthor().getPrivateChannel().sendMessage(message).queue(
+                                sentPM -> System.out.printf("[BOT -> PM][%s:%s]: %s%n",
+                                        event.getAuthor().getName(),
+                                        event.getAuthor().getId(),
+                                        sentPM.getContent())
+                        );
+                    },
+                    failure -> System.out.printf("[ERROR] Unable to send PM to author: %s:%s.%n",
                             event.getAuthor().getName(),
-                            event.getAuthor().getId(),
-                            message);
-                },
-                failure -> System.out.printf("[ERROR] Unable to send PM to author: %s:%s.%n",
-                        event.getAuthor().getName(),
-                        event.getAuthor().getId())
-        );
+                            event.getAuthor().getId())
+            );
+        }
     }
 
     public static synchronized void messageHandler(String guildId, Integer platformId, String channelName, String
@@ -140,11 +145,8 @@ public class DiscordController {
             case 1: // Stream is online
                 if (!checkStreamTable(guildId, platformId, channelName)) {
                     try {
-                        addToStream(guildId, platformId, channelName, streamTitle, gameName);
+
                         announceStream(guildId, platformId, channelName, streamTitle, gameName);
-                        System.out.printf("[ONLINE STREAM] %s has come online. Announced in: %s%n"
-                                , channelName
-                                , Main.getJDA().getGuildById(guildId).getName());
                     } catch (Exception e) {
                         logger.error("There was an error announcing the stream.");
                         e.printStackTrace();
@@ -179,8 +181,8 @@ public class DiscordController {
                                                 success -> {
 
                                                     // Replace the LIVE announcement with OFFLINE
-                                                    String rawContent = success.getRawContent().replace("NOW LIVE",
-                                                            "OFFLINE");
+                                                    String rawContent = success.getRawContent().replace(Const.NOW_LIVE,
+                                                            Const.OFFLINE);
 
                                                     // Update the old message
                                                     success.editMessage(rawContent).queue();
@@ -281,7 +283,7 @@ public class DiscordController {
 
         MessageBuilder message = new MessageBuilder();
 
-        message.appendString("***NOW LIVE!***\n");
+        message.appendString("***" + Const.NOW_LIVE + "***\n");
 
         notifyLevel(guildId, message);
 
@@ -315,28 +317,14 @@ public class DiscordController {
 
         Main.getJDA().getTextChannelById(channelId).sendMessage(message.build()).queue(
                 sentMessage -> {
-                    String msgId = sentMessage.getId();
-                    asConnection = Database.getInstance().getConnection();
-                    query = "UPDATE `stream` SET `messageId` = ? WHERE `guildId` = ? AND `platformId` = ? AND `channelName` =" +
-                            " ?";
-                    try {
-                        asStatement = asConnection.prepareStatement(query);
-                        asStatement.setString(1, msgId);
-                        asStatement.setString(2, guildId);
-                        asStatement.setInt(3, platformId);
-                        asStatement.setString(4, channelName);
-                        asStatement.executeUpdate();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    } finally {
-                        cleanUp(asStatement, asConnection);
-                    }
+                    addToStream(guildId, platformId, channelName, streamTitle, gameName, sentMessage.getId());
 
-                    System.out.printf("[STREAM ANNOUNCE][%s:%s][%s:%s]: %s%n",
+                    System.out.printf("[STREAM ANNOUNCE][%s:%s][%s:%s][%s]: %s%n",
                             Main.getJDA().getGuildById(guildId).getName(),
                             Main.getJDA().getGuildById(guildId).getId(),
                             Main.getJDA().getTextChannelById(getChannelId(guildId)).getName(),
                             Main.getJDA().getTextChannelById(getChannelId(guildId)).getId(),
+                            sentMessage.getId(),
                             channelName + " is streaming " + gameName);
 
                     new Tracker("Streams Announced");

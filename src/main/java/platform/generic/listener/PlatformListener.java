@@ -11,8 +11,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -24,12 +22,10 @@ import static util.database.Database.cleanUp;
  */
 public class PlatformListener {
     private static Logger logger = LoggerFactory.getLogger("Platform Listener");
-    private static Connection connection;
     private static Connection ceConnection;
     private static Connection clcConnection;
     private static Connection clgConnection;
     private static Connection kcConnection;
-    private static PreparedStatement pStatement;
     private static PreparedStatement ceStatement;
     private static PreparedStatement clcStatement;
     private static PreparedStatement clgStatement;
@@ -39,36 +35,13 @@ public class PlatformListener {
     private static ResultSet clgResult;
     private static ResultSet kcResult;
     private static String query;
-    private static List<String> tableList = new ArrayList<>();
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
     public PlatformListener() {
 
-        // Need to rethink this a little bit when I'm not so tired
-        // The idea is to check if the bot was booted while offline and still has remnants in the database
-        /*try {
-            List<Guild> activeGuilds = Main.getJDA().getGuilds();
-            query = "SELECT `guildId` FROM `guild`";
-            ceConnection = Database.getInstance().getConnection();
-            ceStatement = ceConnection.prepareStatement(query);
-            ceResult = ceStatement.executeQuery();
-            while (ceResult.next()) {
-                for (Guild guilds : activeGuilds) {
-                    if (!ceResult.getString("guildId").equals(guilds.getId())) {
-                        leaveGuild(ceResult.getString("guildId"));
-                        Main.getJDA().getGuildById(guilds.getId()).leave().queue();
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(ceResult, ceStatement, ceConnection);
-        }*/
-
         try {
-            executor.scheduleWithFixedDelay(this::checkLiveChannels, 0, 10, TimeUnit.SECONDS);
-            executor.scheduleWithFixedDelay(this::checkLiveGames, 0, 10, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::checkLiveChannels, 0, 30, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::checkLiveGames, 0, 30, TimeUnit.SECONDS);
         } catch (Exception e) {
             logger.info("******************* Caught an exception while keeping the executors active ", e);
             logger.info("Attempting to restart the executors...");

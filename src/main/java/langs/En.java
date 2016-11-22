@@ -68,7 +68,7 @@ public interface En {
             "suitable human for the job. :thumbsup:";
     String NEED_ONE_MANAGER = "If you remove that one, who will manage me?  ";
     String GUILD_JOIN_SUCCESS = "Hi there!  I'm Now Live, the stream announcing bot!  Type `" + Const.COMMAND_PREFIX
-            + Const.COMMAND + " help for a list of my commands.\n\nIf you need some help setting me up, come join my " +
+            + Const.COMMAND + "` help for a list of my commands.\n\nIf you need some help setting me up, come join my " +
             "Discord at https://discordapp.com/oauth2/authorize?&client_id="
             + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=224256 " +
             "and check out the how-to-setup and command-list channels for all the info!\n\nDon't forget to say hey!";

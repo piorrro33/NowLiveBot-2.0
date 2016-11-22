@@ -145,6 +145,7 @@ public final class GuildJoin {
 
     private static void addManager(GuildJoinEvent gEvent) {
         userIds = new ArrayList<>();
+        // Auto add the guild owner as a manager
         userIds.add(gEvent.getGuild().getOwner().getUser().getId());
         // Pull the roles from the guild
         for (Role role : gEvent.getGuild().getRoles()) {

@@ -92,25 +92,19 @@ public class Add implements Command {
         for (String s : this.options) {
             if (this.option.equals(s) && !this.option.equals("help")) {
 
-                System.out.println(args);
-
                 this.argument = this.argument.replace("'", "''");
 
                 switch (this.option) {
                     case "manager":
                         // Check to make sure the user is not a bot
                         try {
-                            logger.info("Checking to see if " + dController.getMentionedUsersId() + " already exists " +
-                                    "for guild: " + guildId);
+                            event.getMessage().getMentionedUsers();
                             if (!event.getJDA().getUserById(String.valueOf(dController.getMentionedUsersId())).isBot()) {
-                                logger.info("User is not a bot");
                                 if (!CountManagers.action(this.option, guildId, String.valueOf(dController
                                         .getMentionedUsersId()))) {
-                                    logger.info("User is currently not a manger.");
 
                                     returnStatement(AddManager.action(this.option, guildId, this.argument), guildId, event);
                                 } else {
-                                    logger.info("User is currently a manager");
                                     sendToChannel(event, "It seems I've already hired that user as a manager.  Find moar " +
                                             "humanz!");
                                 }
@@ -122,7 +116,6 @@ public class Add implements Command {
                         }
                         break;
                     default:
-                        logger.info("Checking to see if the " + this.option + " already exists for guild: " + guildId);
 
                         if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
                             sendToChannel(event, Const.ALREADY_EXISTS);

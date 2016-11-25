@@ -6,6 +6,7 @@
 package core.commands;
 
 import core.Command;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,19 +99,20 @@ public class Add implements Command {
                     case "manager":
                         // Check to make sure the user is not a bot
                         try {
-                            System.out.println(event.getMessage().getMentionedUsers());
-                            if (!event.getJDA().getUserById(String.valueOf(dController.getMentionedUsersId())).isBot()) {
-                                if (!CountManagers.action(this.option, guildId, String.valueOf(dController
-                                        .getMentionedUsersId()))) {
+                            for (User u : event.getMessage().getMentionedUsers()) {
+                                String userId = u.getId();
+                                if (!event.getJDA().getUserById(userId).isBot()) {
+                                    if (!CountManagers.action(this.option, guildId, userId)) {
 
-                                    returnStatement(AddManager.action(this.option, guildId, String.valueOf(dController
-                                            .getMentionedUsersId())), guildId, event);
+                                        returnStatement(AddManager.action(this.option, guildId, userId), guildId,
+                                                event);
+                                    } else {
+                                        sendToChannel(event, "It seems I've already hired that user as a manager.  Find moar " +
+                                                "humanz!");
+                                    }
                                 } else {
-                                    sendToChannel(event, "It seems I've already hired that user as a manager.  Find moar " +
-                                            "humanz!");
+                                    sendToChannel(event, Const.NO_BOT_MANAGER);
                                 }
-                            } else {
-                                sendToChannel(event, Const.NO_BOT_MANAGER);
                             }
                         } catch (NullPointerException npe) {
                             sendToChannel(event, "That person isn't a Discord user!  Try again!");

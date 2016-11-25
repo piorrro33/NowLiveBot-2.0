@@ -87,4 +87,5 @@ public interface Const {
     String REMOVE_HELP = En.REMOVE_HELP;
     String STREAMS_HELP = En.STREAMS_HELP;
     String STATUS_HELP = En.STATUS_HELP;
+    String TWITCH_HELP = En.TWITCH_HELP;
 }

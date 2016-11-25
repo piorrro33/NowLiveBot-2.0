@@ -9,6 +9,7 @@ import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,7 @@ public class Main {
     public static void main(String[] args) throws PropertyVetoException, IOException, SQLException {
         // Verify the database is there on startup
         Database.checkDatabase();
-        guildCheck();
+        //guildCheck();
 
         // Run mode~
         logger.info("Debug mode: " + debugMode());
@@ -85,14 +86,16 @@ public class Main {
     }
 
     private static void guildCheck() {
-        String query = "SELECT `guildId` FROM `guild`";
+        String query = "SELECT * FROM `guild`";
         connection = Database.getInstance().getConnection();
         try {
             pStatement = connection.prepareStatement(query);
             result = pStatement.executeQuery();
 
             while (result.next()) {
-                if (jda.getGuildById(result.getString("guildid")) != null) {
+                System.out.println(result.getString("guildId"));
+                Guild guildId = jda.getGuildById(result.getString("guildId"));
+                if (guildId == null) {
                     tableList.add("channel");
                     tableList.add("game");
                     tableList.add("guild");

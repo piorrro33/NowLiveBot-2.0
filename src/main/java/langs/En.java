@@ -159,4 +159,11 @@ public interface En {
             + Const.COMMAND
             + " streams```";
     String STATUS_HELP = "Haven't started working on this command yet";
+    String TWITCH_HELP = "```Ruby\nTWITCH:  Add and remove things that are Twitch.tv related.\nUSAGE:  "
+            + Const.COMMAND_PREFIX
+            + Const.COMMAND
+            + " twitch <sub-command> <option> <argument>"
+            + "\n\t<sub-command>\t<option>\t<argument>"
+            + "\n\tadd\tchannel\t<channel-name>"
+            + "\n\tremove\tchannel\t<channel-name>```";
 }

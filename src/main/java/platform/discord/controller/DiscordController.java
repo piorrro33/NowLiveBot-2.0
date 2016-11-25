@@ -300,18 +300,20 @@ public class DiscordController {
 
         // If the channel doesn't exist, reset it to the default public channel
         if (Main.getJDA().getTextChannelById(channelId) == null) {
-            channelId = Main.getJDA().getGuildById(guildId).getPublicChannel().getId();
-            try {
-                connection = Database.getInstance().getConnection();
-                query = "UPDATE `guild` SET `channelId` = ? WHERE `guildId` = ?";
-                pStatement = connection.prepareStatement(query);
-                pStatement.setString(1, channelId);
-                pStatement.setString(2, guildId);
-                pStatement.executeUpdate();
-            } catch (SQLException e) {
-                logger.error("There was an SQL Exception", e);
-            } finally {
-                cleanUp(pStatement, connection);
+            if (Main.getJDA().getGuildById(guildId).getPublicChannel() != null) {
+                channelId = Main.getJDA().getGuildById(guildId).getPublicChannel().getId();
+                try {
+                    connection = Database.getInstance().getConnection();
+                    query = "UPDATE `guild` SET `channelId` = ? WHERE `guildId` = ?";
+                    pStatement = connection.prepareStatement(query);
+                    pStatement.setString(1, channelId);
+                    pStatement.setString(2, guildId);
+                    pStatement.executeUpdate();
+                } catch (SQLException e) {
+                    logger.error("There was an SQL Exception", e);
+                } finally {
+                    cleanUp(pStatement, connection);
+                }
             }
         }
 

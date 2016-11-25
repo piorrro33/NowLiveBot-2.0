@@ -2,9 +2,11 @@ package core.commands;
 
 import core.Command;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import util.Const;
 import util.database.calls.Tracker;
 
 import static core.CommandParser.getCommands;
+import static platform.discord.controller.DiscordController.sendToChannel;
 
 /**
  * @author Veteran Software by Ague Mort
@@ -74,7 +76,7 @@ public class Twitch implements Command {
      */
     @Override
     public void help(GuildMessageReceivedEvent event) {
-
+        sendToChannel(event, Const.TWITCH_HELP);
     }
 
     /**

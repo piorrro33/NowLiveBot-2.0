@@ -16,6 +16,7 @@ public class Status implements Command {
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
+        return true;/*
         String[] options = new String[]{"discord", "database", "twitch", "all"};
 
         for (String s : options) {
@@ -35,7 +36,7 @@ public class Status implements Command {
             }
         }
         // If all checks fail
-        return false;
+        return false;*/
     }
 
     @Override

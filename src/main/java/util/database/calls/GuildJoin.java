@@ -150,7 +150,7 @@ public final class GuildJoin {
         // Pull the roles from the guild
         for (Role role : gEvent.getGuild().getRoles()) {
             // Check permissions of each role
-            if (role.hasPermission(Permission.MANAGE_SERVER)) {
+            if (role.hasPermission(Permission.MANAGE_SERVER) || role.hasPermission(Permission.ADMINISTRATOR)) {
                 // See if the user in question has the correct role
                 for (Member member : gEvent.getGuild().getMembersWithRoles((role))) {
                     // Add them to the list of authorized managers

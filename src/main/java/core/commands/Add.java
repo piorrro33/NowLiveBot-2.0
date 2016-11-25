@@ -98,12 +98,13 @@ public class Add implements Command {
                     case "manager":
                         // Check to make sure the user is not a bot
                         try {
-                            event.getMessage().getMentionedUsers();
+                            System.out.println(event.getMessage().getMentionedUsers());
                             if (!event.getJDA().getUserById(String.valueOf(dController.getMentionedUsersId())).isBot()) {
                                 if (!CountManagers.action(this.option, guildId, String.valueOf(dController
                                         .getMentionedUsersId()))) {
 
-                                    returnStatement(AddManager.action(this.option, guildId, this.argument), guildId, event);
+                                    returnStatement(AddManager.action(this.option, guildId, String.valueOf(dController
+                                            .getMentionedUsersId())), guildId, event);
                                 } else {
                                     sendToChannel(event, "It seems I've already hired that user as a manager.  Find moar " +
                                             "humanz!");

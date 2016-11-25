@@ -21,7 +21,14 @@ import util.database.Database;
 import javax.security.auth.login.LoginException;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software
@@ -33,6 +40,11 @@ public class Main {
     public static final CommandParser parser = new CommandParser();
     private static JDA jda;
     private static Logger logger = LoggerFactory.getLogger("Main");
+    private static Connection connection;
+    private static PreparedStatement pStatement;
+    private static ResultSet result;
+    private static Integer resultInt;
+    private static List<String> tableList = new ArrayList<>();
 
     public static JDA getJDA() {
         return jda;
@@ -41,6 +53,7 @@ public class Main {
     public static void main(String[] args) throws PropertyVetoException, IOException, SQLException {
         // Verify the database is there on startup
         Database.checkDatabase();
+        guildCheck();
 
         // Run mode~
         logger.info("Debug mode: " + debugMode());
@@ -69,5 +82,52 @@ public class Main {
 
     public static boolean debugMode() {
         return Boolean.parseBoolean(PropReader.getInstance().getProp().getProperty("mode.debug"));
+    }
+
+    private static void guildCheck() {
+        String query = "SELECT `guildId` FROM `guild`";
+        connection = Database.getInstance().getConnection();
+        try {
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
+
+            while (result.next()) {
+                if (jda.getGuildById(result.getString("guildid")) != null) {
+                    tableList.add("channel");
+                    tableList.add("game");
+                    tableList.add("guild");
+                    tableList.add("manager");
+                    tableList.add("notification");
+                    tableList.add("permission");
+                    tableList.add("stream");
+                    tableList.add("tag");
+                    tableList.add("team");
+
+                    try {
+                        connection = Database.getInstance().getConnection();
+                        for (String s : tableList) {
+                            query = "DELETE FROM `" + s + "` WHERE `guildId` = ?";
+                            pStatement = connection.prepareStatement(query);
+                            pStatement.setString(1, result.getString("guildid"));
+                            resultInt = pStatement.executeUpdate();
+                            if (!resultInt.equals(0)) {
+                                logger.info("Successfully deleted all data for Guild " + result.getString("guildid")
+                                        + " from the " + s.toUpperCase() + " table.");
+                            }
+                        }
+
+                    } catch (Exception e) {
+                        logger.error("Failed to remove info from Guild " + result.getString("guildid") + ".");
+                    } finally {
+                        cleanUp(pStatement, connection);
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
+        }
     }
 }

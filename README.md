@@ -13,6 +13,9 @@
 * HitBox
 
 ## The Basics
+
+> You MUST be a manager to execute these commands!
+
 ### Invite the bot to your server
 To add Now Live to your server, [click here](https://discordapp.com/oauth2/authorize?&client_id=240729664035880961&scope=bot&permissions=224256).
 
@@ -137,9 +140,8 @@ To remove a game, type:
 
 ---
 ## Now Live has a Discord Server!
-> Join us on Discord and chat with the developers!
 
-https://discord.gg/gKbbrFK
+[Join us on Discord and chat with the developers!](https://discord.gg/gKbbrFK)
 
 ---
 ## Problems?

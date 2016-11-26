@@ -25,6 +25,7 @@ import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import static platform.discord.controller.DiscordController.sendToChannel;
 import static platform.discord.controller.DiscordController.sendToPm;
 import static util.database.Database.logger;
 
@@ -107,7 +108,13 @@ public class DiscordListener extends ListenerAdapter {
     private void commandFilter(String cntMsg, GuildMessageReceivedEvent event)
             throws PropertyVetoException, IOException, SQLException {
         if (cntMsg.startsWith(Const.COMMAND_PREFIX + "ping") || cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND)) {
-            CommandParser.handleCommand(Main.parser.parse(cntMsg, event));
+            // Do a check to make sure that -nl add channel|team is not being used directly
+            if (!cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND + " add channel") &&
+                    !cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND + " add team")) {
+                CommandParser.handleCommand(Main.parser.parse(cntMsg, event));
+            } else {
+                sendToChannel(event, Const.USE_PLATFORM);
+            }
         }
     }
 }

@@ -6,9 +6,8 @@
 package core.commands;
 
 import core.Command;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import platform.discord.controller.DiscordController;
 import util.Const;
 import util.database.calls.*;
@@ -24,7 +23,6 @@ import static platform.generic.controller.PlatformController.getPlatformId;
  */
 public class Add implements Command {
 
-    private static final Logger logger = LoggerFactory.getLogger(Add.class);
     private String option;
     private String argument;
     private DiscordController dController;
@@ -96,20 +94,21 @@ public class Add implements Command {
 
                 switch (this.option) {
                     case "manager":
-                        // Check to make sure the user is not a bot
                         try {
-                            event.getMessage().getMentionedUsers();
-                            if (!event.getJDA().getUserById(String.valueOf(dController.getMentionedUsersId())).isBot()) {
-                                if (!CountManagers.action(this.option, guildId, String.valueOf(dController
-                                        .getMentionedUsersId()))) {
+                            for (User u : event.getMessage().getMentionedUsers()) {
+                                String userId = u.getId();
+                                // Check to make sure the user is not a bot
+                                if (!event.getJDA().getUserById(userId).isBot()) {
+                                    if (!CountManagers.action(this.option, guildId, userId)) {
 
-                                    returnStatement(AddManager.action(this.option, guildId, this.argument), guildId, event);
+                                        returnStatement(AddManager.action(this.option, guildId, userId), event);
+                                    } else {
+                                        sendToChannel(event, "It seems I've already hired that user as a manager.  Find moar " +
+                                                "humanz!");
+                                    }
                                 } else {
-                                    sendToChannel(event, "It seems I've already hired that user as a manager.  Find moar " +
-                                            "humanz!");
+                                    sendToChannel(event, Const.NO_BOT_MANAGER);
                                 }
-                            } else {
-                                sendToChannel(event, Const.NO_BOT_MANAGER);
                             }
                         } catch (NullPointerException npe) {
                             sendToChannel(event, "That person isn't a Discord user!  Try again!");
@@ -120,8 +119,7 @@ public class Add implements Command {
                         if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
                             sendToChannel(event, Const.ALREADY_EXISTS);
                         } else {
-                            returnStatement(AddOther.action(this.option, guildId, platformId, this.argument),
-                                    guildId, event);
+                            returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
                         }
                         break;
                 }
@@ -129,15 +127,11 @@ public class Add implements Command {
         }
     }
 
-    private void returnStatement(Boolean success, String guildId, GuildMessageReceivedEvent event) {
+    private void returnStatement(Boolean success, GuildMessageReceivedEvent event) {
         if (success) {
             sendToChannel(event, "Added `" + this.option + "` " + this.argument);
-            logger.info("Successfully added " + this.argument + " to the database for guildId: " +
-                    guildId + ".");
         } else {
             sendToChannel(event, "Failed to add `" + this.option + "` " + this.argument);
-            logger.info("Failed to add " + this.option + " " + this.argument + " to the database for " +
-                    "guildId: " + guildId + ".");
         }
     }
 

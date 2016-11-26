@@ -23,7 +23,7 @@ public interface Const {
     String BOT_NAME = "nowlivebot";
     String BOT_ID = "99852904504004608";
     String COMMAND = "nl";
-    String PLAYING = "with streams";
+    String PLAYING = COMMAND_PREFIX + COMMAND + " help";
     // Language specific variables
     // TODO:  Replace 'En' with the guild language from the DB (when it's setup that way)
     String HELP_PM = En.HELP_PM;
@@ -68,12 +68,6 @@ public interface Const {
     String COMPACT_FAILURE = En.COMPACT_FAILURE;
     String COMPACT_MODE_ON = En.COMPACT_MODE_ON;
     String COMPACT_MODE_OFF = En.COMPACT_MODE_OFF;
-    String DISABLE_HELP = En.DISABLE_HELP;
-    String DISABLE_SUCCESS = En.DISABLE_SUCCESS;
-    String DISABLE_FAIL = En.DISABLE_FAIL;
-    String ENABLE_HELP = En.ENABLE_HELP;
-    String ENABLE_SUCCESS = En.ENABLE_SUCCESS;
-    String ENABLE_FAIL = En.ENABLE_FAIL;
     String INVITE = En.INVITE;
     String INVITE_HELP = En.INVITE_HELP;
     String LIST_HELP = En.LIST_HELP;
@@ -87,4 +81,6 @@ public interface Const {
     String REMOVE_HELP = En.REMOVE_HELP;
     String STREAMS_HELP = En.STREAMS_HELP;
     String STATUS_HELP = En.STATUS_HELP;
+    String TWITCH_HELP = En.TWITCH_HELP;
+    String USE_PLATFORM = En.USE_PLATFORM;
 }

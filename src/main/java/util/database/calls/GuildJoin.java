@@ -105,8 +105,8 @@ public final class GuildJoin {
             case "guild":
                 try {
                     connection = Database.getInstance().getConnection();
-                    query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `isActive`, `cleanup`, " +
-                            "`emoji`) VALUES (?, ?, 0, 0, 0, ?)";
+                    query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `cleanup`, " +
+                            "`emoji`) VALUES (?, ?, 0, 0, ?)";
                     pStatement = connection.prepareStatement(query);
 
                     pStatement.setString(1, guildId);
@@ -150,7 +150,7 @@ public final class GuildJoin {
         // Pull the roles from the guild
         for (Role role : gEvent.getGuild().getRoles()) {
             // Check permissions of each role
-            if (role.hasPermission(Permission.MANAGE_SERVER)) {
+            if (role.hasPermission(Permission.MANAGE_SERVER) || role.hasPermission(Permission.ADMINISTRATOR)) {
                 // See if the user in question has the correct role
                 for (Member member : gEvent.getGuild().getMembersWithRoles((role))) {
                     // Add them to the list of authorized managers

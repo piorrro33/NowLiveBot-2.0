@@ -118,14 +118,15 @@ public class Remove implements Command {
                         break;
 
                     default:
-                        query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                        query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? AND " +
+                                "`name` LIKE ?";
                         try {
                             connection = Database.getInstance().getConnection();
                             pStatement = connection.prepareStatement(query);
 
                             pStatement.setString(1, guildId);
                             pStatement.setInt(2, platformId);
-                            pStatement.setString(3, this.argument);
+                            pStatement.setString(3, "%" + this.argument + "%");
                             Integer removeOther = pStatement.executeUpdate();
                             removeResponse(event, guildId, removeOther);
                         } catch (SQLException e) {

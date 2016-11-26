@@ -37,10 +37,6 @@ public interface En {
     String COMPACT_FAILURE = "Um, something went wrong.  My compact mode is unchanged.";
     String COMPACT_MODE_ON = "Compact mode has been turned on.";
     String COMPACT_MODE_OFF = "Compact mode has been turned off.";
-    String ENABLE_SUCCESS = "Yay!  I'm enabled!  Now I can start doing my job!";
-    String ENABLE_FAIL = ":crying_cat_face: That didn't work...";
-    String DISABLE_SUCCESS = "Why you want to disassemble Johnny 5?!??";
-    String DISABLE_FAIL = ":crying_cat_face: That didn't work... Give it another go.";
     String MOVE_DONT_OWN_CHANNEL = "Hey now, I can't announce to a channel that doesn't exists on your server!";
     String MOVE_FAILURE = "I can't seem to send announcements there.  Make sure I have the proper permissions in that" +
             " channel.";
@@ -66,7 +62,9 @@ public interface En {
     String CANT_REMOVE_OWNER = "Silly human, you can't remove the server owner from the manager list. :laughing: :laughing:";
     String NO_BOT_MANAGER = "It's against the Discord Bot Union By-Laws for bots to manage me. Sorry, try and find a " +
             "suitable human for the job. :thumbsup:";
-    String NEED_ONE_MANAGER = "If you remove that one, who will manage me?  ";
+    String NEED_ONE_MANAGER = "If you remove that one, who will manage me?";
+    String USE_PLATFORM = "Oops!  That's the old way of doing things!  Use the platform specific command!  Type `" +
+            Const.COMMAND_PREFIX + Const.COMMAND + "` help for more info.";
     String GUILD_JOIN_SUCCESS = "Hi there!  I'm Now Live, the stream announcing bot!  Type `" + Const.COMMAND_PREFIX
             + Const.COMMAND + "` help for a list of my commands.\n\nIf you need some help setting me up, come join my " +
             "Discord at https://discordapp.com/oauth2/authorize?&client_id="
@@ -103,14 +101,6 @@ public interface En {
             + "\n<option>"
             + "\n\ton - Turns on Compact Mode"
             + "\n\toff - Turns off Compact Mode```";
-    String ENABLE_HELP = "```Ruby\nENABLE:  Turn on my stream announcing abilities!\nUSAGE:  "
-            + Const.COMMAND_PREFIX
-            + Const.COMMAND
-            + " enable\n\tI will obey...```";
-    String DISABLE_HELP = "```Ruby\nDISABLE:  Turn off my stream announcing abilities!\nUSAGE:  "
-            + Const.COMMAND_PREFIX
-            + Const.COMMAND
-            + " disable\n\tIf I must...```";
     String INVITE = "Hey buddy! Invite me to your server!\n\n\t"
             + "**Click here:** https://discordapp.com/oauth2/authorize?&client_id="
             + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=224256";
@@ -159,4 +149,11 @@ public interface En {
             + Const.COMMAND
             + " streams```";
     String STATUS_HELP = "Haven't started working on this command yet";
+    String TWITCH_HELP = "```Ruby\nTWITCH:  Add and remove things that are Twitch.tv related.\nUSAGE:  "
+            + Const.COMMAND_PREFIX
+            + Const.COMMAND
+            + " twitch <sub-command> <option> <argument>"
+            + "\n\t<sub-command> <option> <argument>"
+            + "\n\tadd channel <channel-name>"
+            + "\n\tremove channel <channel-name>```";
 }

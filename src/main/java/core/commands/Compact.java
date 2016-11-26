@@ -62,7 +62,7 @@ public class Compact implements Command {
                         sendToChannel(event, Const.COMPACT_MODE_ON);
                         break;
                     default:
-                        System.out.println("[ERROR] This statement should never be reached.");
+                        System.out.println("[~ERROR~] This statement should never be reached.");
                         break;
                 }
             }

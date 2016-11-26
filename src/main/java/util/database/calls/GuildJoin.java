@@ -105,8 +105,8 @@ public final class GuildJoin {
             case "guild":
                 try {
                     connection = Database.getInstance().getConnection();
-                    query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `isActive`, `cleanup`, " +
-                            "`emoji`) VALUES (?, ?, 0, 0, 0, ?)";
+                    query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `cleanup`, " +
+                            "`emoji`) VALUES (?, ?, 0, 0, ?)";
                     pStatement = connection.prepareStatement(query);
 
                     pStatement.setString(1, guildId);

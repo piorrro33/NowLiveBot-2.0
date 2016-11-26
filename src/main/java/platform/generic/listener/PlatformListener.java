@@ -22,15 +22,12 @@ import static util.database.Database.cleanUp;
  */
 public class PlatformListener {
     private static Logger logger = LoggerFactory.getLogger("Platform Listener");
-    private static Connection ceConnection;
     private static Connection clcConnection;
     private static Connection clgConnection;
     private static Connection kcConnection;
-    private static PreparedStatement ceStatement;
     private static PreparedStatement clcStatement;
     private static PreparedStatement clgStatement;
     private static PreparedStatement kcStatement;
-    private static ResultSet ceResult;
     private static ResultSet clcResult;
     private static ResultSet clgResult;
     private static ResultSet kcResult;
@@ -46,27 +43,6 @@ public class PlatformListener {
             logger.info("******************* Caught an exception while keeping the executors active ", e);
             logger.info("Attempting to restart the executors...");
         }
-    }
-
-    private static synchronized boolean checkEnabled(String guildId) {
-        try {
-            ceConnection = Database.getInstance().getConnection();
-            query = "SELECT `isActive` FROM `guild` WHERE `guildId` = ?";
-            ceStatement = ceConnection.prepareStatement(query);
-
-            ceStatement.setString(1, guildId);
-            ceResult = ceStatement.executeQuery();
-            while (ceResult.next()) {
-                if (ceResult.getInt("isActive") == 1) {
-                    return true;
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(ceResult, ceStatement, ceConnection);
-        }
-        return false;
     }
 
     private static synchronized void killConn() {
@@ -111,17 +87,15 @@ public class PlatformListener {
             clcResult = clcStatement.executeQuery();
 
             while (clcResult.next()) {
-                if (checkEnabled(clcResult.getString("guildId"))) {
-                    switch (clcResult.getInt("platformId")) {
-                        case 1:
-                            TwitchController twitch = new TwitchController();
-                            // Send info to Twitch Controller
-                            twitch.checkChannel(clcResult.getString("name"), clcResult.getString("guildId"), clcResult.getInt
-                                    ("platformId"));
-                            break;
-                        default:
-                            break;
-                    }
+                switch (clcResult.getInt("platformId")) {
+                    case 1:
+                        TwitchController twitch = new TwitchController();
+                        // Send info to Twitch Controller
+                        twitch.checkChannel(clcResult.getString("name"), clcResult.getString("guildId"), clcResult.getInt
+                                ("platformId"));
+                        break;
+                    default:
+                        break;
                 }
                 killConn();
             }
@@ -142,17 +116,15 @@ public class PlatformListener {
             clgResult = clgStatement.executeQuery();
 
             while (clgResult.next()) {
-                if (checkEnabled(clgResult.getString("guildId"))) {
-                    switch (clgResult.getInt("platformId")) {
-                        case 1:
-                            // Send info to Twitch Controller
-                            TwitchController twitch = new TwitchController();
-                            twitch.checkGame(clgResult.getString("name").replaceAll("''", "'"), clgResult.getString
-                                    ("guildId"), clgResult.getInt("platformId"));
-                            break;
-                        default:
-                            break;
-                    }
+                switch (clgResult.getInt("platformId")) {
+                    case 1:
+                        // Send info to Twitch Controller
+                        TwitchController twitch = new TwitchController();
+                        twitch.checkGame(clgResult.getString("name").replaceAll("''", "'"),
+                                clgResult.getString("guildId"), clgResult.getInt("platformId"));
+                        break;
+                    default:
+                        break;
                 }
                 killConn();
             }

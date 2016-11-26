@@ -75,7 +75,7 @@ public class DiscordController {
                             event.getChannel().getName(),
                             event.getChannel().getId(),
                             success.getContent()),
-                    failure -> System.out.printf("[ERROR] Unable to send message to %s:%s %s:%s.  Trying public " +
+                    failure -> System.out.printf("[~ERROR~] Unable to send message to %s:%s %s:%s.  Trying public " +
                                     "channel.%n",
                             event.getGuild().getName(),
                             event.getGuild().getId(),
@@ -92,7 +92,7 @@ public class DiscordController {
                             event.getGuild().getPublicChannel().getName(),
                             event.getGuild().getPublicChannel().getId(),
                             success.getContent()),
-                    failure -> System.out.printf("[ERROR] Unable to send message to %s:%s, Public Channel: %s:%s.%n",
+                    failure -> System.out.printf("[~ERROR~] Unable to send message to %s:%s, Public Channel: %s:%s.%n",
                             event.getGuild().getName(),
                             event.getGuild().getId(),
                             event.getChannel().getName(),
@@ -112,7 +112,7 @@ public class DiscordController {
                                         event.getAuthor().getId(),
                                         sentMessage.getContent())
                         ),
-                failure -> System.out.printf("[ERROR] Unable to send PM to %s:%s, Author: %s:%s.%n",
+                failure -> System.out.printf("[~ERROR~] Unable to send PM to %s:%s, Author: %s:%s.%n",
                         event.getGuild().getName(),
                         event.getGuild().getId(),
                         event.getAuthor().getName(),
@@ -131,7 +131,7 @@ public class DiscordController {
                                         sentPM.getContent())
                         );
                     },
-                    failure -> System.out.printf("[ERROR] Unable to send PM to author: %s:%s.%n",
+                    failure -> System.out.printf("[~ERROR~] Unable to send PM to author: %s:%s.%n",
                             event.getAuthor().getName(),
                             event.getAuthor().getId())
             );
@@ -243,7 +243,7 @@ public class DiscordController {
                                                         System.err.println("got unexpected error");
                                                         error.printStackTrace();
                                                     }
-                                                    System.out.printf("[ERROR] %s has gone offline. There was an " +
+                                                    System.out.printf("[~ERROR~] %s has gone offline. There was an " +
                                                                     "error deleting it from guild: %s%n",
                                                             channelName,
                                                             Main.getJDA().getGuildById(guildId).getName());
@@ -261,8 +261,11 @@ public class DiscordController {
                     } catch (SQLException e) {
                         e.printStackTrace();
                     } catch (PermissionException pe) {
-                        logger.error("There was a permission exception when trying to read message history.",
-                                pe.getMessage());
+                        System.out.printf("[~ERROR~] There was a permission exception when trying to read message " +
+                                        "history in G:%s, C:%s, M:%s%n",
+                                Main.getJDA().getGuildById(guildId).getName(),
+                                Main.getJDA().getTextChannelById(getChannelId(guildId)).getName(),
+                                getMessageId(guildId, platformId, channelName));
                     } catch (NullPointerException npe) {
                         logger.error("There was a NPE when trying to edit/delete a message.",
                                 npe.getMessage());
@@ -289,31 +292,34 @@ public class DiscordController {
 
         if (checkCompact(guildId).equals(1)) {
             message.appendString("**" + channelName + "** is playing **" + gameName + "** at ");
-            message.appendString("<" + getPlatformLink(platformId) + channelName + ">");
+            message.appendString("<" + getPlatformLink(platformId) + channelName + ">\n");
         } else {
             message.appendString("\t**" + channelName + "** is playing **" + gameName + "**!\n");
             message.appendString("\t\t*" + streamTitle + "*\n");
-            message.appendString("\t\tWatch them here: " + getPlatformLink(platformId) + channelName);
+            message.appendString("\t\tWatch them here: " + getPlatformLink(platformId) + channelName + "\n");
         }
         // TODO: re-enable once emoji command is enabled
         //checkEmoji(guildId, message);
 
-        // If the channel doesn't exist, reset it to the default public channel
+        // If the channel doesn't exist, reset it to the default public channel which is the guildId
         if (Main.getJDA().getTextChannelById(channelId) == null) {
-            if (Main.getJDA().getGuildById(guildId).getPublicChannel() != null) {
-                channelId = Main.getJDA().getGuildById(guildId).getPublicChannel().getId();
-                try {
-                    connection = Database.getInstance().getConnection();
-                    query = "UPDATE `guild` SET `channelId` = ? WHERE `guildId` = ?";
-                    pStatement = connection.prepareStatement(query);
-                    pStatement.setString(1, channelId);
-                    pStatement.setString(2, guildId);
-                    pStatement.executeUpdate();
-                } catch (SQLException e) {
-                    logger.error("There was an SQL Exception", e);
-                } finally {
-                    cleanUp(pStatement, connection);
+            try {
+                if (Main.getJDA().getTextChannelById(guildId) != null) {
+                    try {
+                        connection = Database.getInstance().getConnection();
+                        query = "UPDATE `guild` SET `channelId` = ? WHERE `guildId` = ?";
+                        pStatement = connection.prepareStatement(query);
+                        pStatement.setString(1, guildId);
+                        pStatement.setString(2, guildId);
+                        pStatement.executeUpdate();
+                    } catch (SQLException e) {
+                        logger.error("There was an SQL Exception", e);
+                    } finally {
+                        cleanUp(pStatement, connection);
+                    }
                 }
+            } catch (NullPointerException npe) {
+                logger.error("There was a NPE in Discord Controller");
             }
         }
 
@@ -439,12 +445,12 @@ public class DiscordController {
                         User user = Main.getJDA().getUserById(userId);
                         message.appendString("Hey ");
                         message.appendMention(user);
-                        message.appendString(",  ");
+                        message.appendString(", ");
                         break;
                     case 2: // User wants @here mention
                         message.appendString("Hey ");
                         message.appendHereMention();
-                        message.appendString(",  ");
+                        message.appendString(", ");
                         break;
                     case 3: // User wants @everyone mention
                         message.appendString("Hey ");

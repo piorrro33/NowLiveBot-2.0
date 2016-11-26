@@ -22,6 +22,9 @@ public class Twitch implements Command {
     @Override
     public boolean called(String args, GuildMessageReceivedEvent event) {
         if (args != null && !"".equals(args)) {
+            if (args.equals("help")) {
+                return true;
+            }
             String secondaryCommand = args.substring(0, args.indexOf(' '));
             switch (secondaryCommand) {
                 case "add":
@@ -47,8 +50,6 @@ public class Twitch implements Command {
         String calledArgs = args.substring(args.indexOf(' ') + 1);
         // the args to be passed along with the platform identifier
         String secondaryArgs = "twitch~" + args.substring(args.indexOf(' ') + 1);
-
-        System.out.println(secondaryArgs);
         switch (secondaryCommand) {
             case "add":
             case "remove":

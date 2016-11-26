@@ -16,6 +16,31 @@
 
 > You MUST be a manager to execute these commands!
 
+### Permissions (The How & Why)
+
+> Now Live requires the following permissions in order to do what you expect out of it.
+
+#### Read Messages
+Allows the bot to read messages sent in your server so it can recognize and act on commands.
+
+#### Send Messages
+Allows the bot to announce streams and respond to commands.
+
+#### Manage Messages
+Allows the bot edit and delete its announcements when streamers go offline.
+
+#### Embed Links
+Allows the bot to embed links that direct people to the announced stream (also adds the embedded image from the 
+streamer's channel).
+
+#### Read Message History
+Allows the bot to search through previous messages to look for its announcements so it can edit and delete them as 
+needed.
+
+#### Mention Everyone
+Allows the bot to use @everyone, @here, and @<user> mentions when making announcements (depending on how the bot is 
+configured in your server)
+
 ### Invite the bot to your server
 To add Now Live to your server, [click here](https://discordapp.com/oauth2/authorize?&client_id=240729664035880961&scope=bot&permissions=224256).
 
@@ -60,11 +85,6 @@ To remove a game, type:
 
 `-nl move #<channel-name>`
 
-### Enable the Bot
-> **NOTE:** The bot is disabled by default!
-
-`-nl enable`
-
 ---
 ## Command List
 ### Add (Managers only)
@@ -87,16 +107,6 @@ To remove a game, type:
 
 `-nl compact on`
 `-nl compact off` *(default)*
-
-### Disable (Server Owner only)
-> Disables the bot
-
-`-nl disable`
-
-### Enable (Server Owner only)
-> Enable the bot
-
-`-nl enable`
 
 ### List
 > List the specified things from the database for the Discord server
@@ -132,7 +142,7 @@ To remove a game, type:
 
 `-nl streams`
 
-### Twitch
+### Twitch (Managers only)
 > Adds and removes Twitch channels to monitor
 
 `-nl twitch add channel <channel-name>`

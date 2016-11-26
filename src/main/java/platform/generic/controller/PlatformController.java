@@ -149,6 +149,8 @@ public class PlatformController {
             switch (platform) {
                 case "twitch":
                     return 1;
+                case "beam":
+                    return 2;
                 default:
                     break;
             }

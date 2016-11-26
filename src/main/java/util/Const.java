@@ -59,6 +59,7 @@ public interface Const {
     // Command specific text
     String ADD_HELP = En.ADD_HELP;
     String ANNOUNCE_HELP = En.ANNOUNCE_HELP;
+    String BEAM_HELP = En.BEAM_HELP;
     String CLEANUP_HELP = En.CLEANUP_HELP;
     String CLEANUP_SUCCESS_NONE = En.CLEANUP_SUCCESS_NONE;
     String CLEANUP_SUCCESS_EDIT = En.CLEANUP_SUCCESS_EDIT;

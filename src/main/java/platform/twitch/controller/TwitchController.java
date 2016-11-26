@@ -9,9 +9,7 @@ import com.mb3364.http.RequestParams;
 import com.mb3364.twitch.api.Twitch;
 import com.mb3364.twitch.api.handlers.StreamResponseHandler;
 import com.mb3364.twitch.api.handlers.StreamsResponseHandler;
-import com.mb3364.twitch.api.handlers.TeamResponseHandler;
 import com.mb3364.twitch.api.models.Stream;
-import com.mb3364.twitch.api.models.Team;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import platform.generic.controller.PlatformController;
@@ -42,7 +40,7 @@ public class TwitchController extends Twitch {
         this.setClientId(PropReader.getInstance().getProp().getProperty("twitch.client.id"));
     }
 
-    private static synchronized List<String> checkFilters(String guildId) {
+    public static synchronized List<String> checkFilters(String guildId) {
         try {
             String query = "SELECT * FROM `filter` WHERE `guildId` = ?";
 
@@ -81,7 +79,6 @@ public class TwitchController extends Twitch {
                         // Checking filters
                         List<String> filters = checkFilters(guildId);
                         if (filters != null) {
-                            logger.info("Guild filters are present.  Checking to see if there's a match.");
                             for (String filter : filters) {
                                 if (stream.getGame().equalsIgnoreCase(filter)) {
                                     // If the game filter is equal to the game being played, announce the stream

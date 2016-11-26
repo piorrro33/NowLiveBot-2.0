@@ -19,6 +19,7 @@ public interface En {
 
     // Don't forget to add the String reference in Const.java
 
+    String SHRUG = "¯\\_(ツ)_/¯";
     String EMPTY_ARGS = "I think you forgot some of the command.  Check the help command for more info.";
     String EMPTY_COMMAND = "Next time you wake me up, please send a command as well.";
     String HELP_PM = "Hey there!  I heard you needed some help.  Below is the list of commands I recognize.\n\n";
@@ -28,7 +29,7 @@ public interface En {
             "been setup yet.  Please try your PM again later.";
     String TYPE_ONCE = "You only need to type that part once, silly.";
     String WRONG_COMMAND = "Hmm... I don't know that command.";
-    String ALREADY_EXISTS = "/shrug It looks like you already added that to my database.";
+    String ALREADY_EXISTS = "It looks like you already added that to my database. " + SHRUG;
     String DOESNT_EXIST = "That was never added to my database.";
     String CLEANUP_SUCCESS_NONE = "Ok, I won't do anything to my announcements.";
     String CLEANUP_SUCCESS_EDIT = "Editing my announcements, it is.";
@@ -64,11 +65,10 @@ public interface En {
             "suitable human for the job. :thumbsup:";
     String NEED_ONE_MANAGER = "If you remove that one, who will manage me?";
     String USE_PLATFORM = "Oops!  That's the old way of doing things!  Use the platform specific command!  Type `" +
-            Const.COMMAND_PREFIX + Const.COMMAND + "` help for more info.";
+            Const.COMMAND_PREFIX + Const.COMMAND + " help` for more info.";
     String GUILD_JOIN_SUCCESS = "Hi there!  I'm Now Live, the stream announcing bot!  Type `" + Const.COMMAND_PREFIX
             + Const.COMMAND + "` help for a list of my commands.\n\nIf you need some help setting me up, come join my " +
-            "Discord at https://discordapp.com/oauth2/authorize?&client_id="
-            + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=224256 " +
+            "Discord at https://discord.gg/gKbbrFK " +
             "and check out the how-to-setup and command-list channels for all the info!\n\nDon't forget to say hey!";
 
     // Command specific text
@@ -86,6 +86,13 @@ public interface En {
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " announce <content>\n\tThis command is only available to the developers.```";
+    String BEAM_HELP = "```Ruby\nBEAM:  Add and remove things that are Beam.pro related.\nUSAGE:  "
+            + Const.COMMAND_PREFIX
+            + Const.COMMAND
+            + " beam <sub-command> <option> <argument>"
+            + "\n\t<sub-command> <option> <argument>"
+            + "\n\tadd channel <channel-name>"
+            + "\n\tremove channel <channel-name>```";
     String CLEANUP_HELP = "```Ruby\nCLEANUP:  Change the way I clean up my stream announcements.\nUSAGE:"
             + Const.COMMAND_PREFIX
             + Const.COMMAND

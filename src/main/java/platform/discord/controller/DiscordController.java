@@ -6,8 +6,10 @@
 package platform.discord.controller;
 
 import core.Main;
+import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
@@ -21,6 +23,7 @@ import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
+import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -139,14 +142,13 @@ public class DiscordController {
     }
 
     public static synchronized void messageHandler(String guildId, Integer platformId, String channelName, String
-            streamTitle, String gameName, Integer online) {
+            streamTitle, String gameName, Integer online, String url, String thumbnail, String banner) {
 
         switch (online) {
             case 1: // Stream is online
                 if (!checkStreamTable(guildId, platformId, channelName)) {
                     try {
-
-                        announceStream(guildId, platformId, channelName, streamTitle, gameName);
+                        announceStream(guildId, platformId, channelName, streamTitle, gameName, url, thumbnail, banner);
                     } catch (Exception e) {
                         logger.error("There was an error announcing the stream.");
                         e.printStackTrace();
@@ -280,26 +282,58 @@ public class DiscordController {
     }
 
     private static synchronized void announceStream(String guildId, Integer platformId, String channelName, String
-            streamTitle, String gameName) {
+            streamTitle, String gameName, String url, String thumbnail, String banner) {
         // Send the message to the appropriate channel
         String channelId = getChannelId(guildId);
 
-        MessageBuilder message = new MessageBuilder();
 
-        message.appendString("**" + Const.NOW_LIVE + "**\n");
+        EmbedBuilder eBuilder = new EmbedBuilder();
+        StringBuilder msgDesc = new StringBuilder();
+        MessageBuilder mBuilder = new MessageBuilder();
 
-        notifyLevel(guildId, message);
-
-        if (checkCompact(guildId).equals(1)) {
-            message.appendString("**" + channelName + "** is playing **" + gameName + "** at ");
-            message.appendString("<" + getPlatformLink(platformId) + channelName + ">\n");
-        } else {
-            message.appendString("\t**" + channelName + "** is playing **" + gameName + "**!\n");
-            message.appendString("\t\t*" + streamTitle + "*\n");
-            message.appendString("\t\tWatch them here: " + getPlatformLink(platformId) + channelName + "\n");
-        }
+        notifyLevel(guildId, mBuilder);
         // TODO: re-enable once emoji command is enabled
         //checkEmoji(guildId, message);
+
+        float[] rgb;
+
+        switch (platformId) {
+            case 1:
+                rgb = Color.RGBtoHSB(100, 65, 165, null);
+                eBuilder.setColor(Color.getHSBColor(rgb[0], rgb[1], rgb[2]));
+                break;
+            case 2:
+                rgb = Color.RGBtoHSB(83, 109, 254, null);
+                eBuilder.setColor(Color.getHSBColor(rgb[0], rgb[1], rgb[2]));
+                break;
+            default:
+                // Never should hit
+                break;
+        }
+
+        eBuilder.setAuthor(Const.NOW_LIVE, Const.DISCORD_URL, Const.BOT_LOGO);
+
+        eBuilder.setTitle(channelName + " is streaming " + gameName + "!");
+
+        msgDesc.append(streamTitle + "\n");
+        msgDesc.append("Watch them here: " + url);
+
+        eBuilder.setDescription(msgDesc.toString());
+        if (thumbnail != null || !"".equals(thumbnail)) {
+            eBuilder.setThumbnail(thumbnail);
+        }
+
+        if (checkCompact(guildId).equals(0)) {
+            if (banner != null || !"".equals(banner)) {
+                eBuilder.setImage(banner);
+            }
+        }
+
+        MessageEmbed embed = eBuilder.build();
+
+        mBuilder.setEmbed(embed);
+
+        Message message = mBuilder.build();
 
         // If the channel doesn't exist, reset it to the default public channel which is the guildId
         if (Main.getJDA().getTextChannelById(channelId) == null) {
@@ -323,21 +357,29 @@ public class DiscordController {
             }
         }
 
-        Main.getJDA().getTextChannelById(channelId).sendMessage(message.build()).queue(
-                sentMessage -> {
-                    addToStream(guildId, platformId, channelName, streamTitle, gameName, sentMessage.getId());
+        try {
+            Main.getJDA().getTextChannelById(channelId).sendMessage(message).queue(
+                    sentMessage -> {
+                        addToStream(guildId, platformId, channelName, streamTitle, gameName, sentMessage.getId());
 
-                    System.out.printf("[STREAM ANNOUNCE][%s:%s][%s:%s][%s]: %s%n",
-                            Main.getJDA().getGuildById(guildId).getName(),
-                            Main.getJDA().getGuildById(guildId).getId(),
-                            Main.getJDA().getTextChannelById(getChannelId(guildId)).getName(),
-                            Main.getJDA().getTextChannelById(getChannelId(guildId)).getId(),
-                            sentMessage.getId(),
-                            channelName + " is streaming " + gameName);
+                        System.out.printf("[STREAM ANNOUNCE][%s:%s][%s:%s][%s]: %s%n",
+                                Main.getJDA().getGuildById(guildId).getName(),
+                                Main.getJDA().getGuildById(guildId).getId(),
+                                Main.getJDA().getTextChannelById(getChannelId(guildId)).getName(),
+                                Main.getJDA().getTextChannelById(getChannelId(guildId)).getId(),
+                                sentMessage.getId(),
+                                channelName + " is streaming " + gameName);
 
-                    new Tracker("Streams Announced");
-                }
-        );
+                        new Tracker("Streams Announced");
+                    }
+            );
+        } catch (PermissionException pe) {
+            System.out.printf("[~ERROR~] Permission Exception! G:%s:%s C:%s:%s%n",
+                    Main.getJDA().getGuildById(guildId).getName(),
+                    guildId,
+                    Main.getJDA().getTextChannelById(channelId).getName(),
+                    channelId);
+        }
     }
 
     private static synchronized Integer checkCompact(String guildId) {
@@ -349,7 +391,8 @@ public class DiscordController {
             result = pStatement.executeQuery();
 
             while (result.next()) {
-                return result.getInt("isCompact");
+                Integer isCompact = result.getInt("isCompact");
+                return isCompact;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -445,20 +488,20 @@ public class DiscordController {
                         User user = Main.getJDA().getUserById(userId);
                         message.appendString("Hey ");
                         message.appendMention(user);
-                        message.appendString(", ");
+                        message.appendString("! Check out this streamer that just went live!");
                         break;
                     case 2: // User wants @here mention
                         message.appendString("Hey ");
                         message.appendHereMention();
-                        message.appendString(", ");
+                        message.appendString("! Check out this streamer that just went live!");
                         break;
                     case 3: // User wants @everyone mention
                         message.appendString("Hey ");
                         message.appendEveryoneMention();
-                        message.appendString(",  ");
+                        message.appendString("! Check out this streamer that just went live!");
                         break;
-                    default: // No mention
-                        message.appendString("");
+                    default:
+                        // No mention
                         break;
                 }
             }

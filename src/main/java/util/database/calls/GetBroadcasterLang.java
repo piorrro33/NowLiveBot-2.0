@@ -27,7 +27,8 @@ public class GetBroadcasterLang {
             pStatement.setString(1, guildId);
             result = pStatement.executeQuery();
             while (result.next()) {
-                return result.getString("broadcasterLang");
+                String broadcasterLang = result.getString("broadcasterLang");
+                return broadcasterLang;
             }
         } catch (SQLException e) {
             e.printStackTrace();

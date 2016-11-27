@@ -77,8 +77,7 @@ public class TwitchController extends Twitch {
                 if (stream != null) {
                     // Check for tracked broadcaster languages
                     String casterLang = GetBroadcasterLang.action(guildId);
-                    if (casterLang != null && (stream.getChannel().getBroadcasterLanguage().equals(casterLang) ||
-                            casterLang.equals("all"))) {
+                    if (casterLang.equals(stream.getChannel().getBroadcasterLanguage()) || "all".equals(casterLang)) {
                         // check if the status and game name are not null
                         if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
                             // Checking filters
@@ -88,13 +87,16 @@ public class TwitchController extends Twitch {
                                     if (stream.getGame().equalsIgnoreCase(filter)) {
                                         // If the game filter is equal to the game being played, announce the stream
                                         pController.onlineStreamHandler(guildId, platformId, stream.getChannel().getName(),
-                                                stream.getChannel().getStatus(), stream.getGame());
+                                                stream.getChannel().getStatus(), stream.getGame(), stream.getChannel
+                                                        ().getUrl(), stream.getChannel().getLogo(), stream.getChannel()
+                                                        .getProfileBanner());
                                     }
                                 }
                             } else {
                                 // If no filters are set, announce the channel
                                 pController.onlineStreamHandler(guildId, platformId, stream.getChannel().getName(),
-                                        stream.getChannel().getStatus(), stream.getGame());
+                                        stream.getChannel().getStatus(), stream.getGame(), stream.getChannel().getUrl(),
+                                        stream.getChannel().getLogo(), stream.getChannel().getProfileBanner());
                             }
                         }
                     }

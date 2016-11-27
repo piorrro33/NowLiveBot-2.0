@@ -19,6 +19,8 @@ public interface Const {
     // Commonly used Constants
 
     String TWITCH_CLIENT_ID = "7713uzjnh50pdd9v2v0apto553xeo67";
+    String DISCORD_URL = "https://discord.gg/gKbbrFK";
+    String BOT_LOGO = "https://cdn.discordapp.com/attachments/251541740484296705/251973422521778177/nl2_bot.png";
     String COMMAND_PREFIX = "-";// Requires single, regex safe character (at the moment) wahahahaha
     String BOT_NAME = "nowlivebot";
     String BOT_ID = "99852904504004608";

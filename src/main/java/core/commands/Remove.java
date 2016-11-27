@@ -143,8 +143,6 @@ public class Remove implements Command {
     private void removeResponse(GuildMessageReceivedEvent event, String guildId, Integer resultVar) {
         if (resultVar > 0) {
             sendToChannel(event, "Removed `" + this.option + "` " + this.argument);
-            logger.info("Successfully removed " + this.argument + " from the database for guildId: " +
-                    guildId + ".");
         } else {
             sendToChannel(event, "I can't remove `" + this.option + "` " + this.argument + " because " +
                     "it's not in my database.");

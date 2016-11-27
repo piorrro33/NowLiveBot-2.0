@@ -14,6 +14,12 @@ def appName = 'NowLive'
 group 'com.nowlivebot'
 version '0.1-VS-PreRelease'
 
+compileJava.options.encoding = 'UTF-8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
 task copyExtra {
     outputs.file new File("$buildDir/LICENSE")
     doLast {

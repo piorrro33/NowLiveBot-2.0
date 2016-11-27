@@ -43,6 +43,7 @@ public class CommandParser {
         commands.put("permissions", new Permissions());
         commands.put("ping", new Ping());
         commands.put("remove", new Remove());
+        commands.put("streamlang", new Language());
         commands.put("streams", new Streams());
         commands.put("twitch", new Twitch());
     }
@@ -72,32 +73,57 @@ public class CommandParser {
         if (getCommands().containsKey(cmd.invoke)) {
 
             // Check and see if the command requires elevated permissions and how to handle that
-            Boolean adminCheck = perms.checkAdmins(cmd.event, cmd.invoke);
-            Boolean managerCheck = perms.checkManager(cmd.event, cmd.invoke);
-            if (adminCheck || managerCheck) {
-
-                boolean safe = getCommands().get(cmd.invoke).called(cmd.args, cmd.event);
-
-                if (safe) {
-                    if (cmd.args != null && cmd.args.equals("help")) {
-                        getCommands().get(cmd.invoke).help(cmd.event);
+            Boolean adminCheck = perms.checkAdmins(cmd.event);
+            Boolean managerCheck = perms.checkManager(cmd.event);
+            switch (cmd.invoke) {
+                case "announce":
+                    if (adminCheck) {
+                        runCommand(cmd);
                     } else {
-                        getCommands().get(cmd.invoke).action(cmd.args, cmd.event);
+                        sendToChannel(cmd.event, Const.NOT_AN_ADMIN);
                     }
-                } else {
-                    sendToChannel(cmd.event, Const.INCORRECT_ARGS);
-                }
-                getCommands().get(cmd.invoke).executed(safe, cmd.event);
-            } else {
-                if (!managerCheck && !adminCheck) {
-                    sendToChannel(cmd.event, Const.NOT_A_MANAGER);
-                } else {
-                    sendToChannel(cmd.event, Const.NOT_AN_ADMIN);
-                }
+                    break;
+                case "add":
+                case "beam":
+                case "cleanup":
+                case "lang":
+                case "move":
+                case "notify":
+                case "streamlang":
+                case "twitch":
+                    if (managerCheck || adminCheck) {
+                        if (adminCheck) {
+                            sendToChannel(cmd.event, Const.ADMIN_OVERRIDE);
+                        }
+                        runCommand(cmd);
+                    } else {
+                        sendToChannel(cmd.event, Const.NOT_A_MANAGER);
+                    }
+                    break;
+                default:
+                    if (!cmd.invoke.toLowerCase().equals("announce")) {
+                        runCommand(cmd);
+                    }
+                    break;
             }
         } else {
             sendToChannel(cmd.event, Const.WRONG_COMMAND);
         }
+    }
+
+    private static void runCommand(CommandContainer cmd) {
+        boolean safe = getCommands().get(cmd.invoke).called(cmd.args, cmd.event);
+
+        if (safe) {
+            if (cmd.args != null && cmd.args.equals("help")) {
+                getCommands().get(cmd.invoke).help(cmd.event);
+            } else {
+                getCommands().get(cmd.invoke).action(cmd.args, cmd.event);
+            }
+        } else {
+            sendToChannel(cmd.event, Const.INCORRECT_ARGS);
+        }
+        getCommands().get(cmd.invoke).executed(safe, cmd.event);
     }
 
     public final CommandContainer parse(String raw, GuildMessageReceivedEvent event) {

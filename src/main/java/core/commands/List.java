@@ -30,7 +30,7 @@ public class List implements Command {
     private String option;
     private String query;
     private String guildId;
-    private String[] options = new String[]{"channel", "game", "manager", "tag", "team", "help"};
+    private String[] options = new String[]{"channel", "game", "manager", "streamLang", "tag", "team", "help"};
 
     private Message createNotificationMessage(MessageBuilder message, GuildMessageReceivedEvent event) {
         try {
@@ -57,6 +57,7 @@ public class List implements Command {
                         String userName = user.getName();
                         message.appendString(userName);
                     }
+
                     // Large message handler
                     if (message.getLength() > 1850) {
                         sendToPm(event, message.build());

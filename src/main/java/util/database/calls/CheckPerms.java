@@ -1,16 +1,13 @@
 package util.database.calls;
 
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import util.Const;
 import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
-import static platform.discord.controller.DiscordController.sendToChannel;
 import static util.database.Database.cleanUp;
 
 /**
@@ -22,28 +19,8 @@ public class CheckPerms {
     private PreparedStatement pStatement;
     private ResultSet result;
 
-    public final boolean checkManager(GuildMessageReceivedEvent event, String command) {
+    public final boolean checkManager(GuildMessageReceivedEvent event) {
         // Check if the called command requires a manager
-        ArrayList<String> managerList = new ArrayList<>();
-        Boolean isManager = false;
-
-        try {
-            String query = "SELECT `name` AS `command` FROM `command` ORDER BY `command` ASC";
-            connection = Database.getInstance().getConnection();
-            pStatement = connection.prepareStatement(query);
-            result = pStatement.executeQuery();
-            while (result.next()) {
-                managerList.add(result.getString("command"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(result, pStatement, connection);
-        }
-
-        if (!managerList.contains(command)) {
-            return true;
-        }
 
         try {
             String query = "SELECT `userId` FROM `manager` WHERE `guildId` = ?";
@@ -56,13 +33,8 @@ public class CheckPerms {
             String userId = event.getAuthor().getId();
             while (result.next()) {
                 if (userId.equals(result.getString("userId"))) {
-                    isManager = true;
+                    return true;
                 }
-            }
-            if (managerList.contains(command) && isManager.equals(true)) {
-                return true;
-            } else if (managerList.contains(command) && isManager.equals(false)) {
-                return false;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -72,11 +44,7 @@ public class CheckPerms {
         return false;
     }
 
-    public final boolean checkAdmins(GuildMessageReceivedEvent event, String command) {
-        ArrayList<String> adminList = new ArrayList<>();
-        Boolean isAdmin = false;
-
-        adminList.add("announce");
+    public final boolean checkAdmins(GuildMessageReceivedEvent event) {
 
         try {
             String query = "SELECT `userId` FROM `admins`";
@@ -88,14 +56,8 @@ public class CheckPerms {
             String userId = event.getAuthor().getId();
             while (result.next()) {
                 if (userId.equals(result.getString("userId"))) {
-                    isAdmin = true;
+                    return true;
                 }
-            }
-            if (!adminList.contains(command) && isAdmin.equals(true)) {
-                sendToChannel(event, Const.ADMIN_OVERRIDE);
-                return true;
-            } else if (adminList.contains(command) && isAdmin.equals(true)) {
-                return true;
             }
         } catch (SQLException e) {
             e.printStackTrace();

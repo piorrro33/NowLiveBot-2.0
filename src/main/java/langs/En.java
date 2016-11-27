@@ -28,35 +28,40 @@ public interface En {
     String PRIVATE_MESSAGE_REPLY = "I'm sorry, but the bot you are trying to reach has a voice mail box that has not " +
             "been setup yet.  Please try your PM again later.";
     String TYPE_ONCE = "You only need to type that part once, silly.";
-    String WRONG_COMMAND = "Hmm... I don't know that command.";
+    String WRONG_COMMAND = ":thinking: I don't know that command.";
     String ALREADY_EXISTS = "It looks like you already added that to my database. " + SHRUG;
     String DOESNT_EXIST = "That was never added to my database.";
-    String CLEANUP_SUCCESS_NONE = "Ok, I won't do anything to my announcements.";
+    String ADMIN_OVERRIDE = "*Permission of this command have been overridden by a bot developer.*";
+    String BROADCASTER_LANG_SUCCESS = ":ok_hand: I'll only look for streams that are in that language!";
+    String BROADCASTER_LANG_ALL_SUCCESS = ":ok_hand: I'll only look for streams that all languages!";
+    String BROADCASTER_LANG_FAIL = "";
+    String CLEANUP_SUCCESS_NONE = ":ok_hand: I won't do anything to my announcements.";
     String CLEANUP_SUCCESS_EDIT = "Editing my announcements, it is.";
     String CLEANUP_SUCCESS_DELETE = "Sir, yes Sir!  I will delete all my announcements from now on!";
     String CLEANUP_FAIL = "Ah, man...  Something went wrong...";
     String COMPACT_FAILURE = "Um, something went wrong.  My compact mode is unchanged.";
-    String COMPACT_MODE_ON = "Compact mode has been turned on.";
-    String COMPACT_MODE_OFF = "Compact mode has been turned off.";
-    String MOVE_DONT_OWN_CHANNEL = "Hey now, I can't announce to a channel that doesn't exists on your server!";
-    String MOVE_FAILURE = "I can't seem to send announcements there.  Make sure I have the proper permissions in that" +
+    String COMPACT_MODE_ON = ":compression: Compact mode has been turned on.";
+    String COMPACT_MODE_OFF = ":compression: Compact mode has been turned off.";
+    String MOVE_DONT_OWN_CHANNEL = ":no_entry: Hey now, I can't announce to a channel that doesn't exists on your " +
+            "server!";
+    String MOVE_FAILURE = ":no_entry: I can't seem to send announcements there.  Make sure I have the proper " +
+            "permissions in that" +
             " channel.";
-    String MOVE_SUCCESS = "Ok!  I'll announce over there!";
+    String MOVE_SUCCESS = ":ok_hand: I'll announce over there! :arrow_right: ";
     String NONE_ONLINE = "Sorry bud, but there's nobody online right now that this Discord is following.";
-    String NOTIFY_NONE = "Ok, I won't mention anyone in my announcements.";
+    String NOTIFY_NONE = ":ok_hand: I won't mention anyone in my announcements.";
     String NOTIFY_ME = "Sweet, I'll make sure to mention you when I make my announcements.";
-    String NOTIFY_HERE = "All who are online will get a mention when I announce streams.";
-    String NOTIFY_EVERYONE = "WHOA!!  **EVERYONE** that belongs to the server will get notified when I announce " +
-            "streams!  *(Are you sure?  I don't recommend this for large servers...  It can make people grumpy.)*";
+    String NOTIFY_HERE = ":bellhop_bell: All who are online will get a mention when I announce streams.";
+    String NOTIFY_EVERYONE = ":tada: WHOA!!  **EVERYONE** that belongs to the server will get notified when I " +
+            "announce streams!  *(Are you sure?  I don't recommend this for large servers...  It can make people grumpy.)*";
+    String NOT_A_MANAGER = "Sorry, but only my managers can do that.";
+    String NOT_AN_ADMIN = "To whom it may concern:  I am your servant, but you are not my master.";
     String NOW_PLAYING_LOWER = " is now playing ";
     String ONLINE_STREAM_PM_1 = "Hey there!  There's currently ";
     String ONLINE_STREAM_PM_2 = " streamers online that you may be interested in!  Follow their links to check them " +
             "out: \n\n";
     String ON = " on ";
     String OOPS = "Oops!  Something went wrong and nothing was changed!  Let's try that again.";
-    String NOT_A_MANAGER = "Sorry, but only my managers can do that.";
-    String NOT_AN_ADMIN = "To whom it may concern:  I am your servant, but you are not my master.";
-    String ADMIN_OVERRIDE = "*Permission of this command have been overridden by a bot developer.*";
     String WATCH_THEM_HERE = "Watch them here: ";
     String NOW_LIVE = "NOW LIVE!\n";
     String OFFLINE = "OFFLINE!\n";
@@ -110,7 +115,7 @@ public interface En {
             + "\n\toff - Turns off Compact Mode```";
     String INVITE = "Hey buddy! Invite me to your server!\n\n\t"
             + "**Click here:** https://discordapp.com/oauth2/authorize?&client_id="
-            + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=224256";
+            + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=8";
     String INVITE_HELP = "```Ruby\nINVITE:  used to display my invite link\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
@@ -149,6 +154,14 @@ public interface En {
             + "\n\tgame - The name of the game exactly as it appears on the streaming platform"
             + "\n\tteam - The name of the streaming team (Twitch only)"
             + "\n\ttag - Word or group of words to search for in the stream title```";
+    String STREAMLANG_HELP = "```Ruby\nSTREAMLANG:  Allows you to filter streams by the language it is being broadcast " +
+            "in.  This supports the English spelling of the language, or the native spelling.  Must be a supported " +
+            "language on Twitch that is listed in the Dashboard.\nUSAGE:  \n"
+            + Const.COMMAND_PREFIX
+            + Const.COMMAND +
+            " streamlang <language>" +
+            "You may use either the native spelling of the language or the English spelling of the language.  See " +
+            "https://github.com/VeteranSoftware/NowLiveBot-2.0/blob/master/README.md```";
     String STREAMS_HELP = "```Ruby\nSTREAMS:  I'll send you a list of active streams as a PM. (NOTE: You will likely " +
             "receive several private messages using this command, depending on how many streams your Discord " +
             "monitors!)\nUSAGE:  "

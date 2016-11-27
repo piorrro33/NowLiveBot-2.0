@@ -286,7 +286,7 @@ public class DiscordController {
 
         MessageBuilder message = new MessageBuilder();
 
-        message.appendString("***" + Const.NOW_LIVE + "***\n");
+        message.appendString("**" + Const.NOW_LIVE + "**\n");
 
         notifyLevel(guildId, message);
 

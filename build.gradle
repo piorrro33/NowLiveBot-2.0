@@ -14,6 +14,12 @@ def appName = 'NowLive'
 group 'com.nowlivebot'
 version '0.1-VS-PreRelease'
 
+compileJava.options.encoding = 'UTF-8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
 task copyExtra {
     outputs.file new File("$buildDir/LICENSE")
     doLast {
@@ -59,10 +65,15 @@ repositories {
     mavenCentral()
     jcenter()
     maven { url "https://jitpack.io" }
+    maven {
+        name "beam"
+        url "https://maven.beam.pro/content/repositories/snapshots"
+    }
 }
 dependencies {
     compile group: 'net.dv8tion', name: 'JDA', version: '3.0.BETA_95'
     compile group: 'com.github.avluis', name: 'Java-Twitch-Api-Wrapper', version: '0.3.1'
+    compile group: 'pro.beam', name: 'api', version: '3.0.0-SNAPSHOT'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.21'
     compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.5'

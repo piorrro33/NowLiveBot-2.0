@@ -7,6 +7,7 @@
 
 ## Supported Platforms
 * Twitch
+* Beam
 
 ## Planned Platforms
 * YouTube
@@ -136,6 +137,36 @@ To remove a game, type:
 `-nl remove game <game-name>`
 `-nl remove manager @<user>`
 `-nl remove tag <tag>`
+
+### Stream Language (managers only)
+> **IMPORTANT:**  This only affects Twitch streams.
+
+> Allows you to filter streams by the language it is being broadcast in.  This supports the English spelling of the 
+language, or the native spelling.  Must be a supported language on Twitch that is listed in the Dashboard.
+
+
+`-nl streamlang <language>`
+
+#### Examples
+> Spanish
+
+`-nl streamlang spanish` or `-nl streamlang español`
+
+> Japanese
+
+`-nl streamlang japanese` or `-nl streamlang 日本語`
+
+> Greek
+
+`-nl streamlang greek` or `-nl streamlang ελληνικά`
+
+> Arabic
+
+`-nl streamlang arabic` or `-nl streamlang العربية`
+
+> All languages (no filter)
+
+`-nl streamlang all`
 
 ### Streams
 > Send you a Private Message with a list of all streamers that are actively streaming that your Discord server is following

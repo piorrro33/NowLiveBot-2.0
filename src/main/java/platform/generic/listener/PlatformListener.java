@@ -2,6 +2,7 @@ package platform.generic.listener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import platform.beam.controller.BeamController;
 import platform.twitch.controller.TwitchController;
 import util.PropReader;
 import util.database.Database;
@@ -86,18 +87,26 @@ public class PlatformListener {
 
             clcResult = clcStatement.executeQuery();
 
-            while (clcResult.next()) {
-                switch (clcResult.getInt("platformId")) {
-                    case 1:
-                        TwitchController twitch = new TwitchController();
-                        // Send info to Twitch Controller
-                        twitch.checkChannel(clcResult.getString("name"), clcResult.getString("guildId"), clcResult.getInt
-                                ("platformId"));
-                        break;
-                    default:
-                        break;
+            if (!clcResult.isClosed()) {
+                while (clcResult.next()) {
+                    switch (clcResult.getInt("platformId")) {
+                        case 1:
+                            TwitchController twitch = new TwitchController();
+                            // Send info to Twitch Controller
+                            twitch.checkChannel(clcResult.getString("name"), clcResult.getString("guildId"), clcResult.getInt
+                                    ("platformId"));
+                            break;
+                        case 2:
+                            BeamController beam = new BeamController();
+                            beam.checkChannel(clcResult.getString("name"), clcResult.getString("guildId"),
+                                    clcResult.getInt("platformId"));
+
+                            break;
+                        default:
+                            break;
+                    }
+                    killConn();
                 }
-                killConn();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -122,6 +131,12 @@ public class PlatformListener {
                         TwitchController twitch = new TwitchController();
                         twitch.checkGame(clgResult.getString("name").replaceAll("''", "'"),
                                 clgResult.getString("guildId"), clgResult.getInt("platformId"));
+                        break;
+                    case 2:
+                        BeamController beam = new BeamController();
+                        /*beam.checkGame(clcResult.getString("name"), clcResult.getString("guildId"),
+                                clcResult.getInt("platformId"));*/
+
                         break;
                     default:
                         break;

@@ -9,14 +9,13 @@ import com.mb3364.http.RequestParams;
 import com.mb3364.twitch.api.Twitch;
 import com.mb3364.twitch.api.handlers.StreamResponseHandler;
 import com.mb3364.twitch.api.handlers.StreamsResponseHandler;
-import com.mb3364.twitch.api.handlers.TeamResponseHandler;
 import com.mb3364.twitch.api.models.Stream;
-import com.mb3364.twitch.api.models.Team;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import platform.generic.controller.PlatformController;
 import util.PropReader;
 import util.database.Database;
+import util.database.calls.GetBroadcasterLang;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -42,7 +41,7 @@ public class TwitchController extends Twitch {
         this.setClientId(PropReader.getInstance().getProp().getProperty("twitch.client.id"));
     }
 
-    private static synchronized List<String> checkFilters(String guildId) {
+    public static synchronized List<String> checkFilters(String guildId) {
         try {
             String query = "SELECT * FROM `filter` WHERE `guildId` = ?";
 
@@ -76,23 +75,27 @@ public class TwitchController extends Twitch {
             public void onSuccess(Stream stream) { // If the stream has been found
                 // check if the stream is online
                 if (stream != null) {
-                    // check if the status and game name are not null
-                    if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
-                        // Checking filters
-                        List<String> filters = checkFilters(guildId);
-                        if (filters != null) {
-                            logger.info("Guild filters are present.  Checking to see if there's a match.");
-                            for (String filter : filters) {
-                                if (stream.getGame().equalsIgnoreCase(filter)) {
-                                    // If the game filter is equal to the game being played, announce the stream
-                                    pController.onlineStreamHandler(guildId, platformId, stream.getChannel().getDisplayName(),
-                                            stream.getChannel().getStatus(), stream.getGame());
+                    // Check for tracked broadcaster languages
+                    String casterLang = GetBroadcasterLang.action(guildId);
+                    if (casterLang != null && (stream.getChannel().getBroadcasterLanguage().equals(casterLang) ||
+                            casterLang.equals("all"))) {
+                        // check if the status and game name are not null
+                        if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
+                            // Checking filters
+                            List<String> filters = checkFilters(guildId);
+                            if (filters != null) {
+                                for (String filter : filters) {
+                                    if (stream.getGame().equalsIgnoreCase(filter)) {
+                                        // If the game filter is equal to the game being played, announce the stream
+                                        pController.onlineStreamHandler(guildId, platformId, stream.getChannel().getName(),
+                                                stream.getChannel().getStatus(), stream.getGame());
+                                    }
                                 }
+                            } else {
+                                // If no filters are set, announce the channel
+                                pController.onlineStreamHandler(guildId, platformId, stream.getChannel().getName(),
+                                        stream.getChannel().getStatus(), stream.getGame());
                             }
-                        } else {
-                            // If no filters are set, announce the channel
-                            pController.onlineStreamHandler(guildId, platformId, stream.getChannel().getDisplayName(),
-                                    stream.getChannel().getStatus(), stream.getGame());
                         }
                     }
                 } else {

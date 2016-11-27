@@ -22,7 +22,7 @@ public class Beam implements Command {
     @Override
     public boolean called(String args, GuildMessageReceivedEvent event) {
         if (args != null && !"".equals(args)) {
-            if (args.equals("help")) {
+            if ("help".equals(args)) {
                 return true;
             }
             String secondaryCommand = args.substring(0, args.indexOf(' '));
@@ -30,6 +30,8 @@ public class Beam implements Command {
                 case "add":
                 case "remove":
                     return true;
+                default:
+                    break;
             }
             System.out.println(secondaryCommand);
         }

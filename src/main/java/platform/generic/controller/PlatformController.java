@@ -159,16 +159,16 @@ public class PlatformController {
     }
 
     public final synchronized void onlineStreamHandler(String guildId, Integer platformId, String channelName, String
-            streamTitle, String gameName) {
+            streamTitle, String gameName, String url, String thumbnail, String banner) {
         if (!checkStreamTable(guildId, platformId, channelName)) {
             // Streamer has not been announced
-            messageHandler(guildId, platformId, channelName, streamTitle, gameName, 1);
+            messageHandler(guildId, platformId, channelName, streamTitle, gameName, 1, url, thumbnail, banner);
         }
     }
 
     public final synchronized void offlineStreamHandler(String guildId, Integer platformId, String channelName) {
         if (checkStreamTable(guildId, platformId, channelName)) {
-            messageHandler(guildId, platformId, channelName, null, null, 0);
+            messageHandler(guildId, platformId, channelName, null, null, 0, null, null, null);
         }
     }
 }

@@ -22,7 +22,7 @@ public class Twitch implements Command {
     @Override
     public boolean called(String args, GuildMessageReceivedEvent event) {
         if (args != null && !"".equals(args)) {
-            if (args.equals("help")) {
+            if ("help".equals(args)) {
                 return true;
             }
             String secondaryCommand = args.substring(0, args.indexOf(' '));

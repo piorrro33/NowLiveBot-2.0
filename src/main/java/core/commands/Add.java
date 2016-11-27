@@ -8,6 +8,7 @@ package core.commands;
 import core.Command;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import platform.beam.controller.BeamController;
 import platform.discord.controller.DiscordController;
 import util.Const;
 import util.database.calls.*;
@@ -112,6 +113,25 @@ public class Add implements Command {
                             }
                         } catch (NullPointerException npe) {
                             sendToChannel(event, "That person isn't a Discord user!  Try again!");
+                        }
+                        break;
+                    case "channel":
+                        switch (platformId) {
+                            case 1:
+                                if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
+                                    sendToChannel(event, Const.ALREADY_EXISTS);
+                                } else {
+                                    returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
+                                }
+                                break;
+                            case 2:
+                                if (BeamController.channelExists(this.argument)) {
+                                    if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
+                                        sendToChannel(event, Const.ALREADY_EXISTS);
+                                    } else {
+                                        returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
+                                    }
+                                }
                         }
                         break;
                     default:

@@ -195,7 +195,7 @@ public class Language implements Command {
                 case "한국어":
                     langCode = "ko";
                     break;
-                case "all":
+                default:
                     // Any language (default)
                     langCode = "all";
                     break;
@@ -217,7 +217,7 @@ public class Language implements Command {
                 pStatement.setString(2, event.getGuild().getId());
 
                 if (pStatement.executeUpdate() > 0) {
-                    if (langCode.equals("all")) {
+                    if ("all".equals(langCode)) {
                         sendToChannel(event, Const.BROADCASTER_LANG_ALL_SUCCESS);
                     } else {
                         sendToChannel(event, Const.BROADCASTER_LANG_SUCCESS);

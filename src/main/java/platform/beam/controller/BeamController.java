@@ -22,7 +22,7 @@ import static util.database.Database.cleanUp;
  */
 public class BeamController extends BeamAPI {
 
-    private static BeamAPI beam;
+    private static BeamAPI beamChannel;
     private static Connection connection;
     private static PreparedStatement pStatement;
     private static ResultSet result;
@@ -54,32 +54,48 @@ public class BeamController extends BeamAPI {
         return null;
     }
 
-    public final synchronized void checkChannel(String channelName, String guildId, Integer platformId) {
-        // Grab stream info
-        beam = new BeamAPI();
+    public static synchronized Boolean channelExists(String channelName) {
+        beamChannel = new BeamAPI();
 
-        ListenableFuture<BeamChannel> channel = beam.use(ChannelsService.class).findOneByToken(channelName);
+        ListenableFuture<BeamChannel> channel = beamChannel.use(ChannelsService.class).findOneByToken(channelName);
+
+        if (!channel.toString().equals("{\"message\":\"Channel not found.\",\"statusCode\":404,\"error\":\"Not " +
+                "Found\"}")) {
+            return true;
+        }
+        return false;
+    }
+
+    public final synchronized void checkChannel(String channelName, String guildId, Integer platformId) {
+        // Instantiate
+        beamChannel = new BeamAPI();
+
+        ListenableFuture<BeamChannel> channel = beamChannel.use(ChannelsService.class).findOneByToken(channelName);
         try {
             if (channel.get().online) { // if the channel is online
                 // Grab the channel name with proper capitalization
                 channelName = channel.get().token;
-                // Grab the game name
-                String gameName = channel.get().type.name;
                 // Check to see if the game name is not empty
-                if (!gameName.isEmpty() && gameName != null) {
+                if (!channel.get().type.name.isEmpty() && channel.get().type.name != null) {
+                    // Grab the game name
+                    String gameName = channel.get().type.name;
                     // Grab the stream title
                     String streamTitle = channel.get().name;
+                    // Stream URL
+                    String url = "https://beam.pro/" + channelName;
                     // Grab any entered filters
                     List<String> filters = checkFilters(guildId);
 
                     if (filters != null) {
                         for (String filter : filters) {
                             if (gameName.equalsIgnoreCase(filter)) {
-                                pController.onlineStreamHandler(guildId, platformId, channelName, streamTitle, gameName);
+                                pController.onlineStreamHandler(guildId, platformId, channelName, streamTitle,
+                                        gameName, url, channel.get().thumbnail.url, channel.get().cover.url);
                             }
                         }
                     } else {
-                        pController.onlineStreamHandler(guildId, platformId, channelName, streamTitle, gameName);
+                        pController.onlineStreamHandler(guildId, platformId, channelName, streamTitle, gameName, url,
+                                channel.get().thumbnail.url, channel.get().cover.url);
                     }
                 }
             }

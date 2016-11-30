@@ -28,7 +28,7 @@ public class Add implements Command {
     private String argument;
     private DiscordController dController;
     private Integer platformId;
-    private String[] options = new String[]{"channel", "filter", "game", "manager", "tag", "team", "help"};
+    private String[] options = new String[]{"channel", "filter", "game", "manager", "help"};
 
     public static boolean optionCheck(String args, String option) {
         return args.contains(" ") && args.toLowerCase().substring(0, option.length()).equals(option);
@@ -131,6 +131,9 @@ public class Add implements Command {
                                     } else {
                                         returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
                                     }
+                                } else {
+                                    sendToChannel(event, "That Beam user does not exist! Check your spelling and try" +
+                                            " again!");
                                 }
                         }
                         break;

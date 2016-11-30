@@ -2,6 +2,7 @@ package util.database;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.mchange.v2.c3p0.PooledDataSource;
+import core.Main;
 import net.dv8tion.jda.core.MessageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +68,9 @@ public class Database {
 
     public static void checkDatabase() {
         checkDb();
-        logger.info("Database check complete.");
+        if (Main.debugMode()) {
+            logger.info("Database check complete.");
+        }
     }
 
     public static void cleanUp(ResultSet resultSet, PreparedStatement statement, Connection connection) {

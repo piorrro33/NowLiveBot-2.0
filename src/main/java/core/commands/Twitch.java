@@ -31,7 +31,6 @@ public class Twitch implements Command {
                 case "remove":
                     return true;
             }
-            System.out.println(secondaryCommand);
         }
         return false;
     }
@@ -57,6 +56,8 @@ public class Twitch implements Command {
                     if (getCommands().get(secondaryCommand).called(calledArgs, event)) {
                         getCommands().get(secondaryCommand).action(secondaryArgs, event);
                     }
+                } else {
+                    sendToChannel(event, Const.INCORRECT_ARGS);
                 }
                 break;
             case "help":

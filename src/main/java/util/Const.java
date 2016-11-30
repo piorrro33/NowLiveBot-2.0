@@ -18,14 +18,15 @@ public interface Const {
 
     // Commonly used Constants
 
-    String TWITCH_CLIENT_ID = "7713uzjnh50pdd9v2v0apto553xeo67";
     String DISCORD_URL = "https://discord.gg/gKbbrFK";
     String BOT_LOGO = "https://cdn.discordapp.com/attachments/251541740484296705/251973422521778177/nl2_bot.png";
     String COMMAND_PREFIX = "-";// Requires single, regex safe character (at the moment) wahahahaha
-    String BOT_NAME = "nowlivebot";
-    String BOT_ID = "99852904504004608";
+    String BOT_NAME = "Now Live";
     String COMMAND = "nl";
     String PLAYING = COMMAND_PREFIX + COMMAND + " help";
+    String LOG_CHANNEL = PropReader.getInstance().getProp().getProperty("discord.log.chan");
+    String WARN = "warning";
+
     // Language specific variables
     // TODO:  Replace 'En' with the guild language from the DB (when it's setup that way)
     String HELP_PM = En.HELP_PM;
@@ -40,14 +41,16 @@ public interface Const {
     String ONLINE_STREAM_PM_1 = En.ONLINE_STREAM_PM_1;
     String ONLINE_STREAM_PM_2 = En.ONLINE_STREAM_PM_2;
     String NOW_PLAYING_LOWER = En.NOW_PLAYING_LOWER;
+    String BEAM_USER_NO_EXIST = En.BEAM_USER_NO_EXIST;
+    String DISCORD_USER_NO_EXIST = En.DISCORD_USER_NO_EXIST;
     String ON = En.ON;
     String WATCH_THEM_HERE = En.WATCH_THEM_HERE;
     String NOTIFY_NONE = En.NOTIFY_NONE;
-    String NOTIFY_ME = En.NOTIFY_ME;
     String NOTIFY_HERE = En.NOTIFY_HERE;
     String NOTIFY_EVERYONE = En.NOTIFY_EVERYONE;
     String OOPS = En.OOPS;
     String WRONG_COMMAND = En.WRONG_COMMAND;
+    String ALREADY_MANAGER = En.ALREADY_MANAGER;
     String NOT_A_MANAGER = En.NOT_A_MANAGER;
     String NOT_AN_ADMIN = En.NOT_AN_ADMIN;
     String ADMIN_OVERRIDE = En.ADMIN_OVERRIDE;

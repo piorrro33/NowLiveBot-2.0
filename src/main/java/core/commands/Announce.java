@@ -55,7 +55,7 @@ public class Announce implements Command {
         }
 
         sendToChannel(event, "*Message from the " + Const.BOT_NAME + " developers:*\n\n\t" + args);
-        logger.info("Global announcement sent");
+        System.out.println("[SYSTEM] Global announcement sent.");
     }
 
     @Override

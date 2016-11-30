@@ -43,6 +43,7 @@ public class CommandParser {
         commands.put("permissions", new Permissions());
         commands.put("ping", new Ping());
         commands.put("remove", new Remove());
+        commands.put("status", new Status());
         commands.put("streamlang", new Language());
         commands.put("streams", new Streams());
         commands.put("twitch", new Twitch());

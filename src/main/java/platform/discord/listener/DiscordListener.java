@@ -18,6 +18,8 @@ import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import platform.generic.listener.PlatformListener;
 import util.Const;
+import util.database.calls.AddGuild;
+import util.database.calls.CheckBotInGuild;
 import util.database.calls.GuildJoin;
 import util.database.calls.GuildLeave;
 
@@ -41,19 +43,31 @@ public class DiscordListener extends ListenerAdapter {
      */
     @Override
     public final void onGuildMessageReceived(GuildMessageReceivedEvent event) {
+
         String cntMsg = event.getMessage().getContent();
         String authorID = event.getMessage().getAuthor().getId();
 
         // Pre-check all core.commands to ignore JDA written messages.
-        if (cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND) && !authorID.equals(event.getJDA().getSelfUser().getId()
-        )) {
+        if (cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND) &&
+                !authorID.equals(event.getJDA().getSelfUser().getId()) &&
+                !event.getMessage().getAuthor().isBot()) {
+            // A check to see if the bot was added to the guild while it was offline and to add it
+            if (!CheckBotInGuild.action(event)) {
+                AddGuild.action(event);
+                System.out.printf("[SYSTEM] [%s:%s] [%s:%s] Broken guild fixed.%n",
+                        event.getGuild().getName(),
+                        event.getGuild().getId(),
+                        event.getChannel().getName(),
+                        event.getChannel().getId());
+            }
             try {
-                System.out.printf("[COMMAND][%s:%s][%s:%s][%s]: %s%n",
+                System.out.printf("[COMMAND] [%s:%s] [%s:%s] [%s:%s] %s%n",
                         event.getGuild().getName(),
                         event.getGuild().getId(),
                         event.getChannel().getName(),
                         event.getChannel().getId(),
                         event.getAuthor().getName(),
+                        event.getAuthor().getId(),
                         event.getMessage().getContent());
                 commandFilter(cntMsg, event);
             } catch (PropertyVetoException | IOException | SQLException e) {
@@ -96,13 +110,17 @@ public class DiscordListener extends ListenerAdapter {
     @Override
     public final void onGuildJoin(GuildJoinEvent event) {
         GuildJoin.joinGuild(event);
+        System.out.printf("[GUILD JOIN] Now Live has joined G:%s:%s%n",
+                event.getGuild().getName(),
+                event.getGuild().getId());
     }
 
     @Override
     public final void onGuildLeave(GuildLeaveEvent event) {
         GuildLeave.leaveGuild(event);
-        logger.info("NowLive bot has been dismissed from: " + event.getGuild().getName() + "(Id: " + event.getGuild
-                ().getId() + ")");
+        System.out.printf("[GUILD LEAVE] Now Live has been dismissed from G:%s:%s%n",
+                event.getGuild().getName(),
+                event.getGuild().getId());
     }
 
     private void commandFilter(String cntMsg, GuildMessageReceivedEvent event)
@@ -110,7 +128,7 @@ public class DiscordListener extends ListenerAdapter {
         if (cntMsg.startsWith(Const.COMMAND_PREFIX + "ping") || cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND)) {
             // Do a check to make sure that -nl add channel|team is not being used directly
             if (!cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND + " add channel") &&
-                    !cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND + " add team")) {
+                    !cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND + " remove channel")) {
                 CommandParser.handleCommand(Main.parser.parse(cntMsg, event));
             } else {
                 sendToChannel(event, Const.USE_PLATFORM);

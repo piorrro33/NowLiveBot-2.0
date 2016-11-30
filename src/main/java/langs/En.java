@@ -30,6 +30,8 @@ public interface En {
     String TYPE_ONCE = "You only need to type that part once, silly.";
     String WRONG_COMMAND = ":thinking: I don't know that command.";
     String ALREADY_EXISTS = "It looks like you already added that to my database. " + SHRUG;
+    String BEAM_USER_NO_EXIST = "That Beam user does not exist! Check your spelling and try again!";
+    String DISCORD_USER_NO_EXIST = "That person isn't a Discord user!  Try again!";
     String DOESNT_EXIST = "That was never added to my database.";
     String ADMIN_OVERRIDE = "*Permission of this command have been overridden by a bot developer.*";
     String BROADCASTER_LANG_SUCCESS = ":ok_hand: I'll only look for streams that are in that language!";
@@ -50,7 +52,6 @@ public interface En {
     String MOVE_SUCCESS = ":ok_hand: I'll announce over there! :arrow_right: ";
     String NONE_ONLINE = "Sorry bud, but there's nobody online right now that this Discord is following.";
     String NOTIFY_NONE = ":ok_hand: I won't mention anyone in my announcements.";
-    String NOTIFY_ME = "Sweet, I'll make sure to mention you when I make my announcements.";
     String NOTIFY_HERE = ":bellhop_bell: All who are online will get a mention when I announce streams.";
     String NOTIFY_EVERYONE = ":tada: WHOA!!  **EVERYONE** that belongs to the server will get notified when I " +
             "announce streams!  *(Are you sure?  I don't recommend this for large servers...  It can make people grumpy.)*";
@@ -65,6 +66,7 @@ public interface En {
     String WATCH_THEM_HERE = "Watch them here: ";
     String NOW_LIVE = "NOW LIVE!\n";
     String OFFLINE = "OFFLINE!\n";
+    String ALREADY_MANAGER = "It seems I've already hired that user as a manager.  Find moar humanz!";
     String CANT_REMOVE_OWNER = "Silly human, you can't remove the server owner from the manager list. :laughing: :laughing:";
     String NO_BOT_MANAGER = "It's against the Discord Bot Union By-Laws for bots to manage me. Sorry, try and find a " +
             "suitable human for the job. :thumbsup:";
@@ -72,7 +74,7 @@ public interface En {
     String USE_PLATFORM = "Oops!  That's the old way of doing things!  Use the platform specific command!  Type `" +
             Const.COMMAND_PREFIX + Const.COMMAND + " help` for more info.";
     String GUILD_JOIN_SUCCESS = "Hi there!  I'm Now Live, the stream announcing bot!  Type `" + Const.COMMAND_PREFIX
-            + Const.COMMAND + "` help for a list of my commands.\n\nIf you need some help setting me up, come join my " +
+            + Const.COMMAND + " help` for a list of my commands.\n\nIf you need some help setting me up, come join my " +
             "Discord at https://discord.gg/gKbbrFK " +
             "and check out the how-to-setup and command-list channels for all the info!\n\nDon't forget to say hey!";
 
@@ -82,11 +84,9 @@ public interface En {
             + Const.COMMAND
             + " add <option> <content>"
             + "\n\t<option>\t<content>"
-            + "\n\tchannel - The streamer's name"
             + "\n\tfilter - The game name that you want to filter streamers by"
             + "\n\tgame - The name of the game exactly as it appears on the streaming platform"
-            + "\n\tteam - The name of the streaming team (Twitch only)"
-            + "\n\ttag - Word or group of words to search for in the stream title```";
+            + "\n\tmanager - The @ mention of the user to add as a manager```";
     String ANNOUNCE_HELP = "```Ruby\nANNOUNCE:  Shhh...  I'm a secret...\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
@@ -126,9 +126,7 @@ public interface En {
             + " list <option>"
             + "\n\t<option>"
             + "\n\tgame - List the games that I'm tracking for you"
-            + "\n\tchannel - I'll list out all of the individual stream channels you want me to watch"
-            + "\n\tteam - I'll show which Twitch teams I'm watching"
-            + "\n\ttag - I'll show which tags you want me to keep an eye out for```";
+            + "\n\tchannel - I'll list out all of the individual stream channels you want me to watch```";
     String MOVE_HELP = "```Ruby\nMOVE:  Change where I make my announcements.\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
@@ -149,11 +147,9 @@ public interface En {
             + Const.COMMAND
             + " remove <option> <content>"
             + "\n\t<option>\t<content>"
-            + "\n\tchannel - The streamer's name"
             + "\n\tfilter - The game name that you want to filter streamers by"
             + "\n\tgame - The name of the game exactly as it appears on the streaming platform"
-            + "\n\tteam - The name of the streaming team (Twitch only)"
-            + "\n\ttag - Word or group of words to search for in the stream title```";
+            + "\n\tmanager - The @ mention of the user to add as a manager```";
     String STREAMLANG_HELP = "```Ruby\nSTREAMLANG:  Allows you to filter streams by the language it is being broadcast " +
             "in.  This supports the English spelling of the language, or the native spelling.  Must be a supported " +
             "language on Twitch that is listed in the Dashboard.\nUSAGE:  \n"
@@ -168,7 +164,7 @@ public interface En {
             + Const.COMMAND_PREFIX
             + Const.COMMAND
             + " streams```";
-    String STATUS_HELP = "Haven't started working on this command yet";
+    String STATUS_HELP = "Shows various statistics of the bot.";
     String TWITCH_HELP = "```Ruby\nTWITCH:  Add and remove things that are Twitch.tv related.\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND

@@ -98,8 +98,8 @@ public class PlatformListener {
                             break;
                         case 2:
                             BeamController beam = new BeamController();
-                            beam.checkChannel(clcResult.getString("name"), clcResult.getString("guildId"),
-                                    clcResult.getInt("platformId"));
+                            /*beam.checkChannel(clcResult.getString("name"), clcResult.getString("guildId"),
+                                    clcResult.getInt("platformId"));*/
 
                             break;
                         default:

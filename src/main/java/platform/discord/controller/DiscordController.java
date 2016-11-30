@@ -70,9 +70,19 @@ public class DiscordController {
     public static void sendToChannel(GuildMessageReceivedEvent event, String message) {
         // if the bot doesn't have permissions to post in the channel (which shouldn't happen at this point, but is)
         try {
+            if (message == null || "".equals(message)) {
+
+                System.out.printf("[DEBUG:sendToChannel] [EMPTY MESSAGE] G:%s:%s TC:%s:%s M:%s%n",
+                        event.getGuild().getName(),
+                        event.getGuild().getId(),
+                        event.getChannel().getName(),
+                        event.getChannel().getId(),
+                        message);
+            }
             // Try sending to the channel it was moved to
             event.getMessage().getChannel().sendMessage(message).queue(
-                    success -> System.out.printf("[BOT -> GUILD][%s:%s][%s:%s]: %s%n",
+
+                    success -> System.out.printf("[BOT -> GUILD] [%s:%s] [%s:%s] %s%n",
                             event.getGuild().getName(),
                             event.getGuild().getId(),
                             event.getChannel().getName(),
@@ -84,12 +94,13 @@ public class DiscordController {
                             event.getGuild().getId(),
                             event.getChannel().getName(),
                             event.getChannel().getId())
+
             );
 
         } catch (PermissionException ex) {
             // Try sending to the default channel
             event.getGuild().getPublicChannel().sendMessage(message).queue(
-                    success -> System.out.printf("[BOT -> GUILD][%s:%s][%s:%s]: %s%n",
+                    success -> System.out.printf("[BOT -> GUILD] [%s:%s] [%s:%s]: %s%n",
                             event.getGuild().getName(),
                             event.getGuild().getId(),
                             event.getGuild().getPublicChannel().getName(),
@@ -108,38 +119,41 @@ public class DiscordController {
         event.getAuthor().openPrivateChannel().queue(
                 success ->
                         event.getAuthor().getPrivateChannel().sendMessage(message).queue(
-                                sentMessage -> System.out.printf("[BOT -> PM][%s:%s][%s:%s]: %s%n",
+                                sentMessage -> System.out.printf("[BOT -> PM] [%s:%s] [%s:%s]: %s%n",
                                         event.getGuild().getName(),
                                         event.getGuild().getId(),
                                         event.getAuthor().getName(),
                                         event.getAuthor().getId(),
                                         sentMessage.getContent())
                         ),
-                failure -> System.out.printf("[~ERROR~] Unable to send PM to %s:%s, Author: %s:%s.%n",
-                        event.getGuild().getName(),
-                        event.getGuild().getId(),
-                        event.getAuthor().getName(),
-                        event.getAuthor().getId())
+                failure ->
+                        System.out.printf("[~ERROR~] Unable to send PM to %s:%s, Author: %s:%s.%n",
+                                event.getGuild().getName(),
+                                event.getGuild().getId(),
+                                event.getAuthor().getName(),
+                                event.getAuthor().getId())
         );
     }
 
     public static void sendToPm(PrivateMessageReceivedEvent event, Message message) {
-        if (!event.getAuthor().isBot()) { // Prevents errors if a bot auto-sends PM's on join
+        if (!event.getAuthor().isBot()) { // Prevents errors if a bot auto-sends PM's on
+            // join
             event.getAuthor().openPrivateChannel().queue(
-                    success -> {
-                        event.getAuthor().getPrivateChannel().sendMessage(message).queue(
-                                sentPM -> System.out.printf("[BOT -> PM][%s:%s]: %s%n",
-                                        event.getAuthor().getName(),
-                                        event.getAuthor().getId(),
-                                        sentPM.getContent())
-                        );
-                    },
-                    failure -> System.out.printf("[~ERROR~] Unable to send PM to author: %s:%s.%n",
-                            event.getAuthor().getName(),
-                            event.getAuthor().getId())
+                    success ->
+                            event.getAuthor().getPrivateChannel().sendMessage(message).queue(
+                                    sentPM -> System.out.printf("[BOT -> PM] [%s:%s]: %s%n",
+                                            event.getAuthor().getName(),
+                                            event.getAuthor().getId(),
+                                            sentPM.getContent())
+                            ),
+                    failure ->
+                            System.out.printf("[~ERROR~] Unable to send PM to author: %s:%s.%n",
+                                    event.getAuthor().getName(),
+                                    event.getAuthor().getId())
             );
         }
     }
+
 
     public static synchronized void messageHandler(String guildId, Integer platformId, String channelName, String
             streamTitle, String gameName, Integer online, String url, String thumbnail, String banner) {
@@ -181,21 +195,30 @@ public class DiscordController {
                                     case 1: // Edit old message
                                         oldMessage.queue(
                                                 success -> {
-
-                                                    // Replace the LIVE announcement with OFFLINE
-                                                    String rawContent = success.getRawContent().replace(Const.NOW_LIVE,
-                                                            Const.OFFLINE);
+                                                    Message message = editMessage(platformId, channelName, url,
+                                                            thumbnail, guildId, banner);
 
                                                     // Update the old message
-                                                    success.editMessage(rawContent).queue();
+                                                    try {
+                                                        success.editMessage(message).queue(
+                                                                editSuccess -> {
+                                                                    // Remove the entry from the stream table
+                                                                    deleteFromStream(guildId, platformId, channelName);
 
-                                                    // Remove the entry from the stream table
-                                                    deleteFromStream(guildId, platformId, channelName);
-
-                                                    System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
-                                                                    "announcement was successfully edited in: %s%n",
-                                                            channelName,
-                                                            Main.getJDA().getGuildById(guildId).getName());
+                                                                    System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
+                                                                                    "announcement was successfully edited in: %s%n",
+                                                                            channelName,
+                                                                            Main.getJDA().getGuildById(guildId).getName());
+                                                                }
+                                                        );
+                                                    } catch (UnsupportedOperationException ose) {
+                                                        System.out.printf("[~ERROR~] Message has no content.  Cannot " +
+                                                                        "send the edited message. G:%s:%s C:%s:%s, M:%s%n",
+                                                                Main.getJDA().getGuildById(guildId).getName(),
+                                                                guildId,
+                                                                Main.getJDA().getTextChannelById(channelId).getName(),
+                                                                channelId, messageId);
+                                                    }
                                                 },
                                                 error -> {
                                                     if (error instanceof ErrorResponseException) {
@@ -220,14 +243,17 @@ public class DiscordController {
                                                 success -> {
 
                                                     // Delete the old message
-                                                    success.deleteMessage().queue();
+                                                    success.deleteMessage().queue(
+                                                            deleteSuccess -> {
+                                                                // Remove the entry from the stream table
+                                                                deleteFromStream(guildId, platformId, channelName);
 
-                                                    // Remove the entry from the stream table
-                                                    deleteFromStream(guildId, platformId, channelName);
-                                                    System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
-                                                                    "announcement was successfully deleted from: %s%n",
-                                                            channelName,
-                                                            Main.getJDA().getGuildById(guildId).getName());
+                                                                System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
+                                                                                "announcement was successfully deleted from: %s%n",
+                                                                        channelName,
+                                                                        Main.getJDA().getGuildById(guildId).getName());
+                                                            }
+                                                    );
                                                 },
                                                 error -> {
                                                     if (error instanceof ErrorResponseException) {
@@ -249,6 +275,8 @@ public class DiscordController {
                                                                     "error deleting it from guild: %s%n",
                                                             channelName,
                                                             Main.getJDA().getGuildById(guildId).getName());
+                                                    error.printStackTrace();
+                                                    deleteFromStream(guildId, platformId, channelName);
                                                 });
                                         break;
                                     default:
@@ -281,8 +309,56 @@ public class DiscordController {
 
     }
 
+    private static synchronized Message editMessage(Integer platformId, String channelName, String url, String
+            thumbnail, String guildId, String banner) {
+        EmbedBuilder eBuilder = new EmbedBuilder();
+        StringBuilder msgDesc = new StringBuilder();
+        MessageBuilder mBuilder = new MessageBuilder();
+
+        float[] rgb;
+        switch (platformId) {
+            case 1:
+                rgb = Color.RGBtoHSB(100, 65, 165, null);
+                eBuilder.setColor(Color.getHSBColor(rgb[0], rgb[1], rgb[2]));
+                break;
+            case 2:
+                rgb = Color.RGBtoHSB(83, 109, 254, null);
+                eBuilder.setColor(Color.getHSBColor(rgb[0], rgb[1], rgb[2]));
+                break;
+            default:
+                // Never should hit
+                break;
+        }
+
+        eBuilder.setAuthor(Const.OFFLINE, Const.DISCORD_URL, Const.BOT_LOGO);
+
+        eBuilder.setTitle(channelName + " has gone offline!");
+
+        msgDesc.append("Make sure to watch for my next announcement of when they go live!");
+        //msgDesc.append(url);
+
+        eBuilder.setDescription(msgDesc.toString());
+
+        if (thumbnail != null) {
+            eBuilder.setThumbnail(thumbnail);
+        }
+
+        if (checkCompact(guildId).equals(0)) {
+            if (banner != null) {
+                eBuilder.setImage(banner);
+            }
+        }
+
+        MessageEmbed embed = eBuilder.build();
+
+        mBuilder.setEmbed(embed);
+
+        return mBuilder.build();
+    }
+
     private static synchronized void announceStream(String guildId, Integer platformId, String channelName, String
             streamTitle, String gameName, String url, String thumbnail, String banner) {
+
         // Send the message to the appropriate channel
         String channelId = getChannelId(guildId);
 
@@ -362,7 +438,7 @@ public class DiscordController {
                     sentMessage -> {
                         addToStream(guildId, platformId, channelName, streamTitle, gameName, sentMessage.getId());
 
-                        System.out.printf("[STREAM ANNOUNCE][%s:%s][%s:%s][%s]: %s%n",
+                        System.out.printf("[STREAM ANNOUNCE] [%s:%s] [%s:%s] [%s]: %s%n",
                                 Main.getJDA().getGuildById(guildId).getName(),
                                 Main.getJDA().getGuildById(guildId).getId(),
                                 Main.getJDA().getTextChannelById(getChannelId(guildId)).getName(),
@@ -517,7 +593,6 @@ public class DiscordController {
     private void mentionedUsersID(GuildMessageReceivedEvent event) {
         for (User u : event.getMessage().getMentionedUsers()) {
             this.mentionedUsersId = u.getId();
-            logger.info("Mentioned Users Id's: " + this.mentionedUsersId);
         }
     }
 

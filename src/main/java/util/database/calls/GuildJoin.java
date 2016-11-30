@@ -1,5 +1,6 @@
 package util.database.calls;
 
+import core.Main;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
@@ -53,7 +54,6 @@ public final class GuildJoin {
 
 
         int failed = 0;
-        logger.info("Attempting to join guild: " + guildId);
         for (String s : tableList) {
             try {
                 connection = Database.getInstance().getConnection();
@@ -64,7 +64,9 @@ public final class GuildJoin {
 
                 if (resultSet.next()) {
                     // If there's still remnants or possible corrupt data, remove it
-                    logger.warn("This guild has data remnants in my database!");
+                    if (Main.debugMode()) {
+                        logger.warn("This guild has data remnants in my database!");
+                    }
                     try {
                         remConnection = Database.getInstance().getConnection();
                         query = "DELETE FROM `" + s + "` WHERE `guildId` = ?";
@@ -93,7 +95,11 @@ public final class GuildJoin {
             }
         }
         if (failed == 0) {
-            gEvent.getGuild().getPublicChannel().sendMessage(Const.GUILD_JOIN_SUCCESS).queue();
+            gEvent.getGuild().getPublicChannel().sendMessage(Const.GUILD_JOIN_SUCCESS).queue(
+                    guildJoinSuccess -> System.out.printf("[SYSTEM] Joined G:%s:%s%n",
+                            gEvent.getGuild().getName(),
+                            gEvent.getGuild().getId())
+            );
         } else {
             gEvent.getGuild().getPublicChannel().sendMessage("There was an error adding your guild!!").queue();
         }
@@ -118,10 +124,13 @@ public final class GuildJoin {
                 } finally {
                     cleanUp(pStatement, connection);
                 }
-                if (result > 0) {
-                    logger.info("Successfully added guild " + guildId + " to my database");
-                } else {
-                    logger.warn("Failed to add guild information to my database");
+
+                if (Main.debugMode()) {
+                    if (result > 0) {
+                        logger.info("Successfully added guild " + guildId + " to my database");
+                    } else {
+                        logger.warn("Failed to add guild information to my database");
+                    }
                 }
                 break;
 
@@ -130,15 +139,19 @@ public final class GuildJoin {
                 break;
 
             case "notification":
-                if (addNotification() > 0) {
-                    logger.info("Populated the notification table with default data.");
-                } else {
-                    logger.info("Failed to add data to the notification table.");
+                if (Main.debugMode()) {
+                    if (addNotification() > 0) {
+                        logger.info("Populated the notification table with default data.");
+                    } else {
+                        logger.info("Failed to add data to the notification table.");
+                    }
                 }
                 break;
 
             default:
-                logger.info("No data to add to table: " + s);
+                if (Main.debugMode()) {
+                    logger.info("No data to add to table: " + s);
+                }
                 break;
         }
     }
@@ -174,15 +187,18 @@ public final class GuildJoin {
             } finally {
                 cleanUp(pStatement, connection);
             }
-            if (result > 0) {
-                logger.info("Successfully added manager " + users + " to guild " + guildId + ".");
-            } else {
-                logger.warn("Failed to add manager to my database~");
+
+            if (Main.debugMode()) {
+                if (result > 0) {
+                    logger.info("Successfully added manager " + users + " to guild " + guildId + ".");
+                } else {
+                    logger.warn("Failed to add manager to my database~");
+                }
             }
         }
     }
 
-    private static Integer addNotification() {
+    public static Integer addNotification() {
         try {
             connection = Database.getInstance().getConnection();
             query = "INSERT INTO `notification` (`guildId`, `level`) VALUES (?, ?)";

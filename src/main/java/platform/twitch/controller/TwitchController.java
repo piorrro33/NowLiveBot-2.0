@@ -7,9 +7,12 @@ package platform.twitch.controller;
 
 import com.mb3364.http.RequestParams;
 import com.mb3364.twitch.api.Twitch;
+import com.mb3364.twitch.api.handlers.ChannelResponseHandler;
 import com.mb3364.twitch.api.handlers.StreamResponseHandler;
 import com.mb3364.twitch.api.handlers.StreamsResponseHandler;
+import com.mb3364.twitch.api.models.Channel;
 import com.mb3364.twitch.api.models.Stream;
+import core.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import platform.generic.controller.PlatformController;
@@ -39,6 +42,31 @@ public class TwitchController extends Twitch {
 
     public TwitchController() {
         this.setClientId(PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+    }
+
+    public final synchronized Boolean checkExists(String channelName) {
+        final Boolean[] exists = {false};
+        this.channels().get(channelName, new ChannelResponseHandler() {
+            @Override
+            public void onSuccess(Channel channel) {
+                logger.info("Channel exists!");
+                exists[0] = true;
+            }
+
+            @Override
+            public void onFailure(int i, String s, String s1) {
+                exists[0] = false;
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                exists[0] = false;
+            }
+        });
+        if (exists[0].equals(true)) {
+            return true;
+        }
+        return false;
     }
 
     public static synchronized List<String> checkFilters(String guildId) {
@@ -136,7 +164,9 @@ public class TwitchController extends Twitch {
 
                 @Override
                 public void onFailure(int i, String s, String s1) {
-                    logger.info("onFailure: " + i + " : String1: " + s + " : String2: " + s1);
+                    if (Main.debugMode()) {
+                        logger.info("onFailure: " + i + " : String1: " + s + " : String2: " + s1);
+                    }
                 }
 
                 @Override

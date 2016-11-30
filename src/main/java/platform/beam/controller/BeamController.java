@@ -55,14 +55,22 @@ public class BeamController extends BeamAPI {
     }
 
     public static synchronized Boolean channelExists(String channelName) {
+
         beamChannel = new BeamAPI();
 
         ListenableFuture<BeamChannel> channel = beamChannel.use(ChannelsService.class).findOneByToken(channelName);
 
-        if (!channel.toString().equals("{\"message\":\"Channel not found.\",\"statusCode\":404,\"error\":\"Not " +
-                "Found\"}")) {
-            return true;
+        try {
+            if (channel.get().online || !channel.get().online) {
+                return true;
+            }
+        } catch (InterruptedException ie) {
+            ie.printStackTrace();
+        } catch (ExecutionException ee) {
+            // Typically thrown when the channel does not exist along with a HttpBadResponseException
+            return false;
         }
+
         return false;
     }
 

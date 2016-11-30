@@ -1,5 +1,6 @@
 package util.database.calls;
 
+import core.Main;
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,8 +47,10 @@ public final class GuildLeave {
                 pStatement.setString(1, gEvent.getGuild().getId());
                 result = pStatement.executeUpdate();
                 if (!result.equals(0)) {
-                    logger.info("Successfully deleted all data for Guild " + gEvent.getGuild().getId() + " from the "
-                            + s.toUpperCase() + " table.");
+                    if (Main.debugMode()) {
+                        logger.info("Successfully deleted all data for Guild " + gEvent.getGuild().getId() + " from the "
+                                + s.toUpperCase() + " table.");
+                    }
                 }
             }
 

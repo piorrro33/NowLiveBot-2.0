@@ -54,10 +54,9 @@ public class Main {
     public static void main(String[] args) throws PropertyVetoException, IOException, SQLException {
         // Verify the database is there on startup
         Database.checkDatabase();
-        //guildCheck();
 
         // Run mode~
-        logger.info("Debug mode: " + debugMode());
+        System.out.printf("Debug mode: %s%n", debugMode());
 
         // Instantiate the JDA Object
         try {
@@ -78,6 +77,8 @@ public class Main {
             logger.error("Uh, oh...  We got rate limited.", e);
         }
 
+        guildCheck();
+
         new PlatformListener();
     }
 
@@ -86,16 +87,29 @@ public class Main {
     }
 
     private static void guildCheck() {
-        String query = "SELECT * FROM `guild`";
-        connection = Database.getInstance().getConnection();
+
         try {
+            connection = Database.getInstance().getConnection();
+            String query = "SELECT `guildId` from `guild`";
             pStatement = connection.prepareStatement(query);
             result = pStatement.executeQuery();
 
+            List<Guild> guildList = jda.getGuilds();
+
+            System.out.println(guildList);
+
             while (result.next()) {
-                System.out.println(result.getString("guildId"));
-                Guild guildId = jda.getGuildById(result.getString("guildId"));
-                if (guildId == null) {
+                Integer found = 0;
+                for (Guild guild : guildList) {
+                    if (result.getString("guildId").equals(guild.getId())) {
+                        found++; // Will be 1 if the guildId in the database is a valid guild the bot is in
+                    } // i:found will be 0 if the guildId in the database is not a valid guild the bot is in
+                }
+
+                if (found.equals(0)) { // the bot is not in that guild, so remove all DB entries for it
+
+                    String guildId = result.getString("guildId");
+
                     tableList.add("channel");
                     tableList.add("game");
                     tableList.add("guild");
@@ -108,29 +122,37 @@ public class Main {
 
                     try {
                         connection = Database.getInstance().getConnection();
-                        for (String s : tableList) {
-                            query = "DELETE FROM `" + s + "` WHERE `guildId` = ?";
+                        for (String table : tableList) {
+                            query = "DELETE FROM `" + table + "` WHERE `guildId` = ?";
+                            if (connection.isClosed()) {
+                                connection = Database.getInstance().getConnection();
+                            }
                             pStatement = connection.prepareStatement(query);
-                            pStatement.setString(1, result.getString("guildid"));
+                            pStatement.setString(1, guildId);
                             resultInt = pStatement.executeUpdate();
-                            if (!resultInt.equals(0)) {
-                                logger.info("Successfully deleted all data for Guild " + result.getString("guildid")
-                                        + " from the " + s.toUpperCase() + " table.");
+                            if (resultInt > 0) {
+                                System.out.printf("[SYSTEM] Successfully deleted all data for G:%s in db table %s%n",
+                                        guildId,
+                                        table);
+                            } else {
+                                System.out.printf("[SYSTEM] No data present for G:%s in db table %s%n",
+                                        guildId,
+                                        table);
                             }
                         }
 
                     } catch (Exception e) {
-                        logger.error("Failed to remove info from Guild " + result.getString("guildid") + ".");
+                        logger.error("Failed to remove info from Guild " + guildId + ".");
+                        e.printStackTrace();
                     } finally {
                         cleanUp(pStatement, connection);
                     }
+                    System.out.printf("[SYSTEM] All data removed for G:%s.%n",
+                            guildId);
                 }
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            cleanUp(result, pStatement, connection);
         }
     }
 }

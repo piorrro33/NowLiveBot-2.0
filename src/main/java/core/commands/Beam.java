@@ -33,7 +33,6 @@ public class Beam implements Command {
                 default:
                     break;
             }
-            System.out.println(secondaryCommand);
         }
         return false;
     }

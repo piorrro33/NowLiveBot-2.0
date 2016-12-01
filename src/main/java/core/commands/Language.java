@@ -83,8 +83,11 @@ public class Language implements Command {
                 case "korean": // Korean
                 case "한국어":
                 case "all":
+                case "help":
                     return true;
             }
+        } else if ("help".equals(args)) {
+            return true;
         }
         return false;
     }

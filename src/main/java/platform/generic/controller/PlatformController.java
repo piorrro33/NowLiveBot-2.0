@@ -1,5 +1,6 @@
 package platform.generic.controller;
 
+import core.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.database.Database;
@@ -9,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import static platform.discord.controller.DiscordController.getChannelId;
 import static platform.discord.controller.DiscordController.messageHandler;
 import static util.database.Database.cleanUp;
 
@@ -21,12 +23,15 @@ public class PlatformController {
     private static Connection cstConnection;
     private static Connection gmiConnection;
     private static Connection dfsConnection;
+    private static Connection connection;
     private static Logger logger = LoggerFactory.getLogger("Platform Controller");
     private static PreparedStatement atsStatement;
     private static PreparedStatement cstStatement;
     private static PreparedStatement gmiStatement;
     private static PreparedStatement dfsStatement;
+    private static PreparedStatement pStatement;
     private static String query;
+    private static ResultSet result;
     private static ResultSet gmiResult;
     private static ResultSet cstResult;
 
@@ -40,23 +45,24 @@ public class PlatformController {
      * @param gameName    String
      * @return Boolean
      */
-    public static synchronized boolean addToStream(String guildId, Integer platformId, String channelName, String
-            streamTitle, String gameName, String messageId) {
+    public static synchronized boolean addToStream(String guildId, String channelId, Integer platformId, String
+            channelName, String streamTitle, String gameName, String messageId) {
         try {
             String game = gameName;
             if (game == null || "".equals(game)) {
                 game = "Some Game";
             }
             atsConnection = Database.getInstance().getConnection();
-            query = "INSERT INTO `stream` (`guildId`, `platformId`, `channelName`, `streamTitle`, `gameName`, " +
-                    "`messageId`) VALUES (?,?,?,?,?,?)";
+            query = "INSERT INTO `stream` (`guildId`, `channelId`, `platformId`, `channelName`, `streamTitle`, " +
+                    "`gameName`, `messageId`) VALUES (?,?,?,?,?,?,?)";
             atsStatement = atsConnection.prepareStatement(query);
             atsStatement.setString(1, guildId);
-            atsStatement.setInt(2, platformId);
-            atsStatement.setString(3, channelName);
-            atsStatement.setString(4, streamTitle);
-            atsStatement.setString(5, game);
-            atsStatement.setString(6, messageId);
+            atsStatement.setString(2, channelId);
+            atsStatement.setInt(3, platformId);
+            atsStatement.setString(4, channelName);
+            atsStatement.setString(5, streamTitle);
+            atsStatement.setString(6, game);
+            atsStatement.setString(7, messageId);
             atsStatement.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -66,6 +72,30 @@ public class PlatformController {
         }
 
         return false;
+    }
+
+    public static String getAnnounceChannel(String guildId, Integer platformId, String channelName) {
+        try {
+            String query = "SELECT `channelId` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` =" +
+                    " ?";
+            connection = Database.getInstance().getConnection();
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            pStatement.setInt(2, platformId);
+            pStatement.setString(3, channelName);
+            result = pStatement.executeQuery();
+
+            if (result.isBeforeFirst()) {
+                while (result.next()) {
+                    return result.getString("channelId");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
+        }
+        return null;
     }
 
     /**
@@ -161,14 +191,17 @@ public class PlatformController {
     public final synchronized void onlineStreamHandler(String guildId, Integer platformId, String channelName, String
             streamTitle, String gameName, String url, String thumbnail, String banner) {
         if (!checkStreamTable(guildId, platformId, channelName)) {
+            String channelId = getChannelId(guildId);
             // Streamer has not been announced
-            messageHandler(guildId, platformId, channelName, streamTitle, gameName, 1, url, thumbnail, banner);
+            messageHandler(guildId, channelId, platformId, channelName, streamTitle, gameName, 1, url, thumbnail,
+                    banner);
         }
     }
 
     public final synchronized void offlineStreamHandler(String guildId, Integer platformId, String channelName) {
         if (checkStreamTable(guildId, platformId, channelName)) {
-            messageHandler(guildId, platformId, channelName, null, null, 0, null, null, null);
+            String channelId = getAnnounceChannel(guildId, platformId, channelName);
+            messageHandler(guildId, channelId, platformId, channelName, null, null, 0, null, null, null);
         }
     }
 }

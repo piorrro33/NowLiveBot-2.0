@@ -13,11 +13,13 @@ import net.dv8tion.jda.core.events.ReconnectedEvent;
 import net.dv8tion.jda.core.events.ResumedEvent;
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent;
+import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import platform.generic.listener.PlatformListener;
 import util.Const;
+import util.DiscordLogger;
 import util.database.calls.AddGuild;
 import util.database.calls.CheckBotInGuild;
 import util.database.calls.GuildJoin;
@@ -54,6 +56,7 @@ public class DiscordListener extends ListenerAdapter {
             // A check to see if the bot was added to the guild while it was offline and to add it
             if (!CheckBotInGuild.action(event)) {
                 AddGuild.action(event);
+                new DiscordLogger(" :gear: Fixed broken guild.", event);
                 System.out.printf("[SYSTEM] [%s:%s] [%s:%s] Broken guild fixed.%n",
                         event.getGuild().getName(),
                         event.getGuild().getId(),
@@ -61,6 +64,7 @@ public class DiscordListener extends ListenerAdapter {
                         event.getChannel().getId());
             }
             try {
+                new DiscordLogger(" :arrow_left: " + event.getMessage().getContent(), event);
                 System.out.printf("[COMMAND] [%s:%s] [%s:%s] [%s:%s] %s%n",
                         event.getGuild().getName(),
                         event.getGuild().getId(),
@@ -88,6 +92,7 @@ public class DiscordListener extends ListenerAdapter {
     @Override
     public final void onDisconnect(DisconnectEvent event) {
         try {
+            new DiscordLogger("Discord had been disconnected. Attempting to reconnect...", event);
             logger.info("Discord has been disconnected.  Reconnecting...");
             Main.main(null);
         } catch (PropertyVetoException | IOException | SQLException e) {
@@ -102,6 +107,11 @@ public class DiscordListener extends ListenerAdapter {
     }
 
     @Override
+    public final void onGuildMemberJoin(GuildMemberJoinEvent event) {
+        new DiscordLogger(null, event);
+    }
+
+    @Override
     public final void onResume(ResumedEvent event) {
         logger.info("The JDA instance has been resumed.");
         new PlatformListener();
@@ -110,6 +120,7 @@ public class DiscordListener extends ListenerAdapter {
     @Override
     public final void onGuildJoin(GuildJoinEvent event) {
         GuildJoin.joinGuild(event);
+        new DiscordLogger(null, event);
         System.out.printf("[GUILD JOIN] Now Live has joined G:%s:%s%n",
                 event.getGuild().getName(),
                 event.getGuild().getId());
@@ -118,6 +129,7 @@ public class DiscordListener extends ListenerAdapter {
     @Override
     public final void onGuildLeave(GuildLeaveEvent event) {
         GuildLeave.leaveGuild(event);
+        new DiscordLogger(null, event);
         System.out.printf("[GUILD LEAVE] Now Live has been dismissed from G:%s:%s%n",
                 event.getGuild().getName(),
                 event.getGuild().getId());

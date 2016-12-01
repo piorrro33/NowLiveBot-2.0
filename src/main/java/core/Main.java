@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import platform.discord.listener.DiscordListener;
 import platform.generic.listener.PlatformListener;
 import util.Const;
+import util.DiscordLogger;
 import util.PropReader;
 import util.database.Database;
 
@@ -96,8 +97,6 @@ public class Main {
 
             List<Guild> guildList = jda.getGuilds();
 
-            System.out.println(guildList);
-
             while (result.next()) {
                 Integer found = 0;
                 for (Guild guild : guildList) {
@@ -130,15 +129,6 @@ public class Main {
                             pStatement = connection.prepareStatement(query);
                             pStatement.setString(1, guildId);
                             resultInt = pStatement.executeUpdate();
-                            if (resultInt > 0) {
-                                System.out.printf("[SYSTEM] Successfully deleted all data for G:%s in db table %s%n",
-                                        guildId,
-                                        table);
-                            } else {
-                                System.out.printf("[SYSTEM] No data present for G:%s in db table %s%n",
-                                        guildId,
-                                        table);
-                            }
                         }
 
                     } catch (Exception e) {

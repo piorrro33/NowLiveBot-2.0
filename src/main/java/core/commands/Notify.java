@@ -6,6 +6,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.Const;
+import util.DiscordLogger;
 import util.database.Database;
 import util.database.calls.Tracker;
 
@@ -136,6 +137,7 @@ public class Notify implements Command {
             result = pStatement.executeUpdate();
 
             if (result > 0) {
+                new DiscordLogger("Notification level changed to " + level, event);
                 System.out.printf("[COMMAND-NOTIFY] Guild: %s has set notification level to %s.%n", event.getGuild()
                         .getName(), level);
                 return true;

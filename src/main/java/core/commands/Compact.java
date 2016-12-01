@@ -57,6 +57,7 @@ public class Compact implements Command {
                 switch (args) {
                     case "off":
                         sendToChannel(event, Const.COMPACT_MODE_OFF);
+
                         break;
                     case "on":
                         sendToChannel(event, Const.COMPACT_MODE_ON);

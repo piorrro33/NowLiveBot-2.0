@@ -137,7 +137,6 @@ public interface En {
             + Const.COMMAND
             + " notify <option>"
             + "\n\tnone - No @ notifications of any kind (default)"
-            + "\n\tme - I will @ mention you only."
             + "\n\there - I will notify only those people that are online when I make the announcement"
             + "\n\teveryone - I'll notify EVERYONE!!  Mwahahaha!!  (I don't recommend this on large servers)```";
     String PING_HELP = "```Ruby\nPING:  Used to ping me. If I am working correctly, I'll send you a pong.\nUSAGE: "

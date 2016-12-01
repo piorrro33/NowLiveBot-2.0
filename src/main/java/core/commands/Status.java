@@ -10,6 +10,7 @@ import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.exceptions.PermissionException;
 import util.Const;
+import util.DiscordLogger;
 import util.database.Database;
 import util.database.calls.Tracker;
 
@@ -105,20 +106,25 @@ public class Status implements Command {
 
         try {
             Main.getJDA().getTextChannelById(event.getChannel().getId()).sendMessage(message).queue(
-                    success -> System.out.printf("[BOT -> GUILD] [%s:%s] [%s:%s] %s%n",
-                            event.getGuild().getName(),
-                            event.getGuild().getId(),
-                            event.getChannel().getName(),
-                            event.getChannel().getId(),
-                            "Bot Status Report"),
-                    failure -> System.out.printf("[~ERROR~] Unable to send message to %s:%s %s:%s.  Trying public " +
-                                    "channel.%n",
-                            event.getGuild().getName(),
-                            event.getGuild().getId(),
-                            event.getChannel().getName(),
-                            event.getChannel().getId())
-            );
+                    success -> {
+                        new DiscordLogger("Bot status sent.", event);
+                        System.out.printf("[BOT -> GUILD] [%s:%s] [%s:%s] %s%n",
+                                event.getGuild().getName(),
+                                event.getGuild().getId(),
+                                event.getChannel().getName(),
+                                event.getChannel().getId(),
+                                "Bot Status Report");
+                    },
+                    failure -> {
+                        new DiscordLogger("[PERMS] Unable to send message, trying public channel.", event);
+                        System.out.printf("[~ERROR~] Unable to send message to %s:%s %s:%s.  Trying public channel.%n",
+                                event.getGuild().getName(),
+                                event.getGuild().getId(),
+                                event.getChannel().getName(),
+                                event.getChannel().getId());
+                    });
         } catch (PermissionException pe) {
+            new DiscordLogger("[PERMISSIONS] Permission exception. Check logs for stacktrace.", event);
             System.out.printf("[~ERROR~] Permission Exception! G:%s:%s C:%s:%s%n",
                     event.getGuild().getName(),
                     event.getGuild().getId(),

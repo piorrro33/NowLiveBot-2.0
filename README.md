@@ -43,7 +43,7 @@ Allows the bot to use @everyone, @here, and @<user> mentions when making announc
 configured in your server)
 
 ### Invite the bot to your server
-To add Now Live to your server, [click here](https://discordapp.com/oauth2/authorize?&client_id=240729664035880961&scope=bot&permissions=224256).
+To add Now Live to your server, [click here](https://discordapp.com/oauth2/authorize?&client_id=240729664035880961&scope=bot&permissions=8).
 
 > **IMPORTANT:**  Leave the bot permissions as they are!  The bot needs all of those permissions to do its job!  Removing any of those permissions could cause the bot to not work properly in your server!
 

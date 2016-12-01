@@ -1,5 +1,6 @@
 package util.database.calls;
 
+import core.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.PropReader;
@@ -27,7 +28,7 @@ public class SchemaCheck extends Database {
     }
 
     public static void checkDb() {
-        logger.info("Checking to see if the schema is present.");
+        System.out.println("Checking database schema.");
 
 
         try {
@@ -40,9 +41,9 @@ public class SchemaCheck extends Database {
             Boolean check = resultSet.last(); // Check to see if there's at least one row
 
             if (check) {
-                logger.info("MySQL schema exists.");
+                System.out.println("[SYSTEM] MySQL schema exists.");
             } else {
-                logger.info("MySQL schema does not exist.");
+                System.out.println("[SYSTEM] MySQL schema does not exist. Uploading schema.");
                 // Load the raw SQL schema file in to the database
                 uploadDatabase();
             }
@@ -82,14 +83,18 @@ public class SchemaCheck extends Database {
                 if (!anInst.trim().equals("")) {
                     pStatement = connection.prepareStatement(anInst);
                     pStatement.executeUpdate(anInst);
-                    logger.info("MySQL Query executed successfully:  " + anInst);
+                    if (Main.debugMode()) {
+                        logger.info("MySQL Query executed successfully:  " + anInst);
+                    }
                 }
             }
             String query = "USE `" + MYSQL_SCHEMA + "`";
             pStatement = connection.prepareStatement(query);
 
             if (pStatement.execute("USE `" + MYSQL_SCHEMA + "`")) {
-                logger.info("Now using schema: " + MYSQL_SCHEMA);
+                if (Main.debugMode()) {
+                    logger.info("Now using schema: " + MYSQL_SCHEMA);
+                }
             }
         } catch (SQLException e) {
             logger.error("SQLException error.  No clue what.", e);

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import platform.beam.controller.BeamController;
 import platform.twitch.controller.TwitchController;
+import util.DiscordLogger;
 import util.PropReader;
 import util.database.Database;
 
@@ -78,6 +79,7 @@ public class PlatformListener {
 
     private synchronized void checkLiveChannels() {
         LocalDateTime timeNow = LocalDateTime.now();
+        new DiscordLogger(" :poop: **Checking for live channels...**", null);
         System.out.println("[SYSTEM] Checking for live channels. " + timeNow);
 
         try {
@@ -98,8 +100,8 @@ public class PlatformListener {
                             break;
                         case 2:
                             BeamController beam = new BeamController();
-                            beam.checkChannel(clcResult.getString("name"), clcResult.getString("guildId"),
-                                    clcResult.getInt("platformId"));
+                            /*beam.checkChannel(clcResult.getString("name"), clcResult.getString("guildId"),
+                                    clcResult.getInt("platformId"));*/
 
                             break;
                         default:
@@ -117,6 +119,7 @@ public class PlatformListener {
 
     private synchronized void checkLiveGames() {
         LocalDateTime timeNow = LocalDateTime.now();
+        new DiscordLogger(" :poop: **Checking for live games...**", null);
         System.out.println("[SYSTEM] Checking for live games. " + timeNow);
         try {
             clgConnection = Database.getInstance().getConnection();

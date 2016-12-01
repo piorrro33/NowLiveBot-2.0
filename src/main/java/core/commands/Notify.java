@@ -1,16 +1,19 @@
 package core.commands;
 
 import core.Command;
+import core.Main;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.Const;
+import util.DiscordLogger;
 import util.database.Database;
 import util.database.calls.Tracker;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
 import static util.database.Database.cleanUp;
@@ -44,7 +47,9 @@ public class Notify implements Command {
                     return true;
                 default:
                     sendToChannel(event, Const.INCORRECT_ARGS);
-                    logger.info(Const.INCORRECT_ARGS);
+                    if (Main.debugMode()) {
+                        logger.info(Const.INCORRECT_ARGS);
+                    }
                     return false;
             }
         } else {
@@ -80,7 +85,9 @@ public class Notify implements Command {
                 break;
             default:
                 sendToChannel(event, Const.INCORRECT_ARGS);
-                logger.info("There was an error checking for the command arguments in Notify.");
+                if (Main.debugMode()) {
+                    logger.info("There was an error checking for the command arguments in Notify.");
+                }
                 break;
         }
 
@@ -118,17 +125,20 @@ public class Notify implements Command {
             }
 
             connection = Database.getInstance().getConnection();
-            String query = "UPDATE `notification` SET `userId` = ?, `level` = ? WHERE `guildId` = ?";
+            String query = "INSERT INTO `notification` (`guildId`, `level`, `userId`) VALUES (?, ?, ?) " +
+                    "ON DUPLICATE KEY UPDATE `level` = ?";
 
             pStatement = connection.prepareStatement(query);
 
-            pStatement.setString(1, uId);
+            pStatement.setString(1, event.getGuild().getId());
             pStatement.setInt(2, level);
-            pStatement.setString(3, event.getGuild().getId());
+            pStatement.setNull(3, Types.VARCHAR);
+            pStatement.setInt(4, level);
             result = pStatement.executeUpdate();
 
             if (result > 0) {
-                System.out.printf("[COMMAND-NOTIFY]Guild: %s has set notification level to %s.%n", event.getGuild()
+                new DiscordLogger("Notification level changed to " + level, event);
+                System.out.printf("[COMMAND-NOTIFY] Guild: %s has set notification level to %s.%n", event.getGuild()
                         .getName(), level);
                 return true;
             } else {

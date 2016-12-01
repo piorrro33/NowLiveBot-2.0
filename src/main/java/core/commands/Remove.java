@@ -32,7 +32,7 @@ public class Remove implements Command {
     private String query;
     private ResultSet result;
     private Integer platformId;
-    private String[] options = new String[]{"channel", "filter", "game", "manager", "tag", "team", "help"};
+    private String[] options = new String[]{"channel", "filter", "game", "manager", "help"};
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
@@ -73,7 +73,6 @@ public class Remove implements Command {
 
         if (getPlatformId(args) > 0) {
             platformId = getPlatformId(args);
-            System.out.println("Associated platform ID: " + platformId);
         } else {
             platformId = 1;
         }
@@ -92,7 +91,6 @@ public class Remove implements Command {
                     case "manager":
                         if (!event.getGuild().getOwner().getUser().getId().equals(String.valueOf(dController
                                 .getMentionedUsersId()))) {
-                            logger.info("managerCount:  " + managerCount(guildId));
                             if (managerCount(guildId)) { // Make sure there is going to be enough managers
                                 try {
                                     connection = Database.getInstance().getConnection();
@@ -146,8 +144,6 @@ public class Remove implements Command {
         } else {
             sendToChannel(event, "I can't remove `" + this.option + "` " + this.argument + " because " +
                     "it's not in my database.");
-            logger.info("Failed to remove " + this.option + " " + this.argument + " from the database" +
-                    " for guildId: " + guildId + ".");
         }
     }
 
@@ -168,10 +164,8 @@ public class Remove implements Command {
             pStatement = connection.prepareStatement(query);
 
             pStatement.setString(1, guildId);
-            logger.info("" + pStatement);
             result = pStatement.executeQuery();
             while (result.next()) {
-                logger.info("Result Count:  " + result.getInt("count"));
                 if (result.getInt("count") > 1) {
                     return true; // There are ample managers to remove this one
                 }

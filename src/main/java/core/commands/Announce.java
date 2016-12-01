@@ -5,6 +5,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.Const;
+import util.DiscordLogger;
 import util.database.Database;
 import util.database.calls.Tracker;
 
@@ -55,7 +56,8 @@ public class Announce implements Command {
         }
 
         sendToChannel(event, "*Message from the " + Const.BOT_NAME + " developers:*\n\n\t" + args);
-        logger.info("Global announcement sent");
+        new DiscordLogger("Global announcement sent.", event);
+        System.out.println("[SYSTEM] Global announcement sent.");
     }
 
     @Override

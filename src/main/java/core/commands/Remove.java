@@ -77,10 +77,6 @@ public class Remove implements Command {
             platformId = 1;
         }
 
-        if (platformId > 0) {
-            args = args.substring(args.indexOf("~") + 1);
-        }
-
         for (String s : this.options) {
             if (this.option.equals(s) && !this.option.equals("help")) {
 
@@ -101,7 +97,7 @@ public class Remove implements Command {
                                     pStatement.setString(1, guildId);
                                     pStatement.setString(2, dController.getMentionedUsersId());
                                     Integer removeManager = pStatement.executeUpdate();
-                                    removeResponse(event, guildId, removeManager);
+                                    removeResponse(event, removeManager);
                                 } catch (SQLException e) {
                                     logger.error("Error when deleting info from the " + this.option + " table: ", e);
                                 } finally {
@@ -126,7 +122,7 @@ public class Remove implements Command {
                             pStatement.setInt(2, platformId);
                             pStatement.setString(3, "%" + this.argument + "%");
                             Integer removeOther = pStatement.executeUpdate();
-                            removeResponse(event, guildId, removeOther);
+                            removeResponse(event, removeOther);
                         } catch (SQLException e) {
                             logger.error("Error when deleting info from the " + this.option + " table: ", e);
                         } finally {
@@ -138,7 +134,7 @@ public class Remove implements Command {
         }
     }
 
-    private void removeResponse(GuildMessageReceivedEvent event, String guildId, Integer resultVar) {
+    private void removeResponse(GuildMessageReceivedEvent event, Integer resultVar) {
         if (resultVar > 0) {
             sendToChannel(event, "Removed `" + this.option + "` " + this.argument);
         } else {

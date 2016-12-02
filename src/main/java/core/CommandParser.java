@@ -102,7 +102,7 @@ public class CommandParser {
                     }
                     break;
                 default:
-                    if (!cmd.invoke.toLowerCase().equals("announce")) {
+                    if (!cmd.invoke.equalsIgnoreCase("announce")) {
                         runCommand(cmd);
                     }
                     break;

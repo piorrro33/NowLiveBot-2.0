@@ -46,11 +46,9 @@ public final class GuildLeave {
                 pStatement = connection.prepareStatement(query);
                 pStatement.setString(1, gEvent.getGuild().getId());
                 result = pStatement.executeUpdate();
-                if (!result.equals(0)) {
-                    if (Main.debugMode()) {
-                        logger.info("Successfully deleted all data for Guild " + gEvent.getGuild().getId() + " from the "
-                                + s.toUpperCase() + " table.");
-                    }
+                if (!result.equals(0) && Main.debugMode()) {
+                    logger.info("Successfully deleted all data for Guild " + gEvent.getGuild().getId() + " from the "
+                            + s.toUpperCase() + " table.");
                 }
             }
 

@@ -1,6 +1,5 @@
 package platform.generic.controller;
 
-import core.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.database.Database;
@@ -87,7 +86,8 @@ public class PlatformController {
 
             if (result.isBeforeFirst()) {
                 while (result.next()) {
-                    return result.getString("channelId");
+                    String channelId = result.getString("channelId");
+                    return channelId;
                 }
             }
         } catch (SQLException e) {

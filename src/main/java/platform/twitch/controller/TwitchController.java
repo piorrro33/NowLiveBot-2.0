@@ -44,31 +44,6 @@ public class TwitchController extends Twitch {
         this.setClientId(PropReader.getInstance().getProp().getProperty("twitch.client.id"));
     }
 
-    public final synchronized Boolean checkExists(String channelName) {
-        final Boolean[] exists = {false};
-        this.channels().get(channelName, new ChannelResponseHandler() {
-            @Override
-            public void onSuccess(Channel channel) {
-                logger.info("Channel exists!");
-                exists[0] = true;
-            }
-
-            @Override
-            public void onFailure(int i, String s, String s1) {
-                exists[0] = false;
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                exists[0] = false;
-            }
-        });
-        if (exists[0].equals(true)) {
-            return true;
-        }
-        return false;
-    }
-
     public static synchronized List<String> checkFilters(String guildId) {
         try {
             String query = "SELECT * FROM `filter` WHERE `guildId` = ?";
@@ -95,6 +70,31 @@ public class TwitchController extends Twitch {
         return null;
     }
 
+    public final synchronized Boolean checkExists(String channelName) {
+        final Boolean[] exists = {false};
+        this.channels().get(channelName, new ChannelResponseHandler() {
+            @Override
+            public void onSuccess(Channel channel) {
+                logger.info("Channel exists!");
+                exists[0] = true;
+            }
+
+            @Override
+            public void onFailure(int i, String s, String s1) {
+                exists[0] = false;
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                exists[0] = false;
+            }
+        });
+        if (exists[0].equals(true)) {
+            return true;
+        }
+        return false;
+    }
+
     public final synchronized void checkChannel(String channelName, String guildId, Integer platformId) {
 
         // Grab the stream info
@@ -107,7 +107,7 @@ public class TwitchController extends Twitch {
                     String casterLang = GetBroadcasterLang.action(guildId);
                     if (casterLang.equals(stream.getChannel().getBroadcasterLanguage()) || "all".equals(casterLang)) {
                         // check if the status and game name are not null
-                        if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
+                        if ((stream.getChannel().getStatus() != null) && (stream.getGame() != null)) {
                             // Checking filters
                             List<String> filters = checkFilters(guildId);
                             if (filters != null) {

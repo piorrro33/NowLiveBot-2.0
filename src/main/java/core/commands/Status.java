@@ -116,7 +116,7 @@ public class Status implements Command {
                                 "Bot Status Report");
                     },
                     failure -> {
-                        new DiscordLogger("[PERMS] Unable to send message, trying public channel.", event);
+                        new DiscordLogger(" :gear: Unable to send message, trying public channel.", event);
                         System.out.printf("[~ERROR~] Unable to send message to %s:%s %s:%s.  Trying public channel.%n",
                                 event.getGuild().getName(),
                                 event.getGuild().getId(),
@@ -124,7 +124,7 @@ public class Status implements Command {
                                 event.getChannel().getId());
                     });
         } catch (PermissionException pe) {
-            new DiscordLogger("[PERMISSIONS] Permission exception. Check logs for stacktrace.", event);
+            new DiscordLogger(" :gear: Permission exception. Check logs for stacktrace.", event);
             System.out.printf("[~ERROR~] Permission Exception! G:%s:%s C:%s:%s%n",
                     event.getGuild().getName(),
                     event.getGuild().getId(),

@@ -24,16 +24,16 @@ public class CountManagers {
             if (connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
-                pStatement = connection.prepareStatement(query);
-                pStatement.setString(1, guildId);
-                pStatement.setString(2, userId);
-                result = pStatement.executeQuery();
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            pStatement.setString(2, userId);
+            result = pStatement.executeQuery();
 
-                while (result.next()) {
-                    if (result.getInt("count") > 0) {
-                        return true; // If they are a manager already
-                    }
+            while (result.next()) {
+                if (result.getInt("count") > 0) {
+                    return true; // If they are a manager already
                 }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {

@@ -64,7 +64,7 @@ public class DiscordListener extends ListenerAdapter {
                         event.getChannel().getId());
             }
             try {
-                new DiscordLogger(" :arrow_left: " + event.getMessage().getContent(), event);
+                new DiscordLogger(event.getMessage().getContent(), event);
                 System.out.printf("[COMMAND] [%s:%s] [%s:%s] [%s:%s] %s%n",
                         event.getGuild().getName(),
                         event.getGuild().getId(),

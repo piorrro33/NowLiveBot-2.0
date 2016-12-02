@@ -85,6 +85,8 @@ public class Language implements Command {
                 case "all":
                 case "help":
                     return true;
+                default:
+                    return false;
             }
         } else if ("help".equals(args)) {
             return true;

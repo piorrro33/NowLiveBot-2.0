@@ -82,7 +82,7 @@ public class BeamController extends BeamAPI {
         try {
             if (channel.get().online) { // if the channel is online
                 // Grab the channel name with proper capitalization
-                channelName = channel.get().token;
+                String updatedChannelName = channel.get().token;
                 // Check to see if the game name is not empty
                 if (!channel.get().type.name.isEmpty() && channel.get().type.name != null) {
                     // Grab the game name
@@ -90,19 +90,20 @@ public class BeamController extends BeamAPI {
                     // Grab the stream title
                     String streamTitle = channel.get().name;
                     // Stream URL
-                    String url = "https://beam.pro/" + channelName;
+                    String url = "https://beam.pro/" + updatedChannelName;
                     // Grab any entered filters
                     List<String> filters = checkFilters(guildId);
 
                     if (filters != null) {
                         for (String filter : filters) {
                             if (gameName.equalsIgnoreCase(filter)) {
-                                pController.onlineStreamHandler(guildId, platformId, channelName, streamTitle,
+                                pController.onlineStreamHandler(guildId, platformId, updatedChannelName, streamTitle,
                                         gameName, url, channel.get().thumbnail.url, channel.get().cover.url);
                             }
                         }
                     } else {
-                        pController.onlineStreamHandler(guildId, platformId, channelName, streamTitle, gameName, url,
+                        pController.onlineStreamHandler(guildId, platformId, updatedChannelName, streamTitle, gameName,
+                                url,
                                 channel.get().thumbnail.url, channel.get().cover.url);
                     }
                 }

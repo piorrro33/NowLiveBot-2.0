@@ -2,8 +2,6 @@ package core.commands;
 
 import core.Command;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import util.Const;
 import util.DiscordLogger;
 import util.database.Database;
@@ -22,7 +20,6 @@ import static util.database.Database.cleanUp;
  */
 public class Announce implements Command {
 
-    private static Logger logger = LoggerFactory.getLogger(Announce.class);
     private static ResultSet result;
     private static PreparedStatement pStatement;
     private static Connection connection;
@@ -56,7 +53,7 @@ public class Announce implements Command {
         }
 
         sendToChannel(event, "*Message from the " + Const.BOT_NAME + " developers:*\n\n\t" + args);
-        new DiscordLogger("Global announcement sent.", event);
+        new DiscordLogger(" :satellite: Global announcement sent.", event);
         System.out.println("[SYSTEM] Global announcement sent.");
     }
 

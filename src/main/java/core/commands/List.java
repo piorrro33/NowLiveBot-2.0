@@ -33,6 +33,7 @@ public class List implements Command {
     private String[] options = new String[]{"channel", "game", "manager", "streamLang", "tag", "team", "help"};
 
     private Message createNotificationMessage(MessageBuilder message, GuildMessageReceivedEvent event) {
+        MessageBuilder msg = message;
         try {
             connection = Database.getInstance().getConnection();
             pStatement = connection.prepareStatement(query);
@@ -41,13 +42,15 @@ public class List implements Command {
 
             if (resultSet.isBeforeFirst()) {
                 while (resultSet.next()) {
-                    message.appendString("\n\t");
+                    msg.appendString("\n\t");
                     if (!"manager".equals(option)) {
-                        message.appendString(resultSet.getString(1).replaceAll("''", "'"));
+                        msg.appendString(resultSet.getString(1).replaceAll("''", "'"));
                         switch (resultSet.getInt(2)) {
                             case 1:
-                                message.appendString(" on Twitch.tv");
+                                msg.appendString(" on Twitch.tv");
                                 break;
+                            case 2:
+                                msg.appendString(" on Beam.pro");
                             default:
                                 break;
                         }
@@ -55,24 +58,24 @@ public class List implements Command {
                         String userId = resultSet.getString("userId");
                         User user = event.getJDA().getUserById(userId);
                         String userName = user.getName();
-                        message.appendString(userName);
+                        msg.appendString(userName);
                     }
 
                     // Large message handler
-                    if (message.getLength() > 1850) {
-                        sendToPm(event, message.build());
-                        message = new MessageBuilder();
+                    if (msg.getLength() > 1850) {
+                        sendToPm(event, msg.build());
+                        msg = new MessageBuilder();
                     }
                 }
             } else {
-                message.appendString("\n\tRuh Roh!  I can't seem to find anything here...");
+                msg.appendString("\n\tRuh Roh!  I can't seem to find anything here...");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(resultSet, pStatement, connection);
         }
-        return message.build();
+        return msg.build();
     }
 
     /**

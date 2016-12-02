@@ -84,10 +84,6 @@ public class Add implements Command {
             platformId = 1;
         }
 
-        if (platformId > 0) {
-            args = args.substring(args.indexOf("~") + 1);
-        }
-
         for (String s : this.options) {
             if (this.option.equals(s) && !this.option.equals("help")) {
 
@@ -104,15 +100,14 @@ public class Add implements Command {
 
                                         returnStatement(AddManager.action(this.option, guildId, userId), event);
                                     } else {
-                                        sendToChannel(event, "It seems I've already hired that user as a manager.  Find moar " +
-                                                "humanz!");
+                                        sendToChannel(event, Const.ALREADY_MANAGER);
                                     }
                                 } else {
                                     sendToChannel(event, Const.NO_BOT_MANAGER);
                                 }
                             }
                         } catch (NullPointerException npe) {
-                            sendToChannel(event, "That person isn't a Discord user!  Try again!");
+                            sendToChannel(event, Const.DISCORD_USER_NO_EXIST);
                         }
                         break;
                     case "channel":
@@ -132,9 +127,11 @@ public class Add implements Command {
                                         returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
                                     }
                                 } else {
-                                    sendToChannel(event, "That Beam user does not exist! Check your spelling and try" +
-                                            " again!");
+                                    sendToChannel(event, Const.BEAM_USER_NO_EXIST);
                                 }
+                                break;
+                            default:
+                                break;
                         }
                         break;
                     default:

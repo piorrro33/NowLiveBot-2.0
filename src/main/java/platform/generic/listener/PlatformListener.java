@@ -39,8 +39,8 @@ public class PlatformListener {
     public PlatformListener() {
 
         try {
-            executor.scheduleWithFixedDelay(this::checkLiveChannels, 0, 30, TimeUnit.SECONDS);
-            executor.scheduleWithFixedDelay(this::checkLiveGames, 0, 30, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::checkLiveChannels, 0, 45, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::checkLiveGames, 0, 45, TimeUnit.SECONDS);
         } catch (Exception e) {
             logger.info("******************* Caught an exception while keeping the executors active ", e);
             logger.info("Attempting to restart the executors...");
@@ -58,13 +58,12 @@ public class PlatformListener {
             kcStatement = kcConnection.prepareStatement(query);
             kcResult = kcStatement.executeQuery();
             while (kcResult.next()) {
-                if (kcResult.getString("USER").equals(PropReader.getInstance().getProp().getProperty("mysql.username"))) {
-                    if (kcResult.getInt("TIME") > 10) {
-                        Integer processId = kcResult.getInt("ID");
-                        query = "KILL CONNECTION " + processId;
-                        kcStatement = kcConnection.prepareStatement(query);
-                        kcStatement.execute();
-                    }
+                if (kcResult.getString("USER").equals(PropReader.getInstance().getProp()
+                        .getProperty("mysql" + ".username")) && kcResult.getInt("TIME") > 10) {
+                    Integer processId = kcResult.getInt("ID");
+                    query = "KILL CONNECTION " + processId;
+                    kcStatement = kcConnection.prepareStatement(query);
+                    kcStatement.execute();
                 }
             }
             query = "USE `" + PropReader.getInstance().getProp().getProperty("mysql.schema") + "`";

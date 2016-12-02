@@ -116,13 +116,6 @@ public class Notify implements Command {
 
     private boolean update(GuildMessageReceivedEvent event, Integer level) {
         try {
-            String uId;
-
-            if (level == 1) {
-                uId = event.getAuthor().getId();
-            } else {
-                uId = null;
-            }
 
             connection = Database.getInstance().getConnection();
             String query = "INSERT INTO `notification` (`guildId`, `level`, `userId`) VALUES (?, ?, ?) " +

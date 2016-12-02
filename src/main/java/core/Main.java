@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import platform.discord.listener.DiscordListener;
 import platform.generic.listener.PlatformListener;
 import util.Const;
-import util.DiscordLogger;
 import util.PropReader;
 import util.database.Database;
 
@@ -45,7 +44,6 @@ public class Main {
     private static Connection connection;
     private static PreparedStatement pStatement;
     private static ResultSet result;
-    private static Integer resultInt;
     private static List<String> tableList = new ArrayList<>();
 
     public static JDA getJDA() {
@@ -128,7 +126,7 @@ public class Main {
                             }
                             pStatement = connection.prepareStatement(query);
                             pStatement.setString(1, guildId);
-                            resultInt = pStatement.executeUpdate();
+                            pStatement.executeUpdate();
                         }
 
                     } catch (Exception e) {

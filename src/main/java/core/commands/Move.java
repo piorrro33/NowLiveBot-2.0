@@ -72,6 +72,7 @@ public class Move implements Command {
                     cleanUp(pStatement, connection);
                 }
             } else {
+                sendToChannel(event, Const.MOVE_DONT_OWN_CHANNEL);
                 break;
             }
         }

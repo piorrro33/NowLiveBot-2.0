@@ -91,10 +91,8 @@ public class SchemaCheck extends Database {
             String query = "USE `" + MYSQL_SCHEMA + "`";
             pStatement = connection.prepareStatement(query);
 
-            if (pStatement.execute("USE `" + MYSQL_SCHEMA + "`")) {
-                if (Main.debugMode()) {
-                    logger.info("Now using schema: " + MYSQL_SCHEMA);
-                }
+            if (pStatement.execute("USE `" + MYSQL_SCHEMA + "`") && Main.debugMode()) {
+                logger.info("Now using schema: " + MYSQL_SCHEMA);
             }
         } catch (SQLException e) {
             logger.error("SQLException error.  No clue what.", e);

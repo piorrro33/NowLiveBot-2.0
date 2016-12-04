@@ -25,7 +25,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static util.database.Database.cleanUp;
 
@@ -101,10 +103,16 @@ public class TwitchController extends Twitch {
         this.streams().get(channelName, new StreamResponseHandler() {
             @Override
             public void onSuccess(Stream stream) { // If the stream has been found
+
+                Map<String, String> args = new HashMap<>();
+                args.put("guildId", guildId);
+                args.put("channelName", channelName);
+
                 // check if the stream is online
                 if (stream != null) {
+
                     // Check for tracked broadcaster languages
-                    String casterLang = GetBroadcasterLang.action(guildId);
+                    String casterLang = new GetBroadcasterLang().action(guildId);
                     if (casterLang.equals(stream.getChannel().getBroadcasterLanguage()) || "all".equals(casterLang)) {
                         // check if the status and game name are not null
                         if ((stream.getChannel().getStatus() != null) && (stream.getGame() != null)) {
@@ -114,23 +122,18 @@ public class TwitchController extends Twitch {
                                 for (String filter : filters) {
                                     if (stream.getGame().equalsIgnoreCase(filter)) {
                                         // If the game filter is equal to the game being played, announce the stream
-                                        pController.onlineStreamHandler(guildId, platformId, stream.getChannel().getName(),
-                                                stream.getChannel().getStatus(), stream.getGame(), stream.getChannel
-                                                        ().getUrl(), stream.getChannel().getLogo(), stream.getChannel()
-                                                        .getProfileBanner());
+                                        pController.onlineStreamHandler(setArgs(args, stream), platformId);
                                     }
                                 }
                             } else {
                                 // If no filters are set, announce the channel
-                                pController.onlineStreamHandler(guildId, platformId, stream.getChannel().getName(),
-                                        stream.getChannel().getStatus(), stream.getGame(), stream.getChannel().getUrl(),
-                                        stream.getChannel().getLogo(), stream.getChannel().getProfileBanner());
+                                pController.onlineStreamHandler(setArgs(args, stream), platformId);
                             }
                         }
                     }
                 } else {
                     // If the stream is offline
-                    pController.offlineStreamHandler(guildId, platformId, channelName);
+                    pController.offlineStreamHandler(args, platformId);
                 }
             }
 
@@ -142,6 +145,16 @@ public class TwitchController extends Twitch {
             public void onFailure(Throwable throwable) {
             }
         });
+    }
+
+    private Map<String, String> setArgs(Map<String, String> args, Stream stream) {
+        args.put("channelName", stream.getChannel().getName());
+        args.put("streamTitle", stream.getChannel().getStatus());
+        args.put("gameName", stream.getGame());
+        args.put("url", stream.getChannel().getUrl());
+        args.put("thumbnail", stream.getChannel().getLogo());
+        args.put("banner", stream.getChannel().getProfileBanner());
+        return args;
     }
 
     public final synchronized void checkGame(String gameName, String guildId, Integer platformId) {

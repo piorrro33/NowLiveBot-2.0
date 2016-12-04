@@ -12,12 +12,13 @@ import static util.database.Database.cleanUp;
 /**
  * @author Veteran Software by Ague Mort
  */
-public class GetBroadcasterLang {
+public class CheckStreamTable {
+
     private Connection connection = Database.getInstance().getConnection();
     private PreparedStatement pStatement;
     private ResultSet result;
 
-    public GetBroadcasterLang() {
+    public CheckStreamTable() {
         setConnection();
     }
 
@@ -40,15 +41,20 @@ public class GetBroadcasterLang {
         }
     }
 
-    public synchronized String action(String guildId) {
+    public synchronized Boolean action(String guildId, Integer platformId, String channelName) {
         try {
-            String query = "SELECT `broadcasterLang` FROM `guild` WHERE `guildId` = ?";
+            String query = "SELECT COUNT(*) AS `count` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND " +
+                    "`channelName` = ?";
+
             setStatement(query);
             pStatement.setString(1, guildId);
+            pStatement.setInt(2, platformId);
+            pStatement.setString(3, channelName);
             setResult(pStatement.executeQuery());
-            if (result.isBeforeFirst()) {
-                if (result.next()) {
-                    return result.getString("broadcasterLang");
+
+            while (result.next()) {
+                if (result.getInt("count") == 0) {
+                    return false; // Not in the stream table
                 }
             }
         } catch (SQLException e) {
@@ -56,6 +62,6 @@ public class GetBroadcasterLang {
         } finally {
             cleanUp(pStatement, connection);
         }
-        return null;
+        return true; // Found in the stream table
     }
 }

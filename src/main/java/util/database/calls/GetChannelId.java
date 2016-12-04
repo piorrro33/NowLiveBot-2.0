@@ -12,12 +12,13 @@ import static util.database.Database.cleanUp;
 /**
  * @author Veteran Software by Ague Mort
  */
-public class GetBroadcasterLang {
+public class GetChannelId {
+
     private Connection connection = Database.getInstance().getConnection();
     private PreparedStatement pStatement;
     private ResultSet result;
 
-    public GetBroadcasterLang() {
+    public GetChannelId() {
         setConnection();
     }
 
@@ -42,13 +43,16 @@ public class GetBroadcasterLang {
 
     public synchronized String action(String guildId) {
         try {
-            String query = "SELECT `broadcasterLang` FROM `guild` WHERE `guildId` = ?";
+            String query = "SELECT `channelId` FROM `guild` WHERE `guildId` = ?";
+
             setStatement(query);
             pStatement.setString(1, guildId);
             setResult(pStatement.executeQuery());
-            if (result.isBeforeFirst()) {
-                if (result.next()) {
-                    return result.getString("broadcasterLang");
+
+            while (result.next()) {
+                String channelId = result.getString("channelId");
+                if (!"".equals(channelId)) {
+                    return channelId;
                 }
             }
         } catch (SQLException e) {
@@ -56,6 +60,6 @@ public class GetBroadcasterLang {
         } finally {
             cleanUp(pStatement, connection);
         }
-        return null;
+        return "";
     }
 }

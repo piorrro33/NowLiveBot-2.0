@@ -6,18 +6,20 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 
 import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software by Ague Mort
  */
-public class GetBroadcasterLang {
+public class GetAnnounceChannel {
+
     private Connection connection = Database.getInstance().getConnection();
     private PreparedStatement pStatement;
     private ResultSet result;
 
-    public GetBroadcasterLang() {
+    public GetAnnounceChannel() {
         setConnection();
     }
 
@@ -40,22 +42,32 @@ public class GetBroadcasterLang {
         }
     }
 
-    public synchronized String action(String guildId) {
+    public synchronized String action(Map<String, String> args, Integer platformId) {
         try {
-            String query = "SELECT `broadcasterLang` FROM `guild` WHERE `guildId` = ?";
+            if (args.get("gameName") == null || "".equals(args.get("gameName"))) {
+                args.replace("gameName", "some game");
+            }
+
+            String query = "SELECT `channelId` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND " +
+                    "`channelName` = ?";
             setStatement(query);
-            pStatement.setString(1, guildId);
+            pStatement.setString(1, args.get("guildId"));
+            pStatement.setInt(2, platformId);
+            pStatement.setString(3, args.get("channelName"));
             setResult(pStatement.executeQuery());
+
             if (result.isBeforeFirst()) {
                 if (result.next()) {
-                    return result.getString("broadcasterLang");
+                    return result.getString("channelId");
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("I threw an exception here");
         } finally {
             cleanUp(pStatement, connection);
         }
+
         return null;
     }
+
 }

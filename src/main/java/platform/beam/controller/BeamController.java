@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import platform.generic.controller.PlatformController;
 import pro.beam.api.BeamAPI;
 import pro.beam.api.resource.channel.BeamChannel;
+import pro.beam.api.response.channels.ChannelStatusResponse;
 import pro.beam.api.services.impl.ChannelsService;
 import util.database.Database;
 
@@ -12,7 +13,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static util.database.Database.cleanUp;
@@ -80,37 +83,51 @@ public class BeamController extends BeamAPI {
 
         ListenableFuture<BeamChannel> channel = beamChannel.use(ChannelsService.class).findOneByToken(channelName);
         try {
+            Map<String, String> args = new HashMap<>();
+            args.put("guildId", guildId);
+            args.put("channelName", channelName);
+
             if (channel.get().online) { // if the channel is online
-                // Grab the channel name with proper capitalization
-                String updatedChannelName = channel.get().token;
+
                 // Check to see if the game name is not empty
                 if (!channel.get().type.name.isEmpty() && channel.get().type.name != null) {
+
                     // Grab the game name
                     String gameName = channel.get().type.name;
-                    // Grab the stream title
-                    String streamTitle = channel.get().name;
-                    // Stream URL
-                    String url = "https://beam.pro/" + updatedChannelName;
+
                     // Grab any entered filters
                     List<String> filters = checkFilters(guildId);
 
                     if (filters != null) {
                         for (String filter : filters) {
                             if (gameName.equalsIgnoreCase(filter)) {
-                                pController.onlineStreamHandler(guildId, platformId, updatedChannelName, streamTitle,
-                                        gameName, url, channel.get().thumbnail.url, channel.get().cover.url);
+                                pController.onlineStreamHandler(setArgs(args, channel), platformId);
                             }
                         }
                     } else {
-                        pController.onlineStreamHandler(guildId, platformId, updatedChannelName, streamTitle, gameName,
-                                url,
-                                channel.get().thumbnail.url, channel.get().cover.url);
+                        pController.onlineStreamHandler(setArgs(args, channel), platformId);
                     }
                 }
+            } else {
+                pController.offlineStreamHandler(args, platformId);
             }
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
+    }
+
+    private Map<String, String> setArgs(Map<String, String> args, ListenableFuture<BeamChannel> channel) {
+        try {
+            args.put("channelName", channel.get().token);
+            args.put("streamTitle", channel.get().name);
+            args.put("gameName", channel.get().type.name);
+            args.put("url", "https://beam.pro/" + args.get("channelName"));
+            args.put("thumbnail", channel.get().thumbnail.url);
+            args.put("banner", channel.get().cover.url);
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        return args;
     }
 
 }

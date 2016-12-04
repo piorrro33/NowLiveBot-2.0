@@ -24,20 +24,22 @@ import static util.database.Database.cleanUp;
  */
 public class PlatformListener {
     private static Logger logger = LoggerFactory.getLogger("Platform Listener");
+    private static Connection connection;
     private static Connection clcConnection;
     private static Connection clgConnection;
     private static Connection kcConnection;
+    private static PreparedStatement pStatement;
     private static PreparedStatement clcStatement;
     private static PreparedStatement clgStatement;
     private static PreparedStatement kcStatement;
+    private static ResultSet result;
     private static ResultSet clcResult;
     private static ResultSet clgResult;
     private static ResultSet kcResult;
     private static String query;
-    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
     public PlatformListener() {
-
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         try {
             executor.scheduleWithFixedDelay(this::checkLiveChannels, 0, 45, TimeUnit.SECONDS);
             executor.scheduleWithFixedDelay(this::checkLiveGames, 0, 45, TimeUnit.SECONDS);
@@ -76,6 +78,29 @@ public class PlatformListener {
         }
     }
 
+    private synchronized void checkOfflineChannels() {
+        new DiscordLogger(" :poop: **Checking for offline streams**", null);
+        System.out.println("[SYSTEM] Checking for offline streams.");
+
+        try {
+            query = "SELECT * FROM `stream` ORDER BY `messageId` DESC";
+            connection = Database.getInstance().getConnection();
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
+
+            if (result.isBeforeFirst()) {
+                while (result.next()) {
+                    new TwitchController().checkChannel(result.getString("channelName"), result.getString("guildId"),
+                            result.getInt("platformId"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
+        }
+    }
+
     private synchronized void checkLiveChannels() {
         LocalDateTime timeNow = LocalDateTime.now();
         new DiscordLogger(" :poop: **Checking for live channels...**", null);
@@ -92,15 +117,13 @@ public class PlatformListener {
                 while (clcResult.next()) {
                     switch (clcResult.getInt("platformId")) {
                         case 1:
-                            TwitchController twitch = new TwitchController();
                             // Send info to Twitch Controller
-                            twitch.checkChannel(clcResult.getString("name"), clcResult.getString("guildId"), clcResult.getInt
-                                    ("platformId"));
+                            new TwitchController().checkChannel(clcResult.getString("name"), clcResult.getString
+                                    ("guildId"), clcResult.getInt("platformId"));
                             break;
                         case 2:
-                            BeamController beam = new BeamController();
-                            /*beam.checkChannel(clcResult.getString("name"), clcResult.getString("guildId"),
-                                    clcResult.getInt("platformId"));*/
+                            /*new BeamController().checkChannel(clcResult.getString("name"), clcResult.getString
+                            ("guildId"), clcResult.getInt("platformId"));*/
 
                             break;
                         default:

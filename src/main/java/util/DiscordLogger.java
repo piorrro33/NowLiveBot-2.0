@@ -26,11 +26,15 @@ public class DiscordLogger {
     public DiscordLogger(String message, Event event) {
         dateTime();
         if (event != null) {
-            if (event instanceof GuildMessageReceivedEvent && !((GuildMessageReceivedEvent) event).getAuthor().isBot()) {
-                discordLogGMRE(message, (GuildMessageReceivedEvent) event);
+            if (event instanceof GuildMessageReceivedEvent) {
+                if (!((GuildMessageReceivedEvent) event).getAuthor().isBot()) {
+                    discordLogGMRE(message, (GuildMessageReceivedEvent) event);
+                }
             }
-            if (event instanceof PrivateMessageReceivedEvent && !((PrivateMessageReceivedEvent) event).getAuthor().isBot()) {
-                discordLogPMRE((PrivateMessageReceivedEvent) event);
+            if (event instanceof PrivateMessageReceivedEvent) {
+                if (!((PrivateMessageReceivedEvent) event).getAuthor().isBot()) {
+                    discordLogPMRE((PrivateMessageReceivedEvent) event);
+                }
             }
             if (event instanceof GuildMemberJoinEvent) {
                 discordLogGMJE((GuildMemberJoinEvent) event);
@@ -39,7 +43,7 @@ public class DiscordLogger {
                 discordLogGMLE((GuildMemberLeaveEvent) event);
             }
             if (event instanceof DisconnectEvent) {
-                discordLogNoEvent(" :gear: " + message);
+                discordLogNoEvent(":gear: " + message);
             }
             if (event instanceof GuildJoinEvent) {
                 discordLogGJE((GuildJoinEvent) event);
@@ -54,13 +58,13 @@ public class DiscordLogger {
 
     private void discordLogGMJE(GuildMemberJoinEvent event) {
         String user = event.getMember().getUser().getName();
-        Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage(" :heart_eyes_cat: " + user + " joined the " +
+        Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage("  :heart_eyes_cat: " + user + " joined the " +
                 "guild.");
     }
 
     private void discordLogGMLE(GuildMemberLeaveEvent event) {
         String user = event.getMember().getUser().getName();
-        Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage(" :scream_cat: " + user + " left the " +
+        Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage("  :scream_cat: " + user + " left the " +
                 "guild.");
     }
 
@@ -75,14 +79,14 @@ public class DiscordLogger {
 
         MessageBuilder discord = new MessageBuilder();
 
-        discord.appendString("[");
-        discord.appendString(this.localDateTime);
-        discord.appendString("][G:");
-        discord.appendString(guildName);
-        discord.appendString(":");
-        discord.appendString(guildId);
-        discord.appendString("] :inbox_tray: ");
-        discord.appendString("Joined new guild.");
+        discord.append("[");
+        discord.append(this.localDateTime);
+        discord.append("][G:");
+        discord.append(guildName);
+        discord.append(":");
+        discord.append(guildId);
+        discord.append("]\n\t\t :inbox_tray: ");
+        discord.append("Joined guild.");
 
         Message dMessage = discord.build();
 
@@ -94,12 +98,12 @@ public class DiscordLogger {
 
         MessageBuilder discord = new MessageBuilder();
 
-        discord.appendString("[");
-        discord.appendString(this.localDateTime);
-        discord.appendString("][G:");
-        discord.appendString(guildName);
-        discord.appendString("] :outbox_tray: ");
-        discord.appendString("Left guild.");
+        discord.append("[");
+        discord.append(this.localDateTime);
+        discord.append("][G:");
+        discord.append(guildName);
+        discord.append("]\n\t\t :outbox_tray: ");
+        discord.append("Left guild.");
 
         Message dMessage = discord.build();
 
@@ -109,10 +113,10 @@ public class DiscordLogger {
     private void discordLogNoEvent(String message) {
         MessageBuilder discord = new MessageBuilder();
 
-        discord.appendString("[");
-        discord.appendString(this.localDateTime);
-        discord.appendString("] ");
-        discord.appendString(message);
+        discord.append("[");
+        discord.append(this.localDateTime);
+        discord.append("]\n\t\t ");
+        discord.append(message);
 
         Message dMessage = discord.build();
 
@@ -127,16 +131,16 @@ public class DiscordLogger {
 
         MessageBuilder discord = new MessageBuilder();
 
-        discord.appendString("[");
-        discord.appendString(this.localDateTime);
-        discord.appendString("][G:");
-        discord.appendString(guildName);
-        discord.appendString("][C:");
-        discord.appendString(channelName);
-        discord.appendString("][A:");
-        discord.appendString(authorName);
-        discord.appendString("] ");
-        discord.appendString(message);
+        discord.append("[");
+        discord.append(this.localDateTime);
+        discord.append("][G:");
+        discord.append(guildName);
+        discord.append("][C:");
+        discord.append(channelName);
+        discord.append("][A:");
+        discord.append(authorName);
+        discord.append("]\n\t\t");
+        discord.append(message);
 
         Message dMessage = discord.build();
 
@@ -150,13 +154,13 @@ public class DiscordLogger {
 
         MessageBuilder discord = new MessageBuilder();
 
-        discord.appendString("[");
-        discord.appendString(this.localDateTime);
-        discord.appendString("][A:");
-        discord.appendString(authorName);
-        discord.appendString(":");
-        discord.appendString(authorId);
-        discord.appendString("] ");
+        discord.append("[");
+        discord.append(this.localDateTime);
+        discord.append("][A:");
+        discord.append(authorName);
+        discord.append(":");
+        discord.append(authorId);
+        discord.append("]\n\t\t :secret: Private Message Received");
 
         Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage(discord.build()).queue();
     }

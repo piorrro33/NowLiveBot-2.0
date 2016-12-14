@@ -24,7 +24,7 @@ import static util.database.Database.cleanUp;
  */
 public final class GuildJoin {
 
-    public static final Logger logger = LoggerFactory.getLogger("GuildJoin");
+    private static final Logger logger = LoggerFactory.getLogger("GuildJoin");
     private static List<String> tableList = new ArrayList<>();
     private static Connection connection;
     private static PreparedStatement pStatement;
@@ -33,7 +33,6 @@ public final class GuildJoin {
     private static String query;
     private static String guildId;
     private static String defaultChannel;
-    private static List<String> userIds;
     private static Connection remConnection;
     private static PreparedStatement remStatement;
 
@@ -56,8 +55,8 @@ public final class GuildJoin {
         int failed = 0;
         for (String s : tableList) {
             try {
-                connection = Database.getInstance().getConnection();
                 query = "SELECT `guildId` FROM `" + s + "` WHERE `guildId` = ?";
+                connection = Database.getInstance().getConnection();
                 pStatement = connection.prepareStatement(query);
                 pStatement.setString(1, gEvent.getGuild().getId());
                 resultSet = pStatement.executeQuery();
@@ -68,8 +67,8 @@ public final class GuildJoin {
                         logger.warn("This guild has data remnants in my database!");
                     }
                     try {
-                        remConnection = Database.getInstance().getConnection();
                         query = "DELETE FROM `" + s + "` WHERE `guildId` = ?";
+                        remConnection = Database.getInstance().getConnection();
                         remStatement = remConnection.prepareStatement(query);
                         remStatement.setString(1, guildId);
                         result = remStatement.executeUpdate();
@@ -110,9 +109,9 @@ public final class GuildJoin {
         switch (s) {
             case "guild":
                 try {
-                    connection = Database.getInstance().getConnection();
                     query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `cleanup`, " +
                             "`emoji`) VALUES (?, ?, 0, 0, ?)";
+                    connection = Database.getInstance().getConnection();
                     pStatement = connection.prepareStatement(query);
 
                     pStatement.setString(1, guildId);
@@ -157,7 +156,7 @@ public final class GuildJoin {
     }
 
     private static void addManager(GuildJoinEvent gEvent) {
-        userIds = new ArrayList<>();
+        List<String> userIds = new ArrayList<>();
         // Auto add the guild owner as a manager
         userIds.add(gEvent.getGuild().getOwner().getUser().getId());
         // Pull the roles from the guild
@@ -165,7 +164,7 @@ public final class GuildJoin {
             // Check permissions of each role
             if (role.hasPermission(Permission.MANAGE_SERVER) || role.hasPermission(Permission.ADMINISTRATOR)) {
                 // See if the user in question has the correct role
-                for (Member member : gEvent.getGuild().getMembersWithRoles(role)) {
+                for (Member member : gEvent.getGuild().getMembersWithRoles((role))) {
                     // Add them to the list of authorized managers
                     if (!userIds.contains(member.getUser().getId())) {
                         userIds.add(member.getUser().getId());
@@ -175,8 +174,8 @@ public final class GuildJoin {
         }
         for (String users : userIds) {
             try {
-                connection = Database.getInstance().getConnection();
                 query = "INSERT INTO `manager` (`guildId`, `userId`) VALUES (?, ?)";
+                connection = Database.getInstance().getConnection();
                 pStatement = connection.prepareStatement(query);
 
                 pStatement.setString(1, guildId);
@@ -198,10 +197,10 @@ public final class GuildJoin {
         }
     }
 
-    public static Integer addNotification() {
+    private static Integer addNotification() {
         try {
-            connection = Database.getInstance().getConnection();
             query = "INSERT INTO `notification` (`guildId`, `level`) VALUES (?, ?)";
+            connection = Database.getInstance().getConnection();
             pStatement = connection.prepareStatement(query);
 
             pStatement.setString(1, guildId);

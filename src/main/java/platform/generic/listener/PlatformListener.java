@@ -24,25 +24,24 @@ import static util.database.Database.cleanUp;
  */
 public class PlatformListener {
     private static Logger logger = LoggerFactory.getLogger("Platform Listener");
-    private static Connection connection;
     private static Connection clcConnection;
     private static Connection clgConnection;
     private static Connection kcConnection;
-    private static PreparedStatement pStatement;
+    private static Connection connection;
     private static PreparedStatement clcStatement;
     private static PreparedStatement clgStatement;
     private static PreparedStatement kcStatement;
-    private static ResultSet result;
+    private static PreparedStatement pStatement;
     private static ResultSet clcResult;
     private static ResultSet clgResult;
     private static ResultSet kcResult;
-    private static String query;
+    private static ResultSet result;
+    private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
     public PlatformListener() {
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
         try {
-            executor.scheduleWithFixedDelay(this::checkLiveChannels, 0, 45, TimeUnit.SECONDS);
-            executor.scheduleWithFixedDelay(this::checkLiveGames, 0, 45, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::run, 0, 30, TimeUnit.SECONDS);
         } catch (Exception e) {
             logger.info("******************* Caught an exception while keeping the executors active ", e);
             logger.info("Attempting to restart the executors...");
@@ -52,7 +51,7 @@ public class PlatformListener {
     private static synchronized void killConn() {
         try {
             kcConnection = Database.getInstance().getConnection();
-            query = "USE `information_schema`";
+            String query = "USE `information_schema`";
             kcStatement = kcConnection.prepareStatement(query);
             kcStatement.execute();
 
@@ -60,12 +59,13 @@ public class PlatformListener {
             kcStatement = kcConnection.prepareStatement(query);
             kcResult = kcStatement.executeQuery();
             while (kcResult.next()) {
-                if (kcResult.getString("USER").equals(PropReader.getInstance().getProp()
-                        .getProperty("mysql" + ".username")) && kcResult.getInt("TIME") > 10) {
-                    Integer processId = kcResult.getInt("ID");
-                    query = "KILL CONNECTION " + processId;
-                    kcStatement = kcConnection.prepareStatement(query);
-                    kcStatement.execute();
+                if (kcResult.getString("USER").equals(PropReader.getInstance().getProp().getProperty("mysql.username"))) {
+                    if (kcResult.getInt("TIME") > 10) {
+                        Integer processId = kcResult.getInt("ID");
+                        query = "KILL CONNECTION " + processId;
+                        kcStatement = kcConnection.prepareStatement(query);
+                        kcStatement.execute();
+                    }
                 }
             }
             query = "USE `" + PropReader.getInstance().getProp().getProperty("mysql.schema") + "`";
@@ -78,28 +78,13 @@ public class PlatformListener {
         }
     }
 
-    private synchronized void checkOfflineChannels() {
-        new DiscordLogger(" :poop: **Checking for offline streams**", null);
-        System.out.println("[SYSTEM] Checking for offline streams.");
-
-        try {
-            query = "SELECT * FROM `stream` ORDER BY `messageId` DESC";
-            connection = Database.getInstance().getConnection();
-            pStatement = connection.prepareStatement(query);
-            result = pStatement.executeQuery();
-
-            if (result.isBeforeFirst()) {
-                while (result.next()) {
-                    new TwitchController().checkChannel(result.getString("channelName"), result.getString("guildId"),
-                            result.getInt("platformId"));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(result, pStatement, connection);
-        }
+    private synchronized void run() {
+        checkLiveChannels();
+        checkLiveGames();
+        checkOfflineStreams();
     }
+
+    // jda.getUserById("123456789").getJDA().getPresence().getGame().getUrl();
 
     private synchronized void checkLiveChannels() {
         LocalDateTime timeNow = LocalDateTime.now();
@@ -108,7 +93,7 @@ public class PlatformListener {
 
         try {
             clcConnection = Database.getInstance().getConnection();
-            query = "SELECT `guildId`, `name`, `platformId` FROM `channel` ORDER BY `guildId` ASC";
+            String query = "SELECT `guildId`, `name`, `platformId` FROM `channel` ORDER BY `guildId` ASC";
             clcStatement = clcConnection.prepareStatement(query);
 
             clcResult = clcStatement.executeQuery();
@@ -117,13 +102,15 @@ public class PlatformListener {
                 while (clcResult.next()) {
                     switch (clcResult.getInt("platformId")) {
                         case 1:
+                            TwitchController twitch = new TwitchController();
                             // Send info to Twitch Controller
-                            new TwitchController().checkChannel(clcResult.getString("name"), clcResult.getString
-                                    ("guildId"), clcResult.getInt("platformId"));
+                            twitch.checkChannel(clcResult.getString("name"), clcResult.getString("guildId"), clcResult.getInt
+                                    ("platformId"));
                             break;
                         case 2:
-                            /*new BeamController().checkChannel(clcResult.getString("name"), clcResult.getString
-                            ("guildId"), clcResult.getInt("platformId"));*/
+                            BeamController beam = new BeamController();
+                            new BeamController().checkChannel(clcResult.getString("name"), clcResult.getString("guildId"),
+                                    clcResult.getInt("platformId"));
 
                             break;
                         default:
@@ -145,7 +132,7 @@ public class PlatformListener {
         System.out.println("[SYSTEM] Checking for live games. " + timeNow);
         try {
             clgConnection = Database.getInstance().getConnection();
-            query = "SELECT * FROM `game` ORDER BY `guildId` ASC";
+            String query = "SELECT * FROM `game` ORDER BY `guildId` ASC";
             clgStatement = clgConnection.prepareStatement(query);
             clgResult = clgStatement.executeQuery();
 
@@ -172,6 +159,37 @@ public class PlatformListener {
             e.printStackTrace();
         } finally {
             cleanUp(clgResult, clgStatement, clgConnection);
+        }
+    }
+
+    private synchronized void checkOfflineStreams() {
+        LocalDateTime timeNow = LocalDateTime.now();
+        new DiscordLogger(" :poop: **Checking for offline streams...**", null);
+        System.out.println("[SYSTEM] Checking for offline streams. " + timeNow);
+
+        try {
+            String query = "SELECT * FROM `stream` ORDER BY `messageId` ASC";
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
+
+            if (result.isBeforeFirst()) {
+                while (result.next()) {
+                    if (result.getInt("platformId") == 1) {
+
+                        TwitchController twitch = new TwitchController();
+                        twitch.checkOffline(result.getString("channelName"), result.getString("guildId"),
+                                result.getInt("platformId"));
+                    }
+                    killConn();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
         }
     }
 }

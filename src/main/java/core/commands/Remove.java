@@ -31,7 +31,6 @@ public class Remove implements Command {
     private PreparedStatement pStatement;
     private String query;
     private ResultSet result;
-    private Integer platformId;
     private String[] options = new String[]{"channel", "filter", "game", "manager", "help"};
 
     @Override
@@ -68,8 +67,8 @@ public class Remove implements Command {
     public final void action(String args, GuildMessageReceivedEvent event) {
 
         DiscordController dController = new DiscordController(event);
-
-        String guildId = dController.getGuildId();
+        String guildId = event.getGuild().getId();
+        Integer platformId;
 
         if (getPlatformId(args) > 0) {
             platformId = getPlatformId(args);

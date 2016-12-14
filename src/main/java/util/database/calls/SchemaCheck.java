@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import util.PropReader;
 import util.database.Database;
 
-import java.beans.PropertyVetoException;
 import java.io.*;
 import java.sql.*;
 
@@ -23,7 +22,7 @@ public class SchemaCheck extends Database {
     private static PreparedStatement pStatement;
     private static ResultSet resultSet;
 
-    public SchemaCheck() throws PropertyVetoException, IOException, SQLException {
+    public SchemaCheck() {
         super();
     }
 
@@ -56,7 +55,7 @@ public class SchemaCheck extends Database {
         }
     }
 
-    private static void uploadDatabase() throws SQLException {
+    private static void uploadDatabase() {
 
         String line;
         StringBuilder buffer = new StringBuilder();
@@ -91,8 +90,10 @@ public class SchemaCheck extends Database {
             String query = "USE `" + MYSQL_SCHEMA + "`";
             pStatement = connection.prepareStatement(query);
 
-            if (pStatement.execute("USE `" + MYSQL_SCHEMA + "`") && Main.debugMode()) {
-                logger.info("Now using schema: " + MYSQL_SCHEMA);
+            if (pStatement.execute("USE `" + MYSQL_SCHEMA + "`")) {
+                if (Main.debugMode()) {
+                    logger.info("Now using schema: " + MYSQL_SCHEMA);
+                }
             }
         } catch (SQLException e) {
             logger.error("SQLException error.  No clue what.", e);

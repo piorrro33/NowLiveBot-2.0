@@ -39,6 +39,9 @@ public class Announce implements Command {
         try {
             connection = Database.getInstance().getConnection();
             String query = "SELECT `guildId` FROM `guild` ORDER BY `guildId` ASC";
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
 
             result = pStatement.executeQuery();
@@ -53,7 +56,7 @@ public class Announce implements Command {
         }
 
         sendToChannel(event, "*Message from the " + Const.BOT_NAME + " developers:*\n\n\t" + args);
-        new DiscordLogger(" :satellite: Global announcement sent.", event);
+        new DiscordLogger(" :globe_with_meridians: Global announcement sent.", event);
         System.out.println("[SYSTEM] Global announcement sent.");
     }
 

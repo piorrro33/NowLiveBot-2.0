@@ -20,11 +20,9 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public class Move implements Command {
-    public static final Logger logger = LoggerFactory.getLogger(Database.class);
+    private static final Logger logger = LoggerFactory.getLogger(Database.class);
     private Connection connection;
     private PreparedStatement pStatement;
-    private String query;
-    private Integer result;
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
@@ -51,7 +49,7 @@ public class Move implements Command {
 
             if (textChannel.getGuild().getId().equals(event.getGuild().getId())) {
                 try {
-                    query = "UPDATE `guild` SET `channelId` = ? WHERE `guildId` = ?";
+                    String query = "UPDATE `guild` SET `channelId` = ? WHERE `guildId` = ?";
                     connection = Database.getInstance().getConnection();
                     pStatement = connection.prepareStatement(query);
 
@@ -59,9 +57,7 @@ public class Move implements Command {
                     pStatement.setString(1, textChannel.getId());
                     pStatement.setString(2, event.getGuild().getId());
 
-                    result = pStatement.executeUpdate();
-
-                    if (result.equals(1)) {
+                    if (pStatement.executeUpdate() == 1) {
                         sendToChannel(event, Const.MOVE_SUCCESS);
                     } else {
                         sendToChannel(event, Const.MOVE_FAILURE);
@@ -72,7 +68,6 @@ public class Move implements Command {
                     cleanUp(pStatement, connection);
                 }
             } else {
-                sendToChannel(event, Const.MOVE_DONT_OWN_CHANNEL);
                 break;
             }
         }

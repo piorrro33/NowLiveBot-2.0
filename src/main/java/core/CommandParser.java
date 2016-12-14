@@ -11,9 +11,6 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import util.Const;
 import util.database.calls.CheckPerms;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +22,7 @@ import static platform.discord.controller.DiscordController.sendToChannel;
 public class CommandParser {
     private static Map<String, Command> commands = new HashMap<>();
 
-    private static CheckPerms perms = new CheckPerms();
+    private final static CheckPerms perms = new CheckPerms();
 
     CommandParser() {
 
@@ -58,18 +55,9 @@ public class CommandParser {
     }
 
     /**
-     * @param aCommands the core.commands to set
-     */
-    public static void setCommands(final Map<String, Command> aCommands) {
-
-        commands = aCommands;
-    }
-
-    /**
      * @param cmd Object containing required arguments to invoke the command
      */
-    public static void handleCommand(CommandContainer cmd) throws PropertyVetoException, IOException,
-            SQLException {
+    public static void handleCommand(CommandContainer cmd) {
 
         if (getCommands().containsKey(cmd.invoke)) {
 
@@ -102,7 +90,7 @@ public class CommandParser {
                     }
                     break;
                 default:
-                    if (!cmd.invoke.equalsIgnoreCase("announce")) {
+                    if (!cmd.invoke.toLowerCase().equals("announce")) {
                         runCommand(cmd);
                     }
                     break;

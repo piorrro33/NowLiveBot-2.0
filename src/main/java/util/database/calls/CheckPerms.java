@@ -25,6 +25,9 @@ public class CheckPerms {
         try {
             String query = "SELECT `userId` FROM `manager` WHERE `guildId` = ?";
             connection = Database.getInstance().getConnection();
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, event.getGuild().getId());
             result = pStatement.executeQuery();
@@ -49,6 +52,9 @@ public class CheckPerms {
         try {
             String query = "SELECT `userId` FROM `admins`";
             connection = Database.getInstance().getConnection();
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
             result = pStatement.executeQuery();
 

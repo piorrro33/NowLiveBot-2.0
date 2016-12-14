@@ -78,22 +78,22 @@ public class Streams implements Command {
 
             if (rowCount < 1) { // If no streams are online
                 MessageBuilder noneOnline = new MessageBuilder();
-                noneOnline.appendString(Const.NONE_ONLINE);
+                noneOnline.append(Const.NONE_ONLINE);
                 sendToPm(event, noneOnline.build());
             } else { // If there's at least one stream online
                 MessageBuilder message = new MessageBuilder();
-                message.appendString(Const.ONLINE_STREAM_PM_1);
-                message.appendString(String.valueOf(rowCount));
-                message.appendString(Const.ONLINE_STREAM_PM_2);
+                message.append(Const.ONLINE_STREAM_PM_1);
+                message.append(String.valueOf(rowCount));
+                message.append(Const.ONLINE_STREAM_PM_2);
                 while (result.next()) {
-                    message.appendString("**" + result.getString("channel") + "**"); // Channel Name
-                    message.appendString(Const.NOW_PLAYING_LOWER); // " is now playing"
-                    message.appendString("**" + result.getString("game") + "**"); // name of the game
-                    message.appendString(Const.ON); // " on "
-                    message.appendString("**" + result.getString("platform") + "**!\n\t");
-                    message.appendString(Const.WATCH_THEM_HERE);
-                    message.appendString("__*" + result.getString("link") + result.getString("channel") + "*__\n\n");
-                    if (message.getLength() >= 1800) {
+                    message.append("**" + result.getString("channel") + "**"); // Channel Name
+                    message.append(Const.NOW_PLAYING_LOWER); // " is now playing"
+                    message.append("**" + result.getString("game") + "**"); // name of the game
+                    message.append(Const.ON); // " on "
+                    message.append("**" + result.getString("platform") + "**!\n\t");
+                    message.append(Const.WATCH_THEM_HERE);
+                    message.append("__*" + result.getString("link") + result.getString("channel") + "*__\n\n");
+                    if (message.length() >= 1800) {
                         sendToPm(event, message.build());
                         message = new MessageBuilder();
                     }

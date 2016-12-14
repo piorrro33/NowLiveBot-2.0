@@ -22,18 +22,17 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public class AddGuild {
-    public static final Logger logger = LoggerFactory.getLogger("AddGuild");
-    private static List<String> tableList = new ArrayList<>();
+    private static final Logger logger = LoggerFactory.getLogger("AddGuild");
     private static Connection connection = Database.getInstance().getConnection();
     private static PreparedStatement pStatement;
     private static PreparedStatement pStmt;
     private static PreparedStatement pSt;
     private static ResultSet result;
-    private static String query;
     private static Integer resultInt;
 
     public synchronized static void action(GuildMessageReceivedEvent event) {
 
+        List<String> tableList = new ArrayList<>();
         tableList.add("channel");
         tableList.add("game");
         tableList.add("guild");
@@ -47,9 +46,9 @@ public class AddGuild {
         for (String s : tableList) {
             try {
                 connection = Database.getInstance().getConnection();
-                query = "SELECT COUNT(*) AS `count` FROM `" + s + "` WHERE `guildId` = ?";
+                String query = "SELECT COUNT(*) AS `count` FROM `" + s + "` WHERE `guildId` = ?";
 
-                if (connection.isClosed()) {
+                if (connection == null || connection.isClosed()) {
                     connection = Database.getInstance().getConnection();
                 }
                 pStatement = connection.prepareStatement(query);
@@ -60,17 +59,23 @@ public class AddGuild {
                     if (result.getInt("count") == 0) {
                         switch (s) {
                             case "guild":
-                                connection = Database.getInstance().getConnection();
-                                if (connection.isClosed()) {
+                                try {
                                     connection = Database.getInstance().getConnection();
+                                    if (connection == null || connection.isClosed()) {
+                                        connection = Database.getInstance().getConnection();
+                                    }
+                                    String guildQuery = "INSERT INTO `guild` (`guildId`, `channelId`, `isCompact`, `cleanup`," +
+                                            " `emoji`) VALUES (?, ?, 0, 0, ?)";
+                                    pStmt = connection.prepareStatement(guildQuery);
+                                    pStmt.setString(1, event.getGuild().getId());
+                                    pStmt.setString(2, event.getGuild().getId());
+                                    pStmt.setString(3, ":heart_eyes_cat:");
+                                    resultInt = pStmt.executeUpdate();
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                } finally {
+                                    cleanUp(pStmt, connection);
                                 }
-                                String guildQuery = "INSERT INTO `guild` (`guildId`, `channelId`, `isCompact`, `cleanup`," +
-                                        " `emoji`) VALUES (?, ?, 0, 0, ?)";
-                                pStmt = connection.prepareStatement(guildQuery);
-                                pStmt.setString(1, event.getGuild().getId());
-                                pStmt.setString(2, event.getGuild().getId());
-                                pStmt.setString(3, ":heart_eyes_cat:");
-                                resultInt = pStmt.executeUpdate();
                                 break;
                             case "manager":
                                 List<String> userIds = new ArrayList<>();
@@ -95,7 +100,7 @@ public class AddGuild {
                                     try {
                                         connection = Database.getInstance().getConnection();
                                         query = "INSERT INTO `manager` (`guildId`, `userId`) VALUES (?, ?)";
-                                        if (connection.isClosed()) {
+                                        if (connection == null || connection.isClosed()) {
                                             connection = Database.getInstance().getConnection();
                                         }
                                         pSt = connection.prepareStatement(query);
@@ -123,7 +128,7 @@ public class AddGuild {
                                 try {
                                     connection = Database.getInstance().getConnection();
                                     query = "INSERT INTO `notification` (`guildId`, `level`) VALUES (?, ?)";
-                                    if (connection.isClosed()) {
+                                    if (connection == null || connection.isClosed()) {
                                         connection = Database.getInstance().getConnection();
                                     }
                                     pStatement = connection.prepareStatement(query);
@@ -145,7 +150,6 @@ public class AddGuild {
                         }
                     }
                 }
-
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {

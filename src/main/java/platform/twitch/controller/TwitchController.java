@@ -15,7 +15,7 @@ import com.mb3364.twitch.api.models.Stream;
 import core.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import platform.generic.controller.PlatformController;
+import platform.discord.controller.DiscordController;
 import util.PropReader;
 import util.database.Database;
 import util.database.calls.GetBroadcasterLang;
@@ -25,10 +25,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import static platform.discord.controller.DiscordController.announceStream;
+import static platform.discord.controller.DiscordController.getChannelId;
+import static platform.generic.controller.PlatformController.checkStreamTable;
 import static util.database.Database.cleanUp;
 
 /**
@@ -39,14 +40,13 @@ public class TwitchController extends Twitch {
     private static Connection connection;
     private static PreparedStatement pStatement;
     private static ResultSet result;
-    private PlatformController pController = new PlatformController();
     private Logger logger = LoggerFactory.getLogger("Twitch Controller");
 
     public TwitchController() {
         this.setClientId(PropReader.getInstance().getProp().getProperty("twitch.client.id"));
     }
 
-    public static synchronized List<String> checkFilters(String guildId) {
+    private static synchronized List<String> checkFilters(String guildId) {
         try {
             String query = "SELECT * FROM `filter` WHERE `guildId` = ?";
 
@@ -91,49 +91,15 @@ public class TwitchController extends Twitch {
                 exists[0] = false;
             }
         });
-        if (exists[0].equals(true)) {
-            return true;
-        }
-        return false;
+        return exists[0].equals(true);
     }
 
-    public final synchronized void checkChannel(String channelName, String guildId, Integer platformId) {
-
-        // Grab the stream info
+    public final synchronized void checkOffline(String channelName, String guildId, Integer platformId) {
         this.streams().get(channelName, new StreamResponseHandler() {
             @Override
-            public void onSuccess(Stream stream) { // If the stream has been found
-
-                Map<String, String> args = new HashMap<>();
-                args.put("guildId", guildId);
-                args.put("channelName", channelName);
-
-                // check if the stream is online
-                if (stream != null) {
-
-                    // Check for tracked broadcaster languages
-                    String casterLang = new GetBroadcasterLang().action(guildId);
-                    if (casterLang.equals(stream.getChannel().getBroadcasterLanguage()) || "all".equals(casterLang)) {
-                        // check if the status and game name are not null
-                        if ((stream.getChannel().getStatus() != null) && (stream.getGame() != null)) {
-                            // Checking filters
-                            List<String> filters = checkFilters(guildId);
-                            if (filters != null) {
-                                for (String filter : filters) {
-                                    if (stream.getGame().equalsIgnoreCase(filter)) {
-                                        // If the game filter is equal to the game being played, announce the stream
-                                        pController.onlineStreamHandler(setArgs(args, stream), platformId);
-                                    }
-                                }
-                            } else {
-                                // If no filters are set, announce the channel
-                                pController.onlineStreamHandler(setArgs(args, stream), platformId);
-                            }
-                        }
-                    }
-                } else {
-                    // If the stream is offline
-                    pController.offlineStreamHandler(args, platformId);
+            public void onSuccess(Stream stream) {
+                if (stream == null) {
+                    DiscordController.offlineStream(guildId, platformId, channelName, DiscordController.getChannelId(guildId));
                 }
             }
 
@@ -147,14 +113,67 @@ public class TwitchController extends Twitch {
         });
     }
 
-    private Map<String, String> setArgs(Map<String, String> args, Stream stream) {
-        args.put("channelName", stream.getChannel().getName());
-        args.put("streamTitle", stream.getChannel().getStatus());
-        args.put("gameName", stream.getGame());
-        args.put("url", stream.getChannel().getUrl());
-        args.put("thumbnail", stream.getChannel().getLogo());
-        args.put("banner", stream.getChannel().getProfileBanner());
-        return args;
+    public final synchronized void checkChannel(String channelName, String guildId, Integer platformId) {
+
+        // Grab the stream info
+        this.streams().get(channelName, new StreamResponseHandler() {
+            @Override
+            public void onSuccess(Stream stream) { // If the stream has been found
+                // check if the stream is online
+                if (stream != null) {
+                    // Check for tracked broadcaster languages
+                    String casterLang = GetBroadcasterLang.action(guildId);
+                    if (casterLang.equals(stream.getChannel().getBroadcasterLanguage()) || "all".equals(casterLang)) {
+                        // check if the status and game name are not null
+                        if (stream.getChannel().getStatus() != null &&
+                                stream.getGame() != null &&
+                                !checkStreamTable(guildId, platformId, stream.getChannel().getName())) {
+                            // Checking filters
+                            List<String> filters = checkFilters(guildId);
+                            if (filters != null) {
+                                for (String filter : filters) {
+                                    if (stream.getGame().equalsIgnoreCase(filter)) {
+                                        // If the game filter is equal to the game being played, announce the stream
+                                        announceStream(
+                                                guildId,
+                                                getChannelId(guildId),
+                                                platformId,
+                                                stream.getChannel().getName(),
+                                                stream.getChannel().getStatus(),
+                                                stream.getGame(),
+                                                stream.getChannel().getUrl(),
+                                                stream.getChannel().getLogo(),
+                                                stream.getChannel().getProfileBanner()
+                                        );
+                                    }
+                                }
+                            } else {
+                                // If no filters are set, announce the channel
+                                announceStream(
+                                        guildId,
+                                        getChannelId(guildId),
+                                        platformId,
+                                        stream.getChannel().getName(),
+                                        stream.getChannel().getStatus(),
+                                        stream.getGame(),
+                                        stream.getChannel().getUrl(),
+                                        stream.getChannel().getLogo(),
+                                        stream.getChannel().getProfileBanner()
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(int i, String s, String s1) {
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+            }
+        });
     }
 
     public final synchronized void checkGame(String gameName, String guildId, Integer platformId) {
@@ -169,7 +188,8 @@ public class TwitchController extends Twitch {
                 @Override
                 public void onSuccess(int total, List<Stream> list) {
                     for (Stream stream : list) {
-                        if (stream.getGame().equalsIgnoreCase(gameName)) {
+                        if (!checkStreamTable(guildId, platformId, stream.getChannel().getName()) &&
+                                stream.getGame().equalsIgnoreCase(gameName)) {
                             checkChannel(stream.getChannel().getName(), guildId, platformId);
                         }
                     }

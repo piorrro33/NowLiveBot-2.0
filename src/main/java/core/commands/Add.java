@@ -9,7 +9,6 @@ import core.Command;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import platform.beam.controller.BeamController;
-import platform.discord.controller.DiscordController;
 import util.Const;
 import util.database.calls.*;
 
@@ -26,9 +25,7 @@ public class Add implements Command {
 
     private String option;
     private String argument;
-    private DiscordController dController;
-    private Integer platformId;
-    private String[] options = new String[]{"channel", "filter", "game", "manager", "help"};
+    private final String[] options = new String[]{"channel", "filter", "game", "manager", "help"};
 
     public static boolean optionCheck(String args, String option) {
         return args.contains(" ") && args.toLowerCase().substring(0, option.length()).equals(option);
@@ -74,9 +71,8 @@ public class Add implements Command {
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
 
-        dController = new DiscordController(event);
-
-        String guildId = dController.getGuildId();
+        String guildId = event.getGuild().getId();
+        Integer platformId;
 
         if (getPlatformId(args) > 0) {
             platformId = getPlatformId(args);
@@ -100,14 +96,15 @@ public class Add implements Command {
 
                                         returnStatement(AddManager.action(this.option, guildId, userId), event);
                                     } else {
-                                        sendToChannel(event, Const.ALREADY_MANAGER);
+                                        sendToChannel(event, "It seems I've already hired that user as a manager.  Find moar " +
+                                                "humanz!");
                                     }
                                 } else {
                                     sendToChannel(event, Const.NO_BOT_MANAGER);
                                 }
                             }
                         } catch (NullPointerException npe) {
-                            sendToChannel(event, Const.DISCORD_USER_NO_EXIST);
+                            sendToChannel(event, "That person isn't a Discord user!  Try again!");
                         }
                         break;
                     case "channel":
@@ -127,11 +124,9 @@ public class Add implements Command {
                                         returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
                                     }
                                 } else {
-                                    sendToChannel(event, Const.BEAM_USER_NO_EXIST);
+                                    sendToChannel(event, "That Beam user does not exist! Check your spelling and try" +
+                                            " again!");
                                 }
-                                break;
-                            default:
-                                break;
                         }
                         break;
                     default:

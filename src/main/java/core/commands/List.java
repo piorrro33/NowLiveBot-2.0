@@ -33,7 +33,6 @@ public class List implements Command {
     private String[] options = new String[]{"channel", "game", "manager", "streamLang", "tag", "team", "help"};
 
     private Message createNotificationMessage(MessageBuilder message, GuildMessageReceivedEvent event) {
-        MessageBuilder msg = message;
         try {
             connection = Database.getInstance().getConnection();
             pStatement = connection.prepareStatement(query);
@@ -42,15 +41,13 @@ public class List implements Command {
 
             if (resultSet.isBeforeFirst()) {
                 while (resultSet.next()) {
-                    msg.appendString("\n\t");
+                    message.append("\n\t");
                     if (!"manager".equals(option)) {
-                        msg.appendString(resultSet.getString(1).replaceAll("''", "'"));
+                        message.append(resultSet.getString(1).replaceAll("''", "'"));
                         switch (resultSet.getInt(2)) {
                             case 1:
-                                msg.appendString(" on Twitch.tv");
+                                message.append(" on Twitch.tv");
                                 break;
-                            case 2:
-                                msg.appendString(" on Beam.pro");
                             default:
                                 break;
                         }
@@ -58,24 +55,24 @@ public class List implements Command {
                         String userId = resultSet.getString("userId");
                         User user = event.getJDA().getUserById(userId);
                         String userName = user.getName();
-                        msg.appendString(userName);
+                        message.append(userName);
                     }
 
                     // Large message handler
-                    if (msg.getLength() > 1850) {
-                        sendToPm(event, msg.build());
-                        msg = new MessageBuilder();
+                    if (message.length() > 1850) {
+                        sendToPm(event, message.build());
+                        message = new MessageBuilder();
                     }
                 }
             } else {
-                msg.appendString("\n\tRuh Roh!  I can't seem to find anything here...");
+                message.append("\n\tRuh Roh!  I can't seem to find anything here...");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(resultSet, pStatement, connection);
         }
-        return msg.build();
+        return message.build();
     }
 
     /**
@@ -120,7 +117,7 @@ public class List implements Command {
         guildId = dController.getGuildId();
 
         MessageBuilder message = new MessageBuilder();
-        message.appendString("Heya!  Here's a list of " + option + "s that this Discord server is keeping " +
+        message.append("Heya!  Here's a list of " + option + "s that this Discord server is keeping " +
                 "tabs on:\n");
 
         switch (option) {

@@ -71,9 +71,8 @@ repositories {
     }
 }
 dependencies {
-    compile group: 'net.dv8tion', name: 'JDA', version: '3.0.BETA_98'
+    compile group: 'net.dv8tion', name: 'JDA', version: '3.0.BETA2_108'
     compile group: 'com.github.avluis', name: 'Java-Twitch-Api-Wrapper', version: '0.3.1'
-    compile group: 'pro.beam', name: 'api', version: '3.0.0-SNAPSHOT'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.21'
     compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.5'

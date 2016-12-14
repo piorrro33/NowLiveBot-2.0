@@ -14,7 +14,7 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public final class Tracker {
-    public static final Logger logger = LoggerFactory.getLogger(Tracker.class);
+    private static final Logger logger = LoggerFactory.getLogger(Tracker.class);
     private static Connection connection;
     private static PreparedStatement pStatement;
 

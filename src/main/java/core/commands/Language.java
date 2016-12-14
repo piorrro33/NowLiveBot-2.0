@@ -9,7 +9,6 @@ import util.database.calls.Tracker;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Types;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
 import static util.database.Database.cleanUp;
@@ -21,7 +20,6 @@ public class Language implements Command {
 
     private static Connection connection;
     private static PreparedStatement pStatement;
-    private static String langCode;
 
     /**
      * Used to determine if appropriate arguments exist
@@ -85,8 +83,6 @@ public class Language implements Command {
                 case "all":
                 case "help":
                     return true;
-                default:
-                    return false;
             }
         } else if ("help".equals(args)) {
             return true;
@@ -102,6 +98,7 @@ public class Language implements Command {
      */
     @Override
     public void action(String args, GuildMessageReceivedEvent event) {
+        String langCode;
         if (args != null && !"".equals(args)) {
             switch (args.toLowerCase()) {
                 case "english":
@@ -209,16 +206,13 @@ public class Language implements Command {
                 String query = "UPDATE `guild` SET `broadcasterLang` = ? WHERE `guildId` = ?";
 
                 connection = Database.getInstance().getConnection();
-                if (connection.isClosed()) {
+
+                if (connection == null || connection.isClosed()) {
                     connection = Database.getInstance().getConnection();
                 }
 
                 pStatement = connection.prepareStatement(query);
-                if (langCode != null) {
-                    pStatement.setString(1, langCode);
-                } else {
-                    pStatement.setNull(1, Types.VARCHAR);
-                }
+                pStatement.setString(1, langCode);
                 pStatement.setString(2, event.getGuild().getId());
 
                 if (pStatement.executeUpdate() > 0) {

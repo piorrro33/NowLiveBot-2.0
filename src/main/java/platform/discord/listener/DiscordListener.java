@@ -64,7 +64,7 @@ public class DiscordListener extends ListenerAdapter {
                         event.getChannel().getId());
             }
             try {
-                new DiscordLogger(event.getMessage().getContent(), event);
+                new DiscordLogger(" :arrow_left: " + event.getMessage().getContent(), event);
                 System.out.printf("[COMMAND] [%s:%s] [%s:%s] [%s:%s] %s%n",
                         event.getGuild().getName(),
                         event.getGuild().getId(),
@@ -84,7 +84,7 @@ public class DiscordListener extends ListenerAdapter {
     public final void onPrivateMessageReceived(PrivateMessageReceivedEvent event) {
         if (!event.getAuthor().getId().equals(event.getJDA().getSelfUser().getId())) {
             MessageBuilder message = new MessageBuilder();
-            message.appendString(Const.PRIVATE_MESSAGE_REPLY);
+            message.append(Const.PRIVATE_MESSAGE_REPLY);
             sendToPm(event, message.build());
         }
     }
@@ -92,7 +92,7 @@ public class DiscordListener extends ListenerAdapter {
     @Override
     public final void onDisconnect(DisconnectEvent event) {
         try {
-            new DiscordLogger("Discord had been disconnected. Attempting to reconnect...", event);
+            new DiscordLogger(" :broken_heart: Discord had been disconnected. Attempting to reconnect...", event);
             logger.info("Discord has been disconnected.  Reconnecting...");
             Main.main(null);
         } catch (PropertyVetoException | IOException | SQLException e) {

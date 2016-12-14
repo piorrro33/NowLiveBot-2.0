@@ -25,6 +25,7 @@ public interface Const {
     String COMMAND = "nl";
     String PLAYING = COMMAND_PREFIX + COMMAND + " help";
     String LOG_CHANNEL = PropReader.getInstance().getProp().getProperty("discord.log.chan");
+    String WARN = "warning";
 
     // Language specific variables
     // TODO:  Replace 'En' with the guild language from the DB (when it's setup that way)

@@ -121,7 +121,7 @@ public class Main {
                         connection = Database.getInstance().getConnection();
                         for (String table : tableList) {
                             query = "DELETE FROM `" + table + "` WHERE `guildId` = ?";
-                            if (connection.isClosed()) {
+                            if (connection == null || connection.isClosed()) {
                                 connection = Database.getInstance().getConnection();
                             }
                             pStatement = connection.prepareStatement(query);

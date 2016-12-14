@@ -13,33 +13,18 @@ import static util.database.Database.cleanUp;
  */
 public class SetCompact {
 
-    private Connection connection = Database.getInstance().getConnection();
-    private PreparedStatement pStatement;
+    private static Connection connection = Database.getInstance().getConnection();
+    private static PreparedStatement pStatement;
 
-    public SetCompact() {
-        setConnection();
-    }
-
-    private void setConnection() {
-        this.connection = Database.getInstance().getConnection();
-    }
-
-    private void setStatement(String query) {
-        try {
-            if (connection.isClosed() || connection == null) {
-                setConnection();
-            }
-            this.pStatement = connection.prepareStatement(query);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public synchronized Boolean action(String guildId, int isCompact) {
+    public synchronized static Boolean action(String guildId, int isCompact) {
         try {
             String query = "UPDATE `guild` SET `isCompact` = ? WHERE `guildId` = ?";
 
-            setStatement(query);
+            if (connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
+
+            pStatement = connection.prepareStatement(query);
             pStatement.setInt(1, isCompact);
             pStatement.setString(2, guildId);
 

@@ -27,7 +27,6 @@ public class Notify implements Command {
 
     private Connection connection;
     private PreparedStatement pStatement;
-    private Integer result;
 
     /**
      * Used to determine if appropriate arguments exist
@@ -127,10 +126,9 @@ public class Notify implements Command {
             pStatement.setInt(2, level);
             pStatement.setNull(3, Types.VARCHAR);
             pStatement.setInt(4, level);
-            result = pStatement.executeUpdate();
 
-            if (result > 0) {
-                new DiscordLogger("Notification level changed to " + level, event);
+            if (pStatement.executeUpdate() > 0) {
+                new DiscordLogger(" :telephone: Notification level changed to " + level, event);
                 System.out.printf("[COMMAND-NOTIFY] Guild: %s has set notification level to %s.%n", event.getGuild()
                         .getName(), level);
                 return true;

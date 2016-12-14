@@ -21,7 +21,7 @@ public class LanguageBundle_fr extends ListResourceBundle {
                     "ma raquette de ping-pong Flexolite."},
             {"privateMessageReply", "Je suis désolé, mais la boîte vocale du bot que vous essayez de contacter " +
                     "n’a pas encore été configurée.  S’il vous plaît réessayez plus tard."},
-            {"typeOnce", "Grand galopin ! Vous n’avez qu’à écrire cette partie qu’une seule fois!"},
+            {"typeOnce", "Grand galopin ! Vous n’avez qu’à écrire cette partie qu’une seule fois!"},
             {"wrongCommand", ":thinking: Je ne connais pas cette commande."},
             {"alreadyExists", "Il me semble que ceci ce trouve déjà dans ma base de données.  ¯\\_(ツ)_/¯"},
             {"beamUserNoExist", "That Beam user does not exist! Check your spelling and try again!"},
@@ -51,7 +51,7 @@ public class LanguageBundle_fr extends ListResourceBundle {
                     "j’annoncerai les streams! *(Êtes-vous sûr? Je ne le recommande pas pour les gros serveurs... Ça " +
                     "peut rendre les gens grincheux.)*"},
             {"notAManager", "Désolé, mais uniquement les manageurs peuvent faire cela."},
-            {"notAnAdmin", "À qui cela concerne : je suis votre serviteur, mais vous n’êtes pas mon maître."},
+            {"notAnAdmin", "À qui cela concerne : je suis votre serviteur, mais vous n’êtes pas mon maître."},
             {"nowPlayingLower", " Joue actuellement "},
             {"onlineStreamPm1", "Hey!  Il y a actuellement "},
             {"onlineStreamPm2", " streamers en ligne qui pourraient vous intéresser. Suivez leurs liens pour faire un " +
@@ -72,7 +72,7 @@ public class LanguageBundle_fr extends ListResourceBundle {
             {"guildJoinSuccess", "Hi there!  I'm Now Live, the stream announcing bot!  Écrivez `" + Const.COMMAND_PREFIX
                     + Const.COMMAND + " help` pour une liste de mes commandes.\n\nSi vous avez besoin d’aide pour me " +
                     "configurer, venez rejoindre mon iscord à https://discord.gg/gKbbrFK et venez voir les " +
-                    "channels « Comment configurer » et « Liste de commandes » pour toute information! \n\n Noubliez " +
+                    "channels « Comment configurer » et « Liste de commandes » pour toute information! \n\n Noubliez " +
                     "pas de dire bonjour!"},
             {"addHelp", "```Ruby\nADD:  Utilisé pour ajouter quelque chose à ma base de données." +
                     "\nUSAGE: " + Const.COMMAND_PREFIX + Const.COMMAND + " add <option> <content>" +

@@ -13,48 +13,26 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public class GetBroadcasterLang {
-    private Connection connection = Database.getInstance().getConnection();
-    private PreparedStatement pStatement;
-    private ResultSet result;
+    private static Connection connection = Database.getInstance().getConnection();
+    private static PreparedStatement pStatement;
+    private static ResultSet result;
 
-    public GetBroadcasterLang() {
-        setConnection();
-    }
-
-    private void setConnection() {
-        this.connection = Database.getInstance().getConnection();
-    }
-
-    private void setResult(ResultSet result) {
-        this.result = result;
-    }
-
-    private void setStatement(String query) {
-        try {
-            if (connection.isClosed() || connection == null) {
-                setConnection();
-            }
-            this.pStatement = connection.prepareStatement(query);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public synchronized String action(String guildId) {
+    public synchronized static String action(String guildId) {
         try {
             String query = "SELECT `broadcasterLang` FROM `guild` WHERE `guildId` = ?";
-            setStatement(query);
+            if (connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
+            pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
-            setResult(pStatement.executeQuery());
-            if (result.isBeforeFirst()) {
-                if (result.next()) {
-                    return result.getString("broadcasterLang");
-                }
+            result = pStatement.executeQuery();
+            if (result.next()) {
+                return result.getString("broadcasterLang");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(pStatement, connection);
+            cleanUp(result, pStatement, connection);
         }
         return null;
     }

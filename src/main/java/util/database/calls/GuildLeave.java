@@ -17,12 +17,10 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public final class GuildLeave {
-    public static final Logger logger = LoggerFactory.getLogger("Guild Leave");
+    private static final Logger logger = LoggerFactory.getLogger("Guild Leave");
     private static List<String> tableList = new ArrayList<>();
-    private static Connection connection = null;
-    private static PreparedStatement pStatement = null;
-    private static Integer result = 0;
-    private static String query;
+    private static Connection connection;
+    private static PreparedStatement pStatement;
 
     private GuildLeave() {
 
@@ -42,13 +40,15 @@ public final class GuildLeave {
         try {
             connection = Database.getInstance().getConnection();
             for (String s : tableList) {
-                query = "DELETE FROM `" + s + "` WHERE `guildId` = ?";
+                String query = "DELETE FROM `" + s + "` WHERE `guildId` = ?";
                 pStatement = connection.prepareStatement(query);
                 pStatement.setString(1, gEvent.getGuild().getId());
-                result = pStatement.executeUpdate();
-                if (!result.equals(0) && Main.debugMode()) {
-                    logger.info("Successfully deleted all data for Guild " + gEvent.getGuild().getId() + " from the "
-                            + s.toUpperCase() + " table.");
+                Integer result = pStatement.executeUpdate();
+                if (!result.equals(0)) {
+                    if (Main.debugMode()) {
+                        logger.info("Successfully deleted all data for Guild " + gEvent.getGuild().getId() + " from the "
+                                + s.toUpperCase() + " table.");
+                    }
                 }
             }
 

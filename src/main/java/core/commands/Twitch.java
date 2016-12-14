@@ -30,8 +30,6 @@ public class Twitch implements Command {
                 case "add":
                 case "remove":
                     return true;
-                default:
-                    return false;
             }
         }
         return false;

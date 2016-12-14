@@ -135,10 +135,10 @@ public class Database {
             if (ds instanceof PooledDataSource) {
                 PooledDataSource pds = (PooledDataSource) ds;
                 MessageBuilder msg = new MessageBuilder();
-                msg.appendString("num_connections: " + pds.getNumConnectionsDefaultUser());
-                msg.appendString("\nnum_busy_connections: " + pds.getNumBusyConnectionsDefaultUser());
-                msg.appendString("\nnum_idle_connections: " + pds.getNumIdleConnectionsDefaultUser());
-                msg.appendString("\n");
+                msg.append("num_connections: " + pds.getNumConnectionsDefaultUser());
+                msg.append("\nnum_busy_connections: " + pds.getNumBusyConnectionsDefaultUser());
+                msg.append("\nnum_idle_connections: " + pds.getNumIdleConnectionsDefaultUser());
+                msg.append("\n");
                 msg.build();
             } else {
                 logger.warn("Not a c3p0 PooledDataSource!!");

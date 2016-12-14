@@ -52,20 +52,21 @@ public class Compact implements Command {
                 break;
         }
 
-        if (intArg.equals(1) || intArg.equals(0) && new SetCompact().action(event.getGuild().getId(), intArg)) {
-            switch (args) {
-                case "off":
-                    sendToChannel(event, Const.COMPACT_MODE_OFF);
-                    break;
-                case "on":
-                    sendToChannel(event, Const.COMPACT_MODE_ON);
-                    break;
-                default:
-                    System.out.println("[~ERROR~] This statement should never be reached.");
-                    break;
+        if (intArg.equals(1) || intArg.equals(0)) {
+            if (SetCompact.action(event.getGuild().getId(), intArg)) {
+                switch (args) {
+                    case "off":
+                        sendToChannel(event, Const.COMPACT_MODE_OFF);
+
+                        break;
+                    case "on":
+                        sendToChannel(event, Const.COMPACT_MODE_ON);
+                        break;
+                    default:
+                        System.out.println("[~ERROR~] This statement should never be reached.");
+                        break;
+                }
             }
-        } else {
-            sendToChannel(event, Const.COMPACT_FAILURE);
         }
     }
 

@@ -36,7 +36,6 @@ public class Status implements Command {
     private static PreparedStatement pStatement;
     private static Connection connection;
     private static StringBuilder commandUsage = new StringBuilder();
-    private static DecimalFormat numFormat;
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
@@ -45,7 +44,7 @@ public class Status implements Command {
 
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
-        numFormat = new DecimalFormat("###,###,###,###");
+        DecimalFormat numFormat = new DecimalFormat("###,###,###,###");
         // Total of all guilds the bot is in
         Integer guildCount = Main.getJDA().getGuilds().size();
 
@@ -58,8 +57,8 @@ public class Status implements Command {
 
         // Number of times commands have been used
         try {
-            connection = Database.getInstance().getConnection();
             String query = "SELECT * FROM `commandtracker` ORDER BY `commandName` ASC";
+            connection = Database.getInstance().getConnection();
             pStatement = connection.prepareStatement(query);
             result = pStatement.executeQuery();
 
@@ -116,7 +115,7 @@ public class Status implements Command {
                                 "Bot Status Report");
                     },
                     failure -> {
-                        new DiscordLogger(" :gear: Unable to send message, trying public channel.", event);
+                        new DiscordLogger(" :no_entry: Unable to send message, trying public channel.", event);
                         System.out.printf("[~ERROR~] Unable to send message to %s:%s %s:%s.  Trying public channel.%n",
                                 event.getGuild().getName(),
                                 event.getGuild().getId(),
@@ -124,7 +123,7 @@ public class Status implements Command {
                                 event.getChannel().getId());
                     });
         } catch (PermissionException pe) {
-            new DiscordLogger(" :gear: Permission exception. Check logs for stacktrace.", event);
+            new DiscordLogger(" :no_entry: Permission error sending bot status", event);
             System.out.printf("[~ERROR~] Permission Exception! G:%s:%s C:%s:%s%n",
                     event.getGuild().getName(),
                     event.getGuild().getId(),

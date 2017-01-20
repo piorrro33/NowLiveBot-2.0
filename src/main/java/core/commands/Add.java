@@ -1,4 +1,14 @@
 /*
+ * Copyright $year Ague Mort of Veteran Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -51,7 +61,6 @@ public class Add implements Command {
                         return true;
                     } else {
                         // If the required arguments for the option are missing
-                        missingArguments(event);
                         return false;
                     }
                 } else if ("help".equals(args)) {
@@ -60,7 +69,6 @@ public class Add implements Command {
                 }
             } else {
                 // If there are no passed arguments
-                sendToChannel(event, Const.EMPTY_ARGS);
                 return false;
             }
         }
@@ -96,15 +104,14 @@ public class Add implements Command {
 
                                         returnStatement(AddManager.action(this.option, guildId, userId), event);
                                     } else {
-                                        sendToChannel(event, "It seems I've already hired that user as a manager.  Find moar " +
-                                                "humanz!");
+                                        sendToChannel(event, Const.ALREADY_MANAGER);
                                     }
                                 } else {
                                     sendToChannel(event, Const.NO_BOT_MANAGER);
                                 }
                             }
                         } catch (NullPointerException npe) {
-                            sendToChannel(event, "That person isn't a Discord user!  Try again!");
+                            sendToChannel(event, Const.DISCORD_USER_NO_EXIST);
                         }
                         break;
                     case "channel":
@@ -124,8 +131,7 @@ public class Add implements Command {
                                         returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
                                     }
                                 } else {
-                                    sendToChannel(event, "That Beam user does not exist! Check your spelling and try" +
-                                            " again!");
+                                    sendToChannel(event, Const.BEAM_USER_NO_EXIST);
                                 }
                         }
                         break;
@@ -144,9 +150,9 @@ public class Add implements Command {
 
     private void returnStatement(Boolean success, GuildMessageReceivedEvent event) {
         if (success) {
-            sendToChannel(event, "Added `" + this.option + "` " + this.argument);
+            sendToChannel(event, "Added `" + this.option + "` " + this.argument.replaceAll("''", "'"));
         } else {
-            sendToChannel(event, "Failed to add `" + this.option + "` " + this.argument);
+            sendToChannel(event, "Failed to add `" + this.option + "` " + this.argument.replaceAll("''", "'"));
         }
     }
 

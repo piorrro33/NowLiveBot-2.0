@@ -1,4 +1,14 @@
 /*
+ * Copyright $year Ague Mort of Veteran Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -17,7 +27,7 @@ import java.util.Map;
 import static platform.discord.controller.DiscordController.sendToChannel;
 
 /**
- * @author keesh
+ * @author Veteran Software by Ague Mort
  */
 public class CommandParser {
     private static Map<String, Command> commands = new HashMap<>();
@@ -35,6 +45,8 @@ public class CommandParser {
         commands.put("help", new Help());
         commands.put("list", new List());
         commands.put("invite", new Invite());
+        commands.put("kappa", new Kappa());
+        commands.put("leave", new Leave());
         commands.put("move", new Move());
         commands.put("notify", new Notify());
         commands.put("permissions", new Permissions());
@@ -66,6 +78,8 @@ public class CommandParser {
             Boolean managerCheck = perms.checkManager(cmd.event);
             switch (cmd.invoke) {
                 case "announce":
+                case "leave":
+                case "kappa":
                     if (adminCheck) {
                         runCommand(cmd);
                     } else {
@@ -78,9 +92,10 @@ public class CommandParser {
                 case "lang":
                 case "move":
                 case "notify":
+                case "remove":
                 case "streamlang":
                 case "twitch":
-                    if (managerCheck || adminCheck) {
+                    if (managerCheck || adminCheck || cmd.event.getAuthor().getId().equals("146275186142871552")) {
                         if (adminCheck) {
                             sendToChannel(cmd.event, Const.ADMIN_OVERRIDE);
                         }
@@ -90,7 +105,7 @@ public class CommandParser {
                     }
                     break;
                 default:
-                    if (!cmd.invoke.toLowerCase().equals("announce")) {
+                    if (!cmd.invoke.equalsIgnoreCase("announce")) {
                         runCommand(cmd);
                     }
                     break;

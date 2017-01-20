@@ -1,3 +1,13 @@
+/*
+ * Copyright $year Ague Mort of Veteran Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package core.commands;
 
 import core.Command;
@@ -30,7 +40,9 @@ public class Help implements Command {
         message.append("\n* ping\n* remove\n* streamlang\n* streams\n* twitch```");
         message.append("\nJust to make it known, Ague is still working hard to finish up all of my polish, so some " +
                 "of the commands listed may not be working just yet!  But their help is working.  Bear with the guy, " +
-                "he's working hard to get things right!\n\n\t~~" + Const.BOT_NAME);
+                "he's working hard to get things right!\n\n\t~~" + Const.BOT_NAME + "\n\n");
+        message.append("You can also get some help from my developer and the rest of the Now Live community on my " +
+                "Discord server!  just click this link to join:  http://discord.gg/gKbbrFK");
         message.append("\n\n*P.S. I don't monitor this mailbox, so please don't send me any messages through PM*");
         sendToPm(event, message.build());
     }

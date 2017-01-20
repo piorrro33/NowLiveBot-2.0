@@ -1,3 +1,13 @@
+/*
+ * Copyright $year Ague Mort of Veteran Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package core.commands;
 
 import core.Command;
@@ -35,7 +45,6 @@ public class Status implements Command {
     private static ResultSet result;
     private static PreparedStatement pStatement;
     private static Connection connection;
-    private static StringBuilder commandUsage = new StringBuilder();
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
@@ -55,6 +64,16 @@ public class Status implements Command {
             memberCount += serverMemberCount;
         }
 
+        EmbedBuilder eBuilder = new EmbedBuilder();
+        MessageBuilder mBuilder = new MessageBuilder();
+        DateFormat dateTimeFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+
+        eBuilder.setColor(Color.RED);
+        eBuilder.setAuthor(Const.BOT_NAME + " Statistics", null, Const.BOT_LOGO);
+
+        eBuilder.addField("# Servers", numFormat.format(guildCount), false);
+        eBuilder.addField("Num. Unique Members", numFormat.format(memberCount), false);
+
         // Number of times commands have been used
         try {
             String query = "SELECT * FROM `commandtracker` ORDER BY `commandName` ASC";
@@ -62,40 +81,18 @@ public class Status implements Command {
             pStatement = connection.prepareStatement(query);
             result = pStatement.executeQuery();
 
-            commandUsage.setLength(0);
-
+            String heard = null;
             while (result.next()) {
-                commandUsage.append("\t> ");
-                commandUsage.append(result.getString("commandName"));
-                commandUsage.append(" - ");
-                commandUsage.append(numFormat.format(result.getInt("commandCount")));
-                commandUsage.append("\n");
+                if (result.getString("commandName") == "Messages") {
+                    heard = " Heard";
+                }
+                eBuilder.addField(result.getString("commandName") + heard, numFormat.format(result.getInt("commandCount")), true);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
-
-        EmbedBuilder eBuilder = new EmbedBuilder();
-        StringBuilder sBuilder = new StringBuilder();
-        MessageBuilder mBuilder = new MessageBuilder();
-        DateFormat dateTimeFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-
-        eBuilder.setColor(Color.WHITE);
-        eBuilder.setAuthor(Const.BOT_NAME, null, Const.BOT_LOGO);
-        eBuilder.setTitle(Const.BOT_NAME + " statistics");
-
-        sBuilder.append("I am in **");
-        sBuilder.append(numFormat.format(guildCount));
-        sBuilder.append("** Discord servers\n\n");
-        sBuilder.append("Total members of all servers I am in: **");
-        sBuilder.append(numFormat.format(memberCount));
-        sBuilder.append("**\n\n");
-        sBuilder.append("**Command Usage**\n");
-        sBuilder.append(commandUsage);
-
-        eBuilder.setDescription(sBuilder.toString());
 
         eBuilder.setFooter("\nGenerated on: " + dateTimeFormat.format(new Date()), null);
 

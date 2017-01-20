@@ -1,10 +1,21 @@
 /*
+ * Copyright $year Ague Mort of Veteran Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package platform.discord.controller;
 
+import com.mb3364.twitch.api.models.Stream;
 import core.Main;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
@@ -44,16 +55,13 @@ public class DiscordController {
     private static Connection mhConnection;
     private static Connection ceConnection;
     private static Connection gciConnection;
-    private static Connection gplConnection;
     private static Connection ccConnection;
     private static PreparedStatement nlStatement;
     private static PreparedStatement mhStatement;
     private static PreparedStatement ceStatement;
     private static PreparedStatement gciStatement;
-    private static PreparedStatement gplStatement;
     private static PreparedStatement pStatement;
     private static String query;
-    private static ResultSet gplResult;
     private static ResultSet mhResult;
     private static ResultSet ceResult;
     private static ResultSet gciResult;
@@ -294,7 +302,7 @@ public class DiscordController {
                 e.printStackTrace();
             } catch (PermissionException pe) {
                 new DiscordLogger(" :no_entry: Permissions error editing/deleting in G:" + Main.getJDA
-                        ().getGuildById(guildId).getName() + ".", null);
+                        ().getGuildById(guildId).getName() + ":" + Main.getJDA().getGuildById(guildId).getId(), null);
                 System.out.printf("[~ERROR~] There was a permission exception when trying to read message " +
                                 "history in G:%s, C:%s, M:%s%n",
                         Main.getJDA().getGuildById(guildId).getName(),
@@ -347,14 +355,17 @@ public class DiscordController {
         return mBuilder.build();
     }
 
-    public static synchronized void announceStream(String guildId, String channelId, Integer platformId, String
-            channelName, String streamTitle, String gameName, String url, String thumbnail, String banner) {
+    //public static synchronized void announceStream(String guildId, String channelId, Integer platformId, String
+    //        channelName, String streamTitle, String gameName, String url, String thumbnail, String banner) {
+    public static synchronized void announceStream(String guildId, String channelId, Integer platformId, Stream stream) {
+        //System.out.println("Made into the announcement method...");
 
         EmbedBuilder eBuilder = new EmbedBuilder();
         StringBuilder msgDesc = new StringBuilder();
         MessageBuilder mBuilder = new MessageBuilder();
 
         notifyLevel(guildId, mBuilder);
+        //System.out.println("Notify level checked...");
         // TODO: re-enable once emoji command is enabled
         //checkEmoji(guildId, message);
 
@@ -374,25 +385,26 @@ public class DiscordController {
                 break;
         }
 
-        eBuilder.setAuthor(Const.NOW_LIVE, Const.DISCORD_URL, Const.BOT_LOGO);
+        eBuilder.setAuthor(stream.getChannel().getDisplayName() + " is now streaming!",
+                stream.getChannel().getUrl(), Const.BOT_LOGO);
 
-        eBuilder.setTitle(channelName + " is streaming " + gameName + "!");
-
-        msgDesc.append(streamTitle);
-        msgDesc.append("\n");
-        msgDesc.append("Watch them here: ");
-        msgDesc.append(url);
+        eBuilder.setTitle(stream.getChannel().getUrl());
 
         eBuilder.setDescription(msgDesc.toString());
-        if (thumbnail != null) {
-            eBuilder.setThumbnail(thumbnail);
+        if (stream.getChannel().getLogo() != null) {
+            eBuilder.setThumbnail(stream.getChannel().getLogo());
         }
 
         if (checkCompact(guildId).equals(0)) {
-            if (banner != null) {
-                eBuilder.setImage(banner);
+            if (stream.getPreview().getLarge() != null) {
+                eBuilder.setImage(stream.getPreview().getLarge());
             }
         }
+
+        eBuilder.addField("Now Playing", stream.getGame(), false);
+        eBuilder.addField("Stream Title", stream.getChannel().getStatus(), false);
+        eBuilder.addField("Followers", String.valueOf(stream.getChannel().getFollowers()), true);
+        eBuilder.addField("Total Views", String.valueOf(stream.getChannel().getViews()), true);
 
         MessageEmbed embed = eBuilder.build();
 
@@ -422,10 +434,14 @@ public class DiscordController {
             }
         }
 
-        if (!checkStreamTable(guildId, platformId, channelName)) {
+        if (!checkStreamTable(guildId, platformId, stream.getChannel().getName())) {
             try {
                 Main.getJDA().getTextChannelById(channelId).sendMessage(message).queue(
                         sentMessage -> {
+
+                            addToStream(guildId, channelId, platformId, stream.getChannel().getName(), stream.getChannel().getStatus(), stream.getGame(), sentMessage
+                                    .getId());
+
                             // TODO: Fix this ugly mess!!
                             MessageBuilder discord = new MessageBuilder();
 
@@ -435,14 +451,11 @@ public class DiscordController {
                             discord.append("][C:");
                             discord.append(Main.getJDA().getTextChannelById(channelId).getName());
                             discord.append("]");
-                            discord.append(channelName);
+                            discord.append(stream.getChannel().getName());
                             discord.append(" is streaming ");
-                            discord.append(gameName);
+                            discord.append(stream.getGame());
 
                             Message dMessage = discord.build();
-
-                            addToStream(guildId, channelId, platformId, channelName, streamTitle, gameName, sentMessage
-                                    .getId());
 
                             new DiscordLogger(dMessage.getRawContent(), null);
                             System.out.printf("[STREAM ANNOUNCE] [%s:%s] [%s:%s] [%s]: %s%n",
@@ -451,14 +464,14 @@ public class DiscordController {
                                     Main.getJDA().getTextChannelById(getChannelId(guildId)).getName(),
                                     Main.getJDA().getTextChannelById(getChannelId(guildId)).getId(),
                                     sentMessage.getId(),
-                                    channelName + " is streaming " + gameName);
+                                    stream.getChannel().getName() + " is streaming " + stream.getGame());
 
                             new Tracker("Streams Announced");
                         }
                 );
             } catch (PermissionException pe) {
                 new DiscordLogger(" :no_entry: Permission error sending in G:" + Main.getJDA
-                        ().getGuildById(guildId).getName() + ".", null);
+                        ().getGuildById(guildId).getName() + ":" + Main.getJDA().getGuildById(guildId).getId(), null);
                 System.out.printf("[~ERROR~] Permission Exception! G:%s:%s C:%s:%s%n",
                         Main.getJDA().getGuildById(guildId).getName(),
                         guildId,

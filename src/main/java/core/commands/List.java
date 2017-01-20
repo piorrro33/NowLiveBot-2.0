@@ -1,7 +1,18 @@
+/*
+ * Copyright $year Ague Mort of Veteran Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package core.commands;
 
 import core.Command;
 import net.dv8tion.jda.core.MessageBuilder;
+import net.dv8tion.jda.core.entities.ISnowflake;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
@@ -22,7 +33,7 @@ import static util.database.Database.cleanUp;
 /**
  * @author Veteran Software by Ague Mort
  */
-public class List implements Command {
+public class List<G extends ISnowflake> implements Command {
 
     private static Connection connection;
     private static PreparedStatement pStatement;
@@ -30,7 +41,7 @@ public class List implements Command {
     private String option;
     private String query;
     private String guildId;
-    private String[] options = new String[]{"channel", "game", "manager", "streamLang", "tag", "team", "help"};
+    private String[] options = new String[]{"channel", "filter", "game", "manager", "streamLang", "tag", "team", "help"};
 
     private Message createNotificationMessage(MessageBuilder message, GuildMessageReceivedEvent event) {
         try {
@@ -94,10 +105,6 @@ public class List implements Command {
                     // If the help argument is the only argument that is passed
                     return true;
                 }
-            } else {
-                // If there are no passed arguments
-                sendToChannel(event, Const.EMPTY_ARGS);
-                return false;
             }
         }
         // If all checks fail
@@ -117,28 +124,31 @@ public class List implements Command {
         guildId = dController.getGuildId();
 
         MessageBuilder message = new MessageBuilder();
-        message.append("Heya!  Here's a list of " + option + "s that this Discord server is keeping " +
-                "tabs on:\n");
+        message.append("Heya!  Here's a list of " + option + "s that this Discord server is keeping tabs on:\n");
 
         switch (option) {
             case "channel":
-                query = "SELECT `name`, `platformId` FROM `channel` WHERE `guildId` = ? ORDER BY " +
-                        "`platformId` ASC, `name` ASC";
+                query = "SELECT `name`, `platformId` FROM `channel` WHERE `guildId` = ? " +
+                        "ORDER BY `platformId` ASC, `name` ASC";
                 break;
             case "game":
-                query = "SELECT `name`, `platformId` FROM `game` WHERE `guildId` = ? ORDER BY `platformId` " +
-                        "ASC, `name` ASC";
+                query = "SELECT `name`, `platformId` FROM `game` WHERE `guildId` = ? " +
+                        "ORDER BY `platformId` ASC, `name` ASC";
+                break;
+            case "filter":
+                query = "SELECT `name`, `platformId` FROM `filter` WHERE `guildId` = ? " +
+                        "ORDER BY `platformId` ASC, `name` ASC";
                 break;
             case "manager":
                 query = "SELECT `userId` FROM `manager` WHERE `guildId` = ? ORDER BY `userId` ASC";
                 break;
             case "tag":
-                query = "SELECT `name`, `platformId` FROM `tag` WHERE `guildId` = ? ORDER BY `platformId` " +
-                        "ASC, `name` ASC";
+                query = "SELECT `name`, `platformId` FROM `tag` WHERE `guildId` = ? " +
+                        "ORDER BY `platformId` ASC, `name` ASC";
                 break;
             case "team":
-                query = "SELECT `name`, `platformId` FROM `team` WHERE `guildId` = ? ORDER BY `platformId` " +
-                        "ASC, `name` ASC";
+                query = "SELECT `name`, `platformId` FROM `team` WHERE `guildId` = ? " +
+                        "ORDER BY `platformId` ASC, `name` ASC";
                 break;
             default:
                 break;

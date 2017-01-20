@@ -11,85 +11,59 @@
 package core.commands;
 
 import core.Command;
+import core.Main;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import util.Const;
-import util.database.calls.GetCleanUp;
+import util.DiscordLogger;
 import util.database.calls.Tracker;
-
-import static platform.discord.controller.DiscordController.sendToChannel;
 
 /**
  * @author Veteran Software by Ague Mort
  */
-public class CleanUp implements Command {
-
+public class Leave implements Command {
     /**
      * Used to determine if appropriate arguments exist
      *
      * @param args  Arguments being passed
-     * @param event From JDA: GuildMessageReceivedEvent
+     * @param event From JDA: MessageReceivedEvent
      * @return boolean true if criteria is met, false if criteria not met
      */
     @Override
-    public final boolean called(String args, GuildMessageReceivedEvent event) {
-        if (args != null && !args.isEmpty()) {
-            return "none".equals(args) || "edit".equals(args) || "delete".equals(args) || "help".equals(args);
-        }
-
-        return false;
+    public boolean called(String args, GuildMessageReceivedEvent event) {
+        return true;
     }
 
     /**
      * Action taken after the command is verified
      *
      * @param args  Arguments being passed
-     * @param event From JDA: GuildMessageReceivedEvent
+     * @param event From JDA: MessageReceivedEvent
      */
     @Override
-    public final void action(String args, GuildMessageReceivedEvent event) {
-        String returnStatement;
-        String query;
-        switch (args) {
-            case "none":
-                query = "UPDATE `guild` SET `cleanup` = 0 WHERE `guildId` = ?";
-                returnStatement = Const.CLEANUP_SUCCESS_NONE;
-                break;
-            case "edit":
-                query = "UPDATE `guild` SET `cleanup` = 1 WHERE `guildId` = ?";
-                returnStatement = Const.CLEANUP_SUCCESS_EDIT;
-                break;
-            case "delete":
-                query = "UPDATE `guild` SET `cleanup` = 2 WHERE `guildId` = ?";
-                returnStatement = Const.CLEANUP_SUCCESS_DELETE;
-                break;
-            default:
-                return;
-        }
-        if (GetCleanUp.action(event.getGuild().getId(), query)) {
-            sendToChannel(event, returnStatement);
-        } else {
-            sendToChannel(event, Const.CLEANUP_FAIL);
-        }
+    public void action(String args, GuildMessageReceivedEvent event) {
+        new DiscordLogger("Attempting to leave the specified guild.", event);
+        Main.getJDA().getGuildById(args).leave().queue(
+                success -> new DiscordLogger("Successfully left the specified guild.", event)
+        );
     }
 
     /**
      * Returns help info for the command
      *
-     * @param event From JDA: GuildMessageReceivedEvent
+     * @param event From JDA: MessageReceivedEvent
      */
     @Override
-    public final void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.CLEANUP_HELP);
+    public void help(GuildMessageReceivedEvent event) {
+        // no help text
     }
 
     /**
      * Runs specified scripts which are determined by {success}
      *
      * @param success [boolean]
-     * @param event   From JDA: GuildMessageReceivedEvent
+     * @param event   From JDA: MessageReceivedEvent
      */
     @Override
-    public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Cleanup");
+    public void executed(boolean success, GuildMessageReceivedEvent event) {
+        new Tracker("Leave");
     }
 }

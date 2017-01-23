@@ -1,0 +1,71 @@
+/*
+ * Copyright 2016-2017 Ague Mort of Veteran Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the 
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to 
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the 
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT 
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+package util.database.calls;
+
+import com.mb3364.twitch.api.models.Stream;
+import util.database.Database;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import static util.database.Database.cleanUp;
+
+public class AddToStream {
+
+    private Connection connection = Database.getInstance().getConnection();
+    private PreparedStatement pStatement;
+
+    public synchronized void process(String guildId, String textChannelId, Integer platformId, String messageId, Stream stream) {
+        try {
+            String query = "INSERT INTO `streams` " +
+                    "(`guildId`, `textChannelId`, `platformId`, `messageId`, `streamsGame`, `streamsViewers`, " +
+                    "`channelStatus`, `channelDisplayName`, `channelLanguage`, `channelId`, `channelName`, `channelLogo`," +
+                    "`channelProfileBanner`, `channelUrl`, `channelViews`, `channelFollowers`) " +
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+            if (connection == null || connection.isClosed()) {
+                this.connection = Database.getInstance().getConnection();
+            }
+
+            this.pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            pStatement.setString(2, textChannelId);
+            pStatement.setInt(3, platformId);
+            pStatement.setString(4, messageId);
+            pStatement.setString(5, stream.getGame());
+            pStatement.setInt(6, stream.getViewers());
+            pStatement.setString(7, stream.getChannel().getStatus());
+            pStatement.setString(8, stream.getChannel().getDisplayName());
+            pStatement.setString(9, stream.getChannel().getLanguage());
+            pStatement.setLong(10, stream.getChannel().getId());
+            pStatement.setString(11, stream.getChannel().getName());
+            pStatement.setString(12, stream.getChannel().getLogo());
+            pStatement.setString(13, stream.getChannel().getProfileBanner());
+            pStatement.setString(14, stream.getChannel().getUrl());
+            pStatement.setLong(15, stream.getChannel().getViews());
+            pStatement.setLong(16, stream.getChannel().getFollowers());
+            pStatement.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("[ERROR] I threw an exception here");
+        } finally {
+            cleanUp(pStatement, connection);
+        }
+    }
+}

@@ -66,9 +66,10 @@ public class Move implements Command {
             if (textChannel.getGuild().getId().equals(event.getGuild().getId())) {
                 try {
                     String query = "UPDATE `guild` SET `channelId` = ? WHERE `guildId` = ?";
-                    connection = Database.getInstance().getConnection();
+                    if (connection == null || connection.isClosed()) {
+                        connection = Database.getInstance().getConnection();
+                    }
                     pStatement = connection.prepareStatement(query);
-
 
                     pStatement.setString(1, textChannel.getId());
                     pStatement.setString(2, event.getGuild().getId());

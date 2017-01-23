@@ -102,9 +102,11 @@ public class Remove implements Command {
                                 .getMentionedUsersId()))) {
                             if (managerCount(guildId)) { // Make sure there is going to be enough managers
                                 try {
-                                    connection = Database.getInstance().getConnection();
                                     query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `userId` = ?";
 
+                                    if (connection == null || connection.isClosed()) {
+                                        connection = Database.getInstance().getConnection();
+                                    }
                                     pStatement = connection.prepareStatement(query);
 
                                     pStatement.setString(1, guildId);
@@ -128,7 +130,9 @@ public class Remove implements Command {
                         query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? AND " +
                                 "`name` LIKE ?";
                         try {
-                            connection = Database.getInstance().getConnection();
+                            if (connection == null || connection.isClosed()) {
+                                connection = Database.getInstance().getConnection();
+                            }
                             pStatement = connection.prepareStatement(query);
 
                             pStatement.setString(1, guildId);
@@ -168,8 +172,11 @@ public class Remove implements Command {
 
     private boolean managerCount(String guildId) {
         try {
-            connection = Database.getInstance().getConnection();
             query = "SELECT COUNT(*) AS `count` FROM `manager` WHERE `guildId` = ?";
+
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
 
             pStatement.setString(1, guildId);

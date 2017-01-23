@@ -105,8 +105,10 @@ public class Main {
     private static void guildCheck() {
 
         try {
-            connection = Database.getInstance().getConnection();
             String query = "SELECT `guildId` from `guild`";
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
             result = pStatement.executeQuery();
 

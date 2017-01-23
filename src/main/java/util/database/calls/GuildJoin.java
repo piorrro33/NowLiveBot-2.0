@@ -74,7 +74,9 @@ public final class GuildJoin {
         for (String s : tableList) {
             try {
                 query = "SELECT `guildId` FROM `" + s + "` WHERE `guildId` = ?";
-                connection = Database.getInstance().getConnection();
+                if (connection == null || connection.isClosed()) {
+                    connection = Database.getInstance().getConnection();
+                }
                 pStatement = connection.prepareStatement(query);
                 pStatement.setString(1, gEvent.getGuild().getId());
                 resultSet = pStatement.executeQuery();
@@ -86,7 +88,9 @@ public final class GuildJoin {
                     }
                     try {
                         query = "DELETE FROM `" + s + "` WHERE `guildId` = ?";
-                        remConnection = Database.getInstance().getConnection();
+                        if (remConnection == null || remConnection.isClosed()) {
+                            remConnection = Database.getInstance().getConnection();
+                        }
                         remStatement = remConnection.prepareStatement(query);
                         remStatement.setString(1, guildId);
                         result = remStatement.executeUpdate();
@@ -129,7 +133,9 @@ public final class GuildJoin {
                 try {
                     query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `cleanup`, " +
                             "`emoji`) VALUES (?, ?, 0, 0, ?)";
-                    connection = Database.getInstance().getConnection();
+                    if (connection == null || connection.isClosed()) {
+                        connection = Database.getInstance().getConnection();
+                    }
                     pStatement = connection.prepareStatement(query);
 
                     pStatement.setString(1, guildId);
@@ -193,7 +199,9 @@ public final class GuildJoin {
         for (String users : userIds) {
             try {
                 query = "INSERT INTO `manager` (`guildId`, `userId`) VALUES (?, ?)";
-                connection = Database.getInstance().getConnection();
+                if (connection == null || connection.isClosed()) {
+                    connection = Database.getInstance().getConnection();
+                }
                 pStatement = connection.prepareStatement(query);
 
                 pStatement.setString(1, guildId);
@@ -218,7 +226,9 @@ public final class GuildJoin {
     private static Integer addNotification() {
         try {
             query = "INSERT INTO `notification` (`guildId`, `level`) VALUES (?, ?)";
-            connection = Database.getInstance().getConnection();
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
 
             pStatement.setString(1, guildId);

@@ -73,7 +73,8 @@ public class CleanUp implements Command {
             default:
                 return;
         }
-        if (GetCleanUp.action(event.getGuild().getId(), query)) {
+        GetCleanUp cleanup = new GetCleanUp();
+        if (cleanup.action(event.getGuild().getId(), query)) {
             sendToChannel(event, returnStatement);
         } else {
             sendToChannel(event, Const.CLEANUP_FAIL);

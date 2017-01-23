@@ -85,15 +85,21 @@ public class Status implements Command {
         // Number of times commands have been used
         try {
             String query = "SELECT * FROM `commandtracker` ORDER BY `commandName` ASC";
-            connection = Database.getInstance().getConnection();
+
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
+
             pStatement = connection.prepareStatement(query);
             result = pStatement.executeQuery();
-
-            String heard = null;
+            String heard;
             while (result.next()) {
-                if (result.getString("commandName") == "Messages") {
+                if (result.getString("commandName").equals("Messages")) {
                     heard = " Heard";
+                } else {
+                    heard = "";
                 }
+
                 eBuilder.addField(result.getString("commandName") + heard, numFormat.format(result.getInt("commandCount")), true);
             }
         } catch (SQLException e) {

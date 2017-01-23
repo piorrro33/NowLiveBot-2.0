@@ -30,18 +30,19 @@ import org.slf4j.LoggerFactory;
 import platform.discord.controller.DiscordController;
 import util.PropReader;
 import util.database.Database;
-import util.database.calls.GetBroadcasterLang;
+import util.database.calls.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static platform.discord.controller.DiscordController.announceStream;
 import static platform.discord.controller.DiscordController.getChannelId;
-import static platform.generic.controller.PlatformController.checkStreamTable;
+import static platform.generic.listener.PlatformListener.killConn;
 import static util.database.Database.cleanUp;
 
 /**
@@ -107,90 +108,109 @@ public class TwitchController extends Twitch {
         return exists[0].equals(true);
     }
 
-    public final synchronized void checkOffline(String channelName, String guildId, Integer platformId) {
+    public final synchronized void checkOffline(HashMap<String, Map<String, String>> streams, Integer platformId) {
 
-        this.streams().get(channelName, new StreamResponseHandler() {
-            @Override
-            public void onSuccess(Stream stream) {
-                if (stream == null) {
-                    DiscordController.offlineStream(guildId, platformId, channelName, getChannelId(guildId));
+        streams.forEach((String messageId, Map<String, String> streamData) -> {
+
+            this.streams().get(streamData.get("channelName"), new StreamResponseHandler() {
+                @Override
+                public void onSuccess(Stream stream) {
+                    if (stream == null) {
+                        DiscordController discord = new DiscordController();
+                        discord.offlineStream(streamData);
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(int i, String s, String s1) {
-            }
+                @Override
+                public void onFailure(int i, String s, String s1) {
 
-            @Override
-            public void onFailure(Throwable throwable) {
-            }
+                }
+
+                @Override
+                public void onFailure(Throwable throwable) {
+
+                }
+            });
         });
     }
 
-    public final synchronized void checkChannel(String channelName, String guildId, Integer platformId) {
+    public synchronized void checkChannel(Integer platformId) {
 
-        String query = "SELECT * FROM `channel` ORDER BY `name` ASC";
-        try {
-            connection = Database.getInstance().getConnection();
-            pStatement = connection.prepareStatement(query);
-            result = pStatement.executeQuery();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        GetDbChannels dbChannels = new GetDbChannels();
+        CountDbChannels countDbChannels = new CountDbChannels();
+        DiscordController discord = new DiscordController();
+        GetGuildsByStream guildsByStream = new GetGuildsByStream();
+        CheckStreamTable checkStreamTable = new CheckStreamTable();
 
-        // Grab the stream info
-        this.streams().get(channelName, new StreamResponseHandler() {
-            @Override
-            public void onSuccess(Stream stream) { // If the stream has been found
-                // check if the stream is online
-                if (stream != null) {
-                    // Check for tracked broadcaster languages
-                    String casterLang = GetBroadcasterLang.action(guildId);
-                    if (casterLang != null &&
-                            casterLang.equals(stream.getChannel().getBroadcasterLanguage()) || "all".equals(casterLang)) {
-                        // check if the status and game name are not null
-                        if (stream.getChannel().getStatus() != null &&
-                                stream.getGame() != null &&
-                                !checkStreamTable(guildId, platformId, stream.getChannel().getName())) {
-                            // Checking filters
-                            List<String> filters = checkFilters(guildId);
-                            if (filters != null) {
-                                for (String filter : filters) {
-                                    if (stream.getGame().equalsIgnoreCase(filter)) {
-                                        // If the game filter is equal to the game being played, announce the stream
-                                        announceStream(
-                                                guildId,
-                                                getChannelId(guildId),
-                                                platformId,
-                                                stream);
+        Integer amount = countDbChannels.fetch();
+
+        for (Integer c = 0; c <= amount; c += 100) {
+            List<String> channels = dbChannels.fetch(c);
+
+            StringBuilder channelString = new StringBuilder();
+
+            channels.forEach(channel -> {
+                if (channelString.length() > 0) {
+                    channelString.append(",");
+                }
+                channelString.append(channel);
+            });
+
+            RequestParams params = new RequestParams();
+            params.put("channel", channelString.toString());
+
+            this.streams().get(params, new StreamsResponseHandler() {
+                @Override
+                public void onSuccess(int i, List<Stream> list) {
+
+                    list.forEach(stream -> {
+
+                        List<String> guildIds = guildsByStream.fetch(stream.getChannel().getName());
+
+                        guildIds.forEach(guildId -> {
+
+                            GetBroadcasterLang getBroadcasterLang = new GetBroadcasterLang();
+                            String lang = getBroadcasterLang.action(guildId);
+
+                            if (lang.equalsIgnoreCase(stream.getChannel().getBroadcasterLanguage()) || "all".equals(lang)) {
+                                if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
+
+                                    List<String> filters = checkFilters(guildId);
+                                    if (filters != null) {
+                                        filters.forEach(filter -> {
+                                            if (stream.getGame().equalsIgnoreCase(filter)) {
+                                                if (!checkStreamTable.check(guildId, platformId, stream.getChannel().getName())) {
+                                                    discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        if (!checkStreamTable.check(guildId, platformId, stream.getChannel().getName())) {
+                                            discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
+                                        }
                                     }
                                 }
-                            } else {
-                                // If no filters are set, announce the channel
-                                announceStream(
-                                        guildId,
-                                        getChannelId(guildId),
-                                        platformId,
-                                        stream);
                             }
-                        }
-                    }
+                        });
+                        killConn();
+                    });
                 }
-            }
 
-            @Override
-            public void onFailure(int i, String s, String s1) {
-            }
+                @Override
+                public void onFailure(int i, String s, String s1) {
 
-            @Override
-            public void onFailure(Throwable throwable) {
-            }
-        });
+                }
+
+                @Override
+                public void onFailure(Throwable throwable) {
+
+                }
+            });
+        }
     }
 
     public final synchronized void checkGame(String gameName, String guildId, Integer platformId) {
-
-        // Grab the stream info
+        DiscordController discord = new DiscordController();
 
         for (int offset = 0; offset <= 1000; offset += 100) {
             RequestParams params = new RequestParams();
@@ -202,36 +222,33 @@ public class TwitchController extends Twitch {
                 @Override
                 public void onSuccess(int i, List<Stream> list) {
                     for (Stream stream : list) {
-                        if (!checkStreamTable(guildId, platformId, stream.getChannel().getName())) {
-                            String casterLang = GetBroadcasterLang.action(guildId);
-                            if (casterLang != null &&
-                                    (casterLang.equalsIgnoreCase(stream.getChannel().getBroadcasterLanguage())
-                                            || "all".equals(casterLang))) {
-                                if (stream.getChannel().getStatus() != null
-                                        && stream.getGame() != null) {
-                                    List<String> filters = checkFilters(guildId);
-                                    if (filters != null) {
-                                        for (String filter : filters) {
-                                            if (stream.getGame().equalsIgnoreCase(filter)) {
-                                                // If the game filter is equal to the game being played, announce the stream
-                                                announceStream(
-                                                        guildId,
-                                                        getChannelId(guildId),
-                                                        platformId,
-                                                        stream);
+
+                        GetBroadcasterLang getBroadcasterLang = new GetBroadcasterLang();
+                        String lang = getBroadcasterLang.action(guildId);
+
+                        if (lang != null &&
+                                (lang.equalsIgnoreCase(stream.getChannel().getBroadcasterLanguage())
+                                        || "all".equals(lang))) {
+                            if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
+                                List<String> filters = checkFilters(guildId);
+                                if (filters != null) {
+                                    filters.forEach(filter -> {
+                                        if (stream.getGame().equalsIgnoreCase(filter)) {
+                                            CheckStreamTable checkStreamTable = new CheckStreamTable();
+                                            if (!checkStreamTable.check(guildId, platformId, stream.getChannel().getName())) {
+                                                discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
                                             }
                                         }
-                                    } else {
-                                        // If no filters are set, announce the channel
-                                        announceStream(
-                                                guildId,
-                                                getChannelId(guildId),
-                                                platformId,
-                                                stream);
+                                    });
+                                } else {
+                                    CheckStreamTable checkStreamTable = new CheckStreamTable();
+                                    if (!checkStreamTable.check(guildId, platformId, stream.getChannel().getName())) {
+                                        discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
                                     }
                                 }
                             }
                         }
+                        killConn();
                     }
                 }
 

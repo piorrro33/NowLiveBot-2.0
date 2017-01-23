@@ -22,6 +22,7 @@ import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
@@ -31,10 +32,17 @@ import static util.database.Database.cleanUp;
  */
 public class GetCleanUp {
 
-    private static Connection connection = Database.getInstance().getConnection();
-    private static PreparedStatement pStatement;
+    private Connection connection = Database.getInstance().getConnection();
+    private PreparedStatement pStatement;
+    private ResultSet result;
+    private Integer cleanup;
 
-    public synchronized static Boolean action(String guildId, String query) {
+    public Integer getCleanup(String guildId) {
+        doStuff(guildId);
+        return cleanup;
+    }
+
+    public synchronized Boolean action(String guildId, String query) {
         try {
             if (connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
@@ -52,4 +60,23 @@ public class GetCleanUp {
         return false;
     }
 
+    private synchronized void doStuff(String guildId) {
+        String query = "SELECT `cleanup` FROM `guild` WHERE `guildId` = ?";
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            result = pStatement.executeQuery();
+
+            while (result.next()) {
+                this.cleanup = result.getInt("cleanup");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
+        }
+    }
 }

@@ -62,8 +62,11 @@ public class Streams implements Command {
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
         try {
-            connection = Database.getInstance().getConnection();
             String query = "SELECT COUNT(*) as `rowCount` FROM `stream` WHERE `guildId` = ?";
+
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
 
             pStatement = connection.prepareStatement(query);
 
@@ -86,7 +89,9 @@ public class Streams implements Command {
                     "INNER JOIN `platform` " +
                     "ON `stream`.`platformId` = `platform`.`id` " +
                     "WHERE `stream`.`guildId` = ? ORDER BY `stream`.`channelName`";
-            connection = Database.getInstance().getConnection();
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
 
             pStatement.setString(1, event.getGuild().getId());

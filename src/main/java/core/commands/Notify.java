@@ -131,11 +131,11 @@ public class Notify implements Command {
 
     private boolean update(GuildMessageReceivedEvent event, Integer level) {
         try {
-
-            connection = Database.getInstance().getConnection();
             String query = "INSERT INTO `notification` (`guildId`, `level`, `userId`) VALUES (?, ?, ?) " +
                     "ON DUPLICATE KEY UPDATE `level` = ?";
-
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
 
             pStatement.setString(1, event.getGuild().getId());

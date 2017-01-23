@@ -20,7 +20,6 @@ package core.commands;
 
 import core.Command;
 import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.entities.ISnowflake;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
@@ -41,7 +40,7 @@ import static util.database.Database.cleanUp;
 /**
  * @author Veteran Software by Ague Mort
  */
-public class List<G extends ISnowflake> implements Command {
+public class List implements Command {
 
     private static Connection connection;
     private static PreparedStatement pStatement;
@@ -53,7 +52,9 @@ public class List<G extends ISnowflake> implements Command {
 
     private Message createNotificationMessage(MessageBuilder message, GuildMessageReceivedEvent event) {
         try {
-            connection = Database.getInstance().getConnection();
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
             resultSet = pStatement.executeQuery();

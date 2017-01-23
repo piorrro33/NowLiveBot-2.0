@@ -27,24 +27,22 @@ import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
-import net.dv8tion.jda.core.exceptions.ErrorResponseException;
 import net.dv8tion.jda.core.exceptions.PermissionException;
-import net.dv8tion.jda.core.requests.ErrorResponse;
-import net.dv8tion.jda.core.requests.RestAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.Const;
 import util.DiscordLogger;
 import util.database.Database;
-import util.database.calls.Tracker;
+import util.database.calls.*;
 
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
-import static platform.generic.controller.PlatformController.*;
 import static util.database.Database.cleanUp;
 
 /**
@@ -77,6 +75,10 @@ public class DiscordController {
 
         this.guildIdMessageEvent = event.getGuild().getId();
         mentionedUsersID(event);
+    }
+
+    public DiscordController() {
+
     }
 
     public static void sendToChannel(GuildMessageReceivedEvent event, String message) {
@@ -153,8 +155,7 @@ public class DiscordController {
     }
 
     public static void sendToPm(PrivateMessageReceivedEvent event, Message message) {
-        if (!event.getAuthor().isBot()) { // Prevents errors if a bot auto-sends PM's on
-            // join
+        if (!event.getAuthor().isBot()) { // Prevents errors if a bot auto-sends PM's on join
             event.getAuthor().openPrivateChannel().queue(
                     success ->
                             event.getAuthor().getPrivateChannel().sendMessage(message).queue(
@@ -171,8 +172,7 @@ public class DiscordController {
         }
     }
 
-
-    public static synchronized void offlineStream(String guildId, Integer platformId, String channelName,
+    /*public static synchronized void offlineStream(String guildId, Integer platformId, String channelName,
                                                   String channelId) {
         if (checkStreamTable(guildId, platformId, channelName)) {
             try {
@@ -320,174 +320,14 @@ public class DiscordController {
             }
         }
 
-    }
-
-    private static synchronized Message editMessage(Integer platformId, String channelName) {
-        EmbedBuilder eBuilder = new EmbedBuilder();
-        StringBuilder msgDesc = new StringBuilder();
-        MessageBuilder mBuilder = new MessageBuilder();
-
-        float[] rgb;
-        switch (platformId) {
-            case 1:
-                rgb = Color.RGBtoHSB(100, 65, 165, null);
-                eBuilder.setColor(Color.getHSBColor(rgb[0], rgb[1], rgb[2]));
-                break;
-            case 2:
-                rgb = Color.RGBtoHSB(83, 109, 254, null);
-                eBuilder.setColor(Color.getHSBColor(rgb[0], rgb[1], rgb[2]));
-                break;
-            default:
-                // Never should hit
-                break;
-        }
-
-        eBuilder.setAuthor(Const.OFFLINE, Const.DISCORD_URL, Const.BOT_LOGO);
-
-        eBuilder.setTitle(channelName + " has gone offline!");
-
-        msgDesc.append("Make sure to watch for my next announcement of when they go live!");
-        //msgDesc.append(url);
-
-        eBuilder.setDescription(msgDesc.toString());
-
-        MessageEmbed embed = eBuilder.build();
-
-        mBuilder.setEmbed(embed);
-
-        return mBuilder.build();
-    }
-
-    //public static synchronized void announceStream(String guildId, String channelId, Integer platformId, String
-    //        channelName, String streamTitle, String gameName, String url, String thumbnail, String banner) {
-    public static synchronized void announceStream(String guildId, String channelId, Integer platformId, Stream stream) {
-        //System.out.println("Made into the announcement method...");
-
-        EmbedBuilder eBuilder = new EmbedBuilder();
-        StringBuilder msgDesc = new StringBuilder();
-        MessageBuilder mBuilder = new MessageBuilder();
-
-        notifyLevel(guildId, mBuilder);
-        //System.out.println("Notify level checked...");
-        // TODO: re-enable once emoji command is enabled
-        //checkEmoji(guildId, message);
-
-        float[] rgb;
-
-        switch (platformId) {
-            case 1:
-                rgb = Color.RGBtoHSB(100, 65, 165, null);
-                eBuilder.setColor(Color.getHSBColor(rgb[0], rgb[1], rgb[2]));
-                break;
-            case 2:
-                rgb = Color.RGBtoHSB(83, 109, 254, null);
-                eBuilder.setColor(Color.getHSBColor(rgb[0], rgb[1], rgb[2]));
-                break;
-            default:
-                // Never should hit
-                break;
-        }
-
-        eBuilder.setAuthor(stream.getChannel().getDisplayName() + " is now streaming!",
-                stream.getChannel().getUrl(), Const.BOT_LOGO);
-
-        eBuilder.setTitle(stream.getChannel().getUrl());
-
-        eBuilder.setDescription(msgDesc.toString());
-        if (stream.getChannel().getLogo() != null) {
-            eBuilder.setThumbnail(stream.getChannel().getLogo());
-        }
-
-        if (checkCompact(guildId).equals(0)) {
-            if (stream.getPreview().getLarge() != null) {
-                eBuilder.setImage(stream.getPreview().getLarge());
-            }
-        }
-
-        eBuilder.addField("Now Playing", stream.getGame(), false);
-        eBuilder.addField("Stream Title", stream.getChannel().getStatus(), false);
-        eBuilder.addField("Followers", String.valueOf(stream.getChannel().getFollowers()), true);
-        eBuilder.addField("Total Views", String.valueOf(stream.getChannel().getViews()), true);
-
-        MessageEmbed embed = eBuilder.build();
-
-        mBuilder.setEmbed(embed);
-
-        Message message = mBuilder.build();
-
-        // If the channel doesn't exist, reset it to the default public channel which is the guildId
-        if (Main.getJDA().getTextChannelById(channelId) == null) {
-            try {
-                if (Main.getJDA().getTextChannelById(guildId) != null) {
-                    try {
-                        connection = Database.getInstance().getConnection();
-                        query = "UPDATE `guild` SET `channelId` = ? WHERE `guildId` = ?";
-                        pStatement = connection.prepareStatement(query);
-                        pStatement.setString(1, guildId);
-                        pStatement.setString(2, guildId);
-                        pStatement.executeUpdate();
-                    } catch (SQLException e) {
-                        logger.error("There was an SQL Exception", e);
-                    } finally {
-                        cleanUp(pStatement, connection);
-                    }
-                }
-            } catch (NullPointerException npe) {
-                logger.error("There was a NPE in Discord Controller");
-            }
-        }
-
-        if (!checkStreamTable(guildId, platformId, stream.getChannel().getName())) {
-            try {
-                Main.getJDA().getTextChannelById(channelId).sendMessage(message).queue(
-                        sentMessage -> {
-
-                            addToStream(guildId, channelId, platformId, stream.getChannel().getName(), stream.getChannel().getStatus(), stream.getGame(), sentMessage
-                                    .getId());
-
-                            // TODO: Fix this ugly mess!!
-                            MessageBuilder discord = new MessageBuilder();
-
-                            discord.append(" :tada: ");
-                            discord.append("[G:");
-                            discord.append(Main.getJDA().getGuildById(guildId).getName());
-                            discord.append("][C:");
-                            discord.append(Main.getJDA().getTextChannelById(channelId).getName());
-                            discord.append("]");
-                            discord.append(stream.getChannel().getName());
-                            discord.append(" is streaming ");
-                            discord.append(stream.getGame());
-
-                            Message dMessage = discord.build();
-
-                            new DiscordLogger(dMessage.getRawContent(), null);
-                            System.out.printf("[STREAM ANNOUNCE] [%s:%s] [%s:%s] [%s]: %s%n",
-                                    Main.getJDA().getGuildById(guildId).getName(),
-                                    Main.getJDA().getGuildById(guildId).getId(),
-                                    Main.getJDA().getTextChannelById(getChannelId(guildId)).getName(),
-                                    Main.getJDA().getTextChannelById(getChannelId(guildId)).getId(),
-                                    sentMessage.getId(),
-                                    stream.getChannel().getName() + " is streaming " + stream.getGame());
-
-                            new Tracker("Streams Announced");
-                        }
-                );
-            } catch (PermissionException pe) {
-                new DiscordLogger(" :no_entry: Permission error sending in G:" + Main.getJDA
-                        ().getGuildById(guildId).getName() + ":" + Main.getJDA().getGuildById(guildId).getId(), null);
-                System.out.printf("[~ERROR~] Permission Exception! G:%s:%s C:%s:%s%n",
-                        Main.getJDA().getGuildById(guildId).getName(),
-                        guildId,
-                        Main.getJDA().getTextChannelById(channelId).getName(),
-                        channelId);
-            }
-        }
-    }
+    }*/
 
     private static synchronized Integer checkCompact(String guildId) {
         try {
-            ccConnection = Database.getInstance().getConnection();
             query = "SELECT `isCompact` FROM `guild` WHERE `guildId` = ?";
+            if (ccConnection == null || ccConnection.isClosed()) {
+                ccConnection = Database.getInstance().getConnection();
+            }
             pStatement = ccConnection.prepareStatement(query);
             pStatement.setString(1, guildId);
             result = pStatement.executeQuery();
@@ -505,8 +345,12 @@ public class DiscordController {
 
     private static synchronized MessageBuilder checkEmoji(String guildId, MessageBuilder message) {
         try {
-            ceConnection = Database.getInstance().getConnection();
             query = "SELECT `emoji` FROM `guild` WHERE `guildId` = ?";
+
+            if (ceConnection == null || ceConnection.isClosed()) {
+                ceConnection = Database.getInstance().getConnection();
+            }
+
             ceStatement = ceConnection.prepareStatement(query);
             ceStatement.setString(1, guildId);
             ceResult = ceStatement.executeQuery();
@@ -530,8 +374,12 @@ public class DiscordController {
 
     public static synchronized String getChannelId(String guildId) {
         try {
-            gciConnection = Database.getInstance().getConnection();
             query = "SELECT `channelId` FROM `guild` WHERE `guildId` = ?";
+
+            if (gciConnection == null || gciConnection.isClosed()) {
+                gciConnection = Database.getInstance().getConnection();
+            }
+
             gciStatement = gciConnection.prepareStatement(query);
             gciStatement.setString(1, guildId);
 
@@ -553,8 +401,10 @@ public class DiscordController {
 
     private static synchronized MessageBuilder notifyLevel(String guildId, MessageBuilder message) {
         try {
-            nlConnection = Database.getInstance().getConnection();
             query = "SELECT `level`, `userId` FROM `notification` WHERE `guildId` = ?";
+            if (nlConnection == null || nlConnection.isClosed()) {
+                nlConnection = Database.getInstance().getConnection();
+            }
             nlStatement = nlConnection.prepareStatement(query);
 
             nlStatement.setString(1, guildId);
@@ -591,6 +441,228 @@ public class DiscordController {
             cleanUp(nlResult, nlStatement, nlConnection);
         }
         return message;
+    }
+
+    private synchronized Message editMessage(Map<String, String> stream) {
+        return buildEmbed(stream, "edit");
+    }
+
+    private synchronized Message buildEmbed(Map<String, String> streamData, String action) {
+        Integer platformId = 1;
+        String guildId = streamData.get("guildId");
+        String channelName = streamData.get("channelName");
+        String displayName = streamData.get("channelDisplayName");
+        String streamTitle = streamData.get("channelStatus");
+        String url = streamData.get("channelUrl");
+        String logo = streamData.get("channelLogo");
+        String profileBanner = streamData.get("channelProfileBanner");
+        String game = streamData.get("streamsGame");
+        String followers = streamData.get("channelFollowers");
+        String views = streamData.get("channelViews");
+
+        EmbedBuilder eBuilder = new EmbedBuilder();
+        MessageBuilder mBuilder = new MessageBuilder();
+
+        notifyLevel(guildId, mBuilder);
+        // TODO: re-enable once emoji command is enabled
+        //checkEmoji(guildId, message);
+
+        float[] rgb;
+
+        switch (platformId) {
+            case 1:
+                rgb = Color.RGBtoHSB(100, 65, 165, null);
+                eBuilder.setColor(Color.getHSBColor(rgb[0], rgb[1], rgb[2]));
+                break;
+            case 2:
+                rgb = Color.RGBtoHSB(83, 109, 254, null);
+                eBuilder.setColor(Color.getHSBColor(rgb[0], rgb[1], rgb[2]));
+                break;
+            default:
+                // Never should hit
+                break;
+        }
+
+        switch (action) {
+            case "new":
+                eBuilder.setAuthor(displayName + " is now streaming!", url, Const.BOT_LOGO);
+                break;
+            case "edit":
+                eBuilder.setAuthor(displayName + " has gone offline!", url, Const.BOT_LOGO);
+                break;
+        }
+
+        eBuilder.setTitle(url);
+
+        eBuilder.addField("Now Playing", game, false);
+        eBuilder.addField("Stream Title", streamTitle, false);
+
+        if (logo != null) {
+            eBuilder.setThumbnail(logo);
+        }
+
+        if (checkCompact(guildId).equals(0)) {
+            if (profileBanner != null) {
+                eBuilder.setImage(profileBanner);
+            }
+            eBuilder.addField("Followers", followers, true);
+            eBuilder.addField("Total Views", views, true);
+        }
+
+
+        MessageEmbed embed = eBuilder.build();
+
+        mBuilder.setEmbed(embed);
+
+        return mBuilder.build();
+    }
+
+    public synchronized void offlineStream(Map<String, String> offline) {
+
+        GetCleanUp clean = new GetCleanUp();
+        Integer cleanup = clean.getCleanup(offline.get("guildId"));
+
+        CheckStreamTable checkStreamTable = new CheckStreamTable();
+        switch (cleanup) {
+            case 1: // Edit
+                if (checkStreamTable.check(offline.get("guildId"), Integer.parseInt(offline.get("platformId")), offline.get("channelName"))) {
+                    Main.getJDA()
+                            .getTextChannelById(offline.get("textChannelId"))
+                            .editMessageById(offline.get("messageId"), buildEmbed(offline, "edit"))
+                            .queue(success -> {
+
+                                DeleteFromStream deleteStream = new DeleteFromStream();
+                                deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
+
+                                new DiscordLogger(" :pencil2: " + offline.get("channelName") + " has gone " +
+                                        "offline. Message edited in G:" + Main.getJDA().getGuildById(offline.get("guildId")).getName(), null);
+                                System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
+                                                "announcement was successfully edited in: %s%n",
+                                        offline.get("channelName"),
+                                        Main.getJDA().getGuildById(offline.get("guildId")).getName());
+                            });
+                }
+                break;
+            case 2: // Delete
+                if (checkStreamTable.check(offline.get("guildId"), Integer.valueOf(offline.get("platformId")), offline.get("channelName"))) {
+                    Main.getJDA()
+                            .getTextChannelById(offline.get("textChannelId"))
+                            .deleteMessageById(offline.get("messageId"))
+                            .queue(success -> {
+
+                                DeleteFromStream deleteStream = new DeleteFromStream();
+                                deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
+
+                                new DiscordLogger(" :x: " + offline.get("channelName") + " has gone " +
+                                        "offline. Message deleted in G:" + Main.getJDA
+                                        ().getGuildById(offline.get("guildId")).getName(), null);
+                                System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
+                                                "announcement was successfully deleted in: %s%n",
+                                        offline.get("channelName"),
+                                        Main.getJDA().getGuildById(offline.get("guildId")).getName());
+                            });
+                }
+                break;
+            default: // Do nothing
+
+                break;
+        }
+    }
+
+    public synchronized void announceStream(String guildId, String textChannelId, Integer platformId, Stream stream) {
+        CheckStreamTable checkStreamTable = new CheckStreamTable();
+
+        if (!checkStreamTable.check(guildId, platformId, stream.getChannel().getName())) {
+
+            HashMap<String, String> streamData = new HashMap<>();
+            streamData.put("guildId", guildId);
+            streamData.put("textChannelId", textChannelId);
+            streamData.put("streamsGame", stream.getGame());
+            streamData.put("streamsViewers", String.valueOf(stream.getViewers()));
+            streamData.put("channelStatus", stream.getChannel().getStatus());
+            streamData.put("channelDisplayName", stream.getChannel().getDisplayName());
+            streamData.put("channelLanguage", stream.getChannel().getBroadcasterLanguage());
+            streamData.put("channelId", String.valueOf(stream.getChannel().getId()));
+            streamData.put("channelName", stream.getChannel().getName());
+            streamData.put("channelLogo", stream.getChannel().getLogo());
+            streamData.put("channelProfileBanner", stream.getChannel().getProfileBanner());
+            streamData.put("channelUrl", stream.getChannel().getUrl());
+            streamData.put("channelViews", String.valueOf(stream.getChannel().getViews()));
+            streamData.put("channelFollowers", String.valueOf(stream.getChannel().getFollowers()));
+
+            Message message = buildEmbed(streamData, "new");
+
+            // If the channel doesn't exist, reset it to the default public channel which is the guildId
+            if (Main.getJDA().getTextChannelById(textChannelId) == null) {
+                try {
+                    if (Main.getJDA().getTextChannelById(guildId) != null) {
+                        try {
+                            query = "UPDATE `guild` SET `channelId` = ? WHERE `guildId` = ?";
+
+                            if (connection == null || connection.isClosed()) {
+                                connection = Database.getInstance().getConnection();
+                            }
+                            pStatement = connection.prepareStatement(query);
+                            pStatement.setString(1, guildId);
+                            pStatement.setString(2, guildId);
+                            pStatement.executeUpdate();
+                        } catch (SQLException e) {
+                            logger.error("There was an SQL Exception", e);
+                        } finally {
+                            cleanUp(pStatement, connection);
+                        }
+                    }
+                } catch (NullPointerException npe) {
+                    logger.error("There was a NPE in Discord Controller");
+                }
+            }
+
+            if (!checkStreamTable.check(guildId, platformId, streamData.get("channelName"))) {
+                try {
+                    Main.getJDA().getTextChannelById(textChannelId).sendMessage(message).queue(
+                            sentMessage -> {
+
+                                AddToStream addLiveStream = new AddToStream();
+                                addLiveStream.process(guildId, textChannelId, platformId, sentMessage.getId(), stream);
+
+                                // TODO: Fix this ugly mess!!
+                                MessageBuilder discord = new MessageBuilder();
+
+                                discord.append(" :tada: ");
+                                discord.append("[G:");
+                                discord.append(Main.getJDA().getGuildById(guildId).getName());
+                                discord.append("][C:");
+                                discord.append(Main.getJDA().getTextChannelById(textChannelId).getName());
+                                discord.append("]");
+                                discord.append(stream.getChannel().getName());
+                                discord.append(" is streaming ");
+                                discord.append(stream.getGame());
+
+                                Message dMessage = discord.build();
+
+                                new DiscordLogger(dMessage.getRawContent(), null);
+                                System.out.printf("[STREAM ANNOUNCE] [%s:%s] [%s:%s] [%s]: %s%n",
+                                        Main.getJDA().getGuildById(guildId).getName(),
+                                        Main.getJDA().getGuildById(guildId).getId(),
+                                        Main.getJDA().getTextChannelById(getChannelId(guildId)).getName(),
+                                        Main.getJDA().getTextChannelById(getChannelId(guildId)).getId(),
+                                        sentMessage.getId(),
+                                        stream.getChannel().getName() + " is streaming " + stream.getGame());
+
+                                new Tracker("Streams Announced");
+                            }
+                    );
+                } catch (PermissionException pe) {
+                    new DiscordLogger(" :no_entry: Permission error sending in G:" + Main.getJDA
+                            ().getGuildById(guildId).getName() + ":" + Main.getJDA().getGuildById(guildId).getId(), null);
+                    System.out.printf("[~ERROR~] Permission Exception! G:%s:%s C:%s:%s%n",
+                            Main.getJDA().getGuildById(guildId).getName(),
+                            guildId,
+                            Main.getJDA().getTextChannelById(textChannelId).getName(),
+                            textChannelId);
+                }
+            }
+        }
     }
 
     private void mentionedUsersID(GuildMessageReceivedEvent event) {

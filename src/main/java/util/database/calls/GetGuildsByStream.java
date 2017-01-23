@@ -18,42 +18,48 @@
 
 package util.database.calls;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static util.database.Database.cleanUp;
 
-/**
- * @author Veteran Software by Ague Mort
- */
-public final class Tracker {
-    private static final Logger logger = LoggerFactory.getLogger(Tracker.class);
-    private static Connection connection;
-    private static PreparedStatement pStatement;
+public class GetGuildsByStream {
 
-    public Tracker(String command) {
-        super();
-        doStuff(command);
-    }
+    private Connection connection = Database.getInstance().getConnection();
+    private PreparedStatement pStatement;
+    private ResultSet result;
+    private List<String> guildIds = new ArrayList<>();
 
-    private synchronized static void doStuff(String command) {
+    public synchronized final List<String> fetch(String channelName) {
         try {
-            String query = "INSERT INTO `commandtracker` (`commandName`, `commandCount`) VALUES (?, 1) " +
-                    "ON DUPLICATE KEY UPDATE `commandCount` = `commandCount` + 1";
-            connection = Database.getInstance().getConnection();
-            pStatement = connection.prepareStatement(query);
+            String query = "SELECT `guildId` FROM `channel` WHERE `name` = ?";
+            if (connection == null || connection.isClosed()) {
+                this.connection = Database.getInstance().getConnection();
+            }
+            this.pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, channelName);
+            result = pStatement.executeQuery();
 
-            pStatement.setString(1, command);
-            pStatement.executeUpdate();
+            guildIds.clear();
+
+            while (result.next()) {
+                guildIds.add(result.getString("guildId"));
+            }
+
+            return guildIds;
+
         } catch (SQLException e) {
-            logger.warn("There was a problem updating the count for commands in my database.");
+            e.printStackTrace();
         } finally {
-            cleanUp(pStatement, connection);
+            cleanUp(result, pStatement, connection);
         }
+
+        return guildIds;
     }
 }

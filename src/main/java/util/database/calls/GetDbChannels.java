@@ -18,42 +18,50 @@
 
 package util.database.calls;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static util.database.Database.cleanUp;
 
 /**
- * @author Veteran Software by Ague Mort
+ * Created by keesh on 1/22/2017.
  */
-public final class Tracker {
-    private static final Logger logger = LoggerFactory.getLogger(Tracker.class);
-    private static Connection connection;
-    private static PreparedStatement pStatement;
+public class GetDbChannels {
 
-    public Tracker(String command) {
-        super();
-        doStuff(command);
-    }
+    private Connection connection = Database.getInstance().getConnection();
+    private PreparedStatement pStatement;
+    private ResultSet result;
 
-    private synchronized static void doStuff(String command) {
+    public synchronized List<String> fetch(Integer start) {
+        String query = "SELECT `name` FROM `channel` ORDER BY `timeAdded` ASC LIMIT " + start + ",100";
         try {
-            String query = "INSERT INTO `commandtracker` (`commandName`, `commandCount`) VALUES (?, 1) " +
-                    "ON DUPLICATE KEY UPDATE `commandCount` = `commandCount` + 1";
-            connection = Database.getInstance().getConnection();
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
 
-            pStatement.setString(1, command);
-            pStatement.executeUpdate();
+            List<String> channels = new ArrayList<>();
+
+            while (result.next()) {
+                if (!channels.contains(result.getString("name"))) {
+                    channels.add(result.getString("name"));
+                }
+            }
+            return channels;
+
         } catch (SQLException e) {
-            logger.warn("There was a problem updating the count for commands in my database.");
+            e.printStackTrace();
         } finally {
-            cleanUp(pStatement, connection);
+            cleanUp(result, pStatement, connection);
         }
+        return null;
     }
+
 }

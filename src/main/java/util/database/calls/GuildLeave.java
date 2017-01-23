@@ -56,9 +56,11 @@ public final class GuildLeave {
         tableList.add("team");
 
         try {
-            connection = Database.getInstance().getConnection();
             for (String s : tableList) {
                 String query = "DELETE FROM `" + s + "` WHERE `guildId` = ?";
+                if (connection == null || connection.isClosed()) {
+                    connection = Database.getInstance().getConnection();
+                }
                 pStatement = connection.prepareStatement(query);
                 pStatement.setString(1, gEvent.getGuild().getId());
                 Integer result = pStatement.executeUpdate();

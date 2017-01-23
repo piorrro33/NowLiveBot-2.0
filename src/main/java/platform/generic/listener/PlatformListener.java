@@ -24,12 +24,15 @@ import platform.twitch.controller.TwitchController;
 import util.DiscordLogger;
 import util.PropReader;
 import util.database.Database;
+import util.database.calls.GetOnlineStreams;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -41,18 +44,12 @@ import static util.database.Database.cleanUp;
  */
 public class PlatformListener {
     private static Logger logger = LoggerFactory.getLogger("Platform Listener");
-    private static Connection clcConnection;
     private static Connection clgConnection;
     private static Connection kcConnection;
-    private static Connection connection;
-    private static PreparedStatement clcStatement;
     private static PreparedStatement clgStatement;
     private static PreparedStatement kcStatement;
-    private static PreparedStatement pStatement;
-    private static ResultSet clcResult;
     private static ResultSet clgResult;
     private static ResultSet kcResult;
-    private static ResultSet result;
     private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
     public PlatformListener() {
@@ -65,10 +62,12 @@ public class PlatformListener {
         }
     }
 
-    private static synchronized void killConn() {
+    public static synchronized void killConn() {
         try {
-            kcConnection = Database.getInstance().getConnection();
             String query = "USE `information_schema`";
+            if (kcConnection == null || kcConnection.isClosed()){
+                kcConnection = Database.getInstance().getConnection();
+            }
             kcStatement = kcConnection.prepareStatement(query);
             kcStatement.execute();
 
@@ -97,8 +96,6 @@ public class PlatformListener {
 
     private synchronized void run() {
         checkLiveChannels();
-        checkLiveGames();
-        checkOfflineStreams();
     }
 
     // jda.getUserById("123456789").getJDA().getPresence().getGame().getUrl();
@@ -108,39 +105,22 @@ public class PlatformListener {
         new DiscordLogger(" :poop: **Checking for live channels...**", null);
         System.out.println("[SYSTEM] Checking for live channels. " + timeNow);
 
-        try {
-            clcConnection = Database.getInstance().getConnection();
-            String query = "SELECT `guildId`, `name`, `platformId` FROM `channel` ORDER BY `guildId` ASC";
-            clcStatement = clcConnection.prepareStatement(query);
-
-            clcResult = clcStatement.executeQuery();
-
-            if (!clcResult.isClosed()) {
-                while (clcResult.next()) {
-                    switch (clcResult.getInt("platformId")) {
-                        case 1:
-                            TwitchController twitch = new TwitchController();
-                            // Send info to Twitch Controller
-                            twitch.checkChannel(clcResult.getString("name"), clcResult.getString("guildId"), clcResult.getInt
-                                    ("platformId"));
-                            break;
-                        case 2:
-                            //System.out.println("Found a Beam channel, starting the announcement checking process...");
+        Integer platformId = 1;
+        switch (platformId) {
+            case 1:
+                TwitchController twitch = new TwitchController();
+                twitch.checkChannel(platformId);
+                break;
+            case 2:
+                //System.out.println("Found a Beam channel, starting the announcement checking process...");
                             /*new BeamController().checkChannel(clcResult.getString("name"), clcResult.getString("guildId"),
                                     clcResult.getInt("platformId"));*/
-                            //System.out.println();
-                            break;
-                        default:
-                            break;
-                    }
-                    killConn();
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(clcResult, clcStatement, clcConnection);
+                //System.out.println();
+                break;
+            default:
+                break;
         }
+        checkLiveGames();
     }
 
     private synchronized void checkLiveGames() {
@@ -148,8 +128,11 @@ public class PlatformListener {
         new DiscordLogger(" :poop: **Checking for live games...**", null);
         System.out.println("[SYSTEM] Checking for live games. " + timeNow);
         try {
-            clgConnection = Database.getInstance().getConnection();
             String query = "SELECT * FROM `game` ORDER BY `guildId` ASC";
+
+            if (clgConnection == null || clgConnection.isClosed()) {
+                clgConnection = Database.getInstance().getConnection();
+            }
             clgStatement = clgConnection.prepareStatement(query);
             clgResult = clgStatement.executeQuery();
 
@@ -177,6 +160,7 @@ public class PlatformListener {
         } finally {
             cleanUp(clgResult, clgStatement, clgConnection);
         }
+        checkOfflineStreams();
     }
 
     private synchronized void checkOfflineStreams() {
@@ -184,29 +168,10 @@ public class PlatformListener {
         new DiscordLogger(" :poop: **Checking for offline streams...**", null);
         System.out.println("[SYSTEM] Checking for offline streams. " + timeNow);
 
-        try {
-            String query = "SELECT * FROM `stream` ORDER BY `messageId` ASC";
-            if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
-            }
-            pStatement = connection.prepareStatement(query);
-            result = pStatement.executeQuery();
+        GetOnlineStreams onlineStreams = new GetOnlineStreams();
+        HashMap<String, Map<String, String>> streams = onlineStreams.getOnlineStreams(1);
 
-            if (result.isBeforeFirst()) {
-                while (result.next()) {
-                    if (result.getInt("platformId") == 1) {
-
-                        TwitchController twitch = new TwitchController();
-                        twitch.checkOffline(result.getString("channelName"), result.getString("guildId"),
-                                result.getInt("platformId"));
-                    }
-                    killConn();
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(result, pStatement, connection);
-        }
+        TwitchController twitch = new TwitchController();
+        twitch.checkOffline(streams, 1);
     }
 }

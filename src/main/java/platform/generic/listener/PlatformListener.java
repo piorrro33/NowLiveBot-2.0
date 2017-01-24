@@ -96,6 +96,8 @@ public class PlatformListener {
 
     private synchronized void run() {
         checkLiveChannels();
+        checkLiveGames();
+        checkOfflineStreams();
     }
 
     // jda.getUserById("123456789").getJDA().getPresence().getGame().getUrl();
@@ -120,7 +122,6 @@ public class PlatformListener {
             default:
                 break;
         }
-        checkLiveGames();
     }
 
     private synchronized void checkLiveGames() {
@@ -160,7 +161,6 @@ public class PlatformListener {
         } finally {
             cleanUp(clgResult, clgStatement, clgConnection);
         }
-        checkOfflineStreams();
     }
 
     private synchronized void checkOfflineStreams() {

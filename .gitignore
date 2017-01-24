@@ -43,7 +43,6 @@ Thumbs.db
 *.orig
 
 # Intellij project files
-*.iml
 *.ipr
 *.iws
 .idea/
@@ -68,3 +67,4 @@ start.sh
 OFFLINEconfig.properties
 ONLINEconfig.properties
 *.json
+*.jar

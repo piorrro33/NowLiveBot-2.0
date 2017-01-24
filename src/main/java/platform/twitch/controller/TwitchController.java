@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 
 import static platform.discord.controller.DiscordController.getChannelId;
-import static platform.generic.listener.PlatformListener.killConn;
 import static util.database.Database.cleanUp;
 
 /**
@@ -138,9 +137,7 @@ public class TwitchController extends Twitch {
 
         GetDbChannels dbChannels = new GetDbChannels();
         CountDbChannels countDbChannels = new CountDbChannels();
-        DiscordController discord = new DiscordController();
         GetGuildsByStream guildsByStream = new GetGuildsByStream();
-        CheckStreamTable checkStreamTable = new CheckStreamTable();
 
         Integer amount = countDbChannels.fetch();
 
@@ -167,32 +164,7 @@ public class TwitchController extends Twitch {
 
                         List<String> guildIds = guildsByStream.fetch(stream.getChannel().getName());
 
-                        guildIds.forEach(guildId -> {
-
-                            GetBroadcasterLang getBroadcasterLang = new GetBroadcasterLang();
-                            String lang = getBroadcasterLang.action(guildId);
-
-                            if (lang.equalsIgnoreCase(stream.getChannel().getBroadcasterLanguage()) || "all".equals(lang)) {
-                                if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
-
-                                    List<String> filters = checkFilters(guildId);
-                                    if (filters != null) {
-                                        filters.forEach(filter -> {
-                                            if (stream.getGame().equalsIgnoreCase(filter)) {
-                                                if (!checkStreamTable.check(guildId, platformId, stream.getChannel().getName())) {
-                                                    discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
-                                                }
-                                            }
-                                        });
-                                    } else {
-                                        if (!checkStreamTable.check(guildId, platformId, stream.getChannel().getName())) {
-                                            discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
-                                        }
-                                    }
-                                }
-                            }
-                        });
-                        killConn();
+                        guildIds.forEach(guildId -> onLiveStream(stream, guildId, platformId, new DiscordController()));
                     });
                 }
 
@@ -210,46 +182,26 @@ public class TwitchController extends Twitch {
     }
 
     public final synchronized void checkGame(String gameName, String guildId, Integer platformId) {
-        DiscordController discord = new DiscordController();
+        System.out.println("YAY!!");
 
-        for (int offset = 0; offset <= 1000; offset += 100) {
+        int[] values = new int[]{0, 0};
+        System.out.println(values[1]);
+        do {
             RequestParams params = new RequestParams();
             params.put("limit", 100);
-            params.put("offset", offset);
+            params.put("offset", values[0]);
             params.put("game", gameName);
 
             this.streams().get(params, new StreamsResponseHandler() {
                 @Override
                 public void onSuccess(int i, List<Stream> list) {
-                    for (Stream stream : list) {
+                    System.out.println(list);
+                    if (values[1] == 0) values[1] = i;
 
-                        GetBroadcasterLang getBroadcasterLang = new GetBroadcasterLang();
-                        String lang = getBroadcasterLang.action(guildId);
-
-                        if (lang != null &&
-                                (lang.equalsIgnoreCase(stream.getChannel().getBroadcasterLanguage())
-                                        || "all".equals(lang))) {
-                            if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
-                                List<String> filters = checkFilters(guildId);
-                                if (filters != null) {
-                                    filters.forEach(filter -> {
-                                        if (stream.getGame().equalsIgnoreCase(filter)) {
-                                            CheckStreamTable checkStreamTable = new CheckStreamTable();
-                                            if (!checkStreamTable.check(guildId, platformId, stream.getChannel().getName())) {
-                                                discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
-                                            }
-                                        }
-                                    });
-                                } else {
-                                    CheckStreamTable checkStreamTable = new CheckStreamTable();
-                                    if (!checkStreamTable.check(guildId, platformId, stream.getChannel().getName())) {
-                                        discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
-                                    }
-                                }
-                            }
-                        }
-                        killConn();
-                    }
+                    list.forEach(stream -> {
+                        System.out.println("Inside the lambda");
+                        onLiveStream(stream, guildId, platformId, new DiscordController());
+                    });
                 }
 
                 @Override
@@ -262,6 +214,56 @@ public class TwitchController extends Twitch {
 
                 }
             });
+            values[0] += 100;
+            params.put("offset", values[0]);
+        } while (values[0] < values[1]);
+    }
+
+    /**
+     * Method by Hopewell
+     *
+     * @param guildId Guild Id
+     * @param stream  Stream object
+     * @return boolean
+     */
+    private boolean filterCheck(String guildId, Stream stream) {
+        List<String> filters;
+        if ((filters = checkFilters(guildId)) == null) return true;
+        for (String filter : filters) {
+            if (stream.getGame().equalsIgnoreCase(filter)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Method by Hopewell
+     *
+     * @param stream     Stream object
+     * @param guildId    Guild Id
+     * @param platformId Platform Id
+     * @param discord    Discord Controller object
+     */
+    private synchronized void onLiveStream(Stream stream, String guildId, Integer platformId, DiscordController discord) {
+        GetBroadcasterLang getBroadcasterLang = new GetBroadcasterLang();
+        String lang = getBroadcasterLang.action(guildId);
+
+        if (lang != null &&
+                (lang.equalsIgnoreCase(stream.getChannel().getBroadcasterLanguage()) || "all".equals(lang))) {
+            if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
+                if (filterCheck(guildId, stream)) {
+                    System.out.println("Passed filter check");
+                    CheckStreamTable checkStreamTable = new CheckStreamTable();
+                    if (!checkStreamTable.check(guildId, platformId, stream.getChannel().getName())) {
+                        System.out.println("Not found in the stream table");
+                        discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
+                    }
+                } else {
+                    CheckStreamTable checkStreamTable = new CheckStreamTable();
+                    if (!checkStreamTable.check(guildId, platformId, stream.getChannel().getName())) {
+                        discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
+                    }
+                }
+            }
         }
     }
 }

@@ -7,7 +7,7 @@
 
 ## Supported Platforms
 * Twitch
-* Beam
+* Beam (Currently disabled due to performance concerns)
 
 ## Planned Platforms
 * YouTube
@@ -21,26 +21,9 @@
 
 > Now Live requires the following permissions in order to do what you expect out of it.
 
-#### Read Messages
-Allows the bot to read messages sent in your server so it can recognize and act on commands.
-
-#### Send Messages
-Allows the bot to announce streams and respond to commands.
-
-#### Manage Messages
-Allows the bot edit and delete its announcements when streamers go offline.
-
-#### Embed Links
-Allows the bot to embed links that direct people to the announced stream (also adds the embedded image from the 
-streamer's channel).
-
-#### Read Message History
-Allows the bot to search through previous messages to look for its announcements so it can edit and delete them as 
-needed.
-
-#### Mention Everyone
-Allows the bot to use @everyone, @here, and @<user> mentions when making announcements (depending on how the bot is 
-configured in your server)
+#### Administrator
+Allows the bot to do everything it needs to do (send, delete, edit announcements) and leave it open for future implementations of different features.
+Please don't change the permissions to anything else as the bot will likely not do everything it needs to do.
 
 ### Invite the bot to your server
 To add Now Live to your server, [click here](https://discordapp.com/oauth2/authorize?&client_id=240729664035880961&scope=bot&permissions=8).
@@ -51,38 +34,64 @@ To add Now Live to your server, [click here](https://discordapp.com/oauth2/autho
 > **NOTE:**  All peeps in your server with Administrator and Manage Server permissions are automagically added as managers!
 
 To add additional managers use the following command:
+
 `-nl add manager @<user>`
+
+
 Additionally, you can remove managers by typing:
+
 `-nl remove manmager @<user>`
 
 ### Add Channels to Monitor
 > **NOTE:** Twitch is currently the only supported platform.  I will update this when more platforms are added.
 
 To add channels, type:
+
 `-nl twitch add channel <channel-name>`
+
+
 Example:  `-nl twitch add channel AgueMort`
+
 > **IMPORTANT:** Only add the channel name.  Adding the full URL of the channel will not work.
 
 If you messed up, you can remove the channel using:
+
 `-nl twitch remove channel <channel-name>`
+
 #### Filters
 Filters allow you to only have channels announced when the streamer is playing a specific game.  Filters are global and will apply to all platforms that are implemented in the future!
 
 To add a filter, type:
+
 `-nl add filter <game-name>`
+
+
 To remove filters, type:
+
 `-nl remove filter <game-name>`
 
 ### Add Games, Tags and Teams
 > **NOTE:**  Currently Tags and Teams are still being worked on for Twitch.  I expect to have them ready soon.
 
-To add a game *(this will announce EVERY LIVE STREAM for that game!)*, type:
+To add a game ***(this will announce EVERY LIVE STREAM for that game!)***, type:
+
 `-nl add game <game-name>`
+
+Example:
+
+`-nl add game World of Warcraft`
+
+
 To remove a game, type:
+
 `-nl remove game <game-name>`
 
+Example:
+
+`-nl remove game World of Warcraft`
+
 ### Change Which Discord Channel the Streams Are Announced In (optional)
-> **NOTE:**  You MUST include the hastag (#) in front of the channel name!  This command will not work otherwise!
+> **NOTE:**  You MUST include the hash-tag (#) in front of the channel name!  This command will not work otherwise!
 
 `-nl move #<channel-name>`
 
@@ -92,30 +101,40 @@ To remove a game, type:
 > Add game filters, full games, tags and managers
 
 `-nl add filter <game-name>`
+
 `-nl add game <game-name>`
+
 `-nl add manager @<user>`
+
 `-nl add tag <tag>`
 
 ### Cleanup (Managers only)
-> Changes what happenes when the streamer goes offline
+> Changes what happens when the streamer goes offline
 
 `-nl cleanup none` *(default)*
+
 `-nl cleanup edit`
+
 `-nl cleanup delete`
 
 ### Compact (Managers only)
 > Changes how streams are announces (removes the auto-embedded image)
 
 `-nl compact on`
+
 `-nl compact off` *(default)*
 
 ### List
 > List the specified things from the database for the Discord server
 
 `-nl list channels`
+
 `-nl list games`
+
 `-nl list manager`
+
 `-nl list tag`
+
 `-nl list team`
 
 ### Move (Managers only)
@@ -127,15 +146,20 @@ To remove a game, type:
 > Changes who gets notified with the announcements
 
 `-nl notify none` *(default)*
+
 `-nl notify here`
+
 `-nl notify everyone`
 
 ### Remove (Managers only)
 > Remove game filters, full games, tags and managers
 
 `-nl remove filter <game-name>`
+
 `-nl remove game <game-name>`
+
 `-nl remove manager @<user>`
+
 `-nl remove tag <tag>`
 
 ### Stream Language (managers only)
@@ -177,6 +201,7 @@ language, or the native spelling.  Must be a supported language on Twitch that i
 > Adds and removes Twitch channels to monitor
 
 `-nl twitch add channel <channel-name>`
+
 `-nl twitch remove channel <channel-name>`
 
 ---

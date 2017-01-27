@@ -44,13 +44,13 @@ public class CountDbChannels {
             }
             pStatement = connection.prepareStatement(query);
             result = pStatement.executeQuery();
-            
+
             Integer count = -1;
-            
+
             while (result.next()) {
                 count = result.getInt("count");
             }
-            
+
             return count;
         } catch (SQLException e) {
             e.printStackTrace();

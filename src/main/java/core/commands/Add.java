@@ -36,9 +36,9 @@ import static platform.generic.controller.PlatformController.getPlatformId;
  */
 public class Add implements Command {
 
+    private final String[] options = new String[]{"channel", "filter", "game", "manager", "help"};
     private String option;
     private String argument;
-    private final String[] options = new String[]{"channel", "filter", "game", "manager", "help"};
 
     public static boolean optionCheck(String args, String option) {
         return args.contains(" ") && args.toLowerCase().substring(0, option.length()).equals(option);

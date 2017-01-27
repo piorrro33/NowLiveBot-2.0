@@ -66,38 +66,38 @@ public class DiscordListener extends ListenerAdapter {
             String cntMsg = event.getMessage().getContent();
             String authorID = event.getMessage().getAuthor().getId();
 
-            if (!event.getChannel().getId().equals("250045505659207699")) {
-                // Pre-check all core.commands to ignore JDA written messages.
-                if (cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND) &&
-                        !authorID.equals(event.getJDA().getSelfUser().getId()) &&
-                        !event.getMessage().getAuthor().isBot()) {
+            //if (!event.getChannel().getId().equals("250045505659207699")) {
+            // Pre-check all core.commands to ignore JDA written messages.
+            if (cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND) &&
+                    !authorID.equals(event.getJDA().getSelfUser().getId()) &&
+                    !event.getMessage().getAuthor().isBot()) {
 
-                    // A check to see if the bot was added to the guild while it was offline and to add it
-                    if (!CheckBotInGuild.action(event)) {
-                        AddGuild.action(event);
-                        new DiscordLogger(" :gear: Fixed broken guild.", event);
-                        System.out.printf("[SYSTEM] [%s:%s] [%s:%s] Broken guild fixed.%n",
-                                event.getGuild().getName(),
-                                event.getGuild().getId(),
-                                event.getChannel().getName(),
-                                event.getChannel().getId());
-                    }
-                    try {
-                        new DiscordLogger(" :arrow_left: " + event.getMessage().getContent(), event);
-                        System.out.printf("[COMMAND] [%s:%s] [%s:%s] [%s:%s] %s%n",
-                                event.getGuild().getName(),
-                                event.getGuild().getId(),
-                                event.getChannel().getName(),
-                                event.getChannel().getId(),
-                                event.getAuthor().getName(),
-                                event.getAuthor().getId(),
-                                event.getMessage().getContent());
-                        commandFilter(cntMsg, event);
-                    } catch (PropertyVetoException | IOException | SQLException e) {
-                        e.printStackTrace();
-                    }
+                // A check to see if the bot was added to the guild while it was offline and to add it
+                if (!CheckBotInGuild.action(event)) {
+                    AddGuild.action(event);
+                    new DiscordLogger(" :gear: Fixed broken guild.", event);
+                    System.out.printf("[SYSTEM] [%s:%s] [%s:%s] Broken guild fixed.%n",
+                            event.getGuild().getName(),
+                            event.getGuild().getId(),
+                            event.getChannel().getName(),
+                            event.getChannel().getId());
+                }
+                try {
+                    new DiscordLogger(" :arrow_left: " + event.getMessage().getContent(), event);
+                    System.out.printf("[COMMAND] [%s:%s] [%s:%s] [%s:%s] %s%n",
+                            event.getGuild().getName(),
+                            event.getGuild().getId(),
+                            event.getChannel().getName(),
+                            event.getChannel().getId(),
+                            event.getAuthor().getName(),
+                            event.getAuthor().getId(),
+                            event.getMessage().getContent());
+                    commandFilter(cntMsg, event);
+                } catch (PropertyVetoException | IOException | SQLException e) {
+                    e.printStackTrace();
                 }
             }
+            //}
         }
     }
 

@@ -126,7 +126,7 @@ public class ApiRequest {
                 }
             }
             if (getxRateLimitRemaining() != null &&
-                    getxRateLimitReset()!= null &&
+                    getxRateLimitReset() != null &&
                     Integer.parseInt(getxRateLimitRemaining()) <= 1) {
                 System.out.println("Rate limit remaining: " + getxRateLimitRemaining());
                 System.out.println("Rate limit reset time: " + getxRateLimitReset());

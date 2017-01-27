@@ -34,12 +34,8 @@ public class CheckStreamTable {
     private ResultSet result;
 
     public synchronized boolean check(String guildId, Integer platformId, String channelName) {
-        /*if (checkOldStreamTable(guildId, platformId, channelName)) {
-            AddToStream addToStream = new AddToStream();
-
-        }*/
         try {
-            String query = "SELECT COUNT(*) AS `count` FROM `streams` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
+            String query = "SELECT COUNT(*) AS `count` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
 
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
@@ -55,31 +51,6 @@ public class CheckStreamTable {
                     return false; // Not in the stream table
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(result, pStatement, connection);
-        }
-        return true; // Found in the stream table
-    }
-
-    public synchronized boolean checkOldStreamTable(String guildId, Integer platformId, String channelName) {
-        try {
-            String query = "SELECT `channelName` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
-            if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
-            }
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            pStatement.setInt(2, platformId);
-            pStatement.setString(3, channelName);
-            result = pStatement.executeQuery();
-            while (result.next()) {
-                if (result.getInt("count") == 0) {
-                    return false; // Not in the stream table
-                }
-            }
-
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {

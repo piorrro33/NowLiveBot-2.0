@@ -32,13 +32,13 @@ public class AddToStream {
     private Connection connection = Database.getInstance().getConnection();
     private PreparedStatement pStatement;
 
-    public synchronized void process(String guildId, String textChannelId, Integer platformId, String messageId, Stream stream) {
+    public synchronized void process(String guildId, String textChannelId, Integer platformId, Stream stream) {
         try {
-            String query = "INSERT INTO `streams` " +
-                    "(`guildId`, `textChannelId`, `platformId`, `messageId`, `streamsGame`, `streamsViewers`, " +
+            String query = "INSERT INTO `stream` " +
+                    "(`guildId`, `textChannelId`, `platformId`, `streamsGame`, `streamsViewers`, " +
                     "`channelStatus`, `channelDisplayName`, `channelLanguage`, `channelId`, `channelName`, `channelLogo`," +
                     "`channelProfileBanner`, `channelUrl`, `channelViews`, `channelFollowers`) " +
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
@@ -48,19 +48,18 @@ public class AddToStream {
             pStatement.setString(1, guildId);
             pStatement.setString(2, textChannelId);
             pStatement.setInt(3, platformId);
-            pStatement.setString(4, messageId);
-            pStatement.setString(5, stream.getGame());
-            pStatement.setInt(6, stream.getViewers());
-            pStatement.setString(7, stream.getChannel().getStatus());
-            pStatement.setString(8, stream.getChannel().getDisplayName());
-            pStatement.setString(9, stream.getChannel().getLanguage());
-            pStatement.setLong(10, stream.getChannel().getId());
-            pStatement.setString(11, stream.getChannel().getName());
-            pStatement.setString(12, stream.getChannel().getLogo());
-            pStatement.setString(13, stream.getChannel().getProfileBanner());
-            pStatement.setString(14, stream.getChannel().getUrl());
-            pStatement.setLong(15, stream.getChannel().getViews());
-            pStatement.setLong(16, stream.getChannel().getFollowers());
+            pStatement.setString(4, stream.getGame());
+            pStatement.setInt(5, stream.getViewers());
+            pStatement.setString(6, stream.getChannel().getStatus());
+            pStatement.setString(7, stream.getChannel().getDisplayName());
+            pStatement.setString(8, stream.getChannel().getLanguage());
+            pStatement.setLong(9, stream.getChannel().getId());
+            pStatement.setString(10, stream.getChannel().getName());
+            pStatement.setString(11, stream.getChannel().getLogo());
+            pStatement.setString(12, stream.getChannel().getProfileBanner());
+            pStatement.setString(13, stream.getChannel().getUrl());
+            pStatement.setLong(14, stream.getChannel().getViews());
+            pStatement.setLong(15, stream.getChannel().getFollowers());
             pStatement.executeUpdate();
         } catch (SQLException e) {
             System.out.println("[ERROR] I threw an exception here");

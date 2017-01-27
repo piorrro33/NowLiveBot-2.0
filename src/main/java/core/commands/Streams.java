@@ -62,7 +62,7 @@ public class Streams implements Command {
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
         try {
-            String query = "SELECT COUNT(*) as `rowCount` FROM `stream` WHERE `guildId` = ?";
+            String query = "SELECT COUNT(*) AS `rowCount` FROM `stream` WHERE `guildId` = ?";
 
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();

@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import platform.twitch.controller.TwitchController;
 import util.DiscordLogger;
-import util.PropReader;
 import util.database.Database;
 import util.database.calls.GetOnlineStreams;
 
@@ -45,11 +44,8 @@ import static util.database.Database.cleanUp;
 public class PlatformListener {
     private static Logger logger = LoggerFactory.getLogger("Platform Listener");
     private static Connection clgConnection;
-    private static Connection kcConnection;
     private static PreparedStatement clgStatement;
-    private static PreparedStatement kcStatement;
     private static ResultSet clgResult;
-    private static ResultSet kcResult;
     private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
     public PlatformListener() {
@@ -59,38 +55,6 @@ public class PlatformListener {
         } catch (Exception e) {
             logger.info("******************* Caught an exception while keeping the executors active ", e);
             logger.info("Attempting to restart the executors...");
-        }
-    }
-
-    public static synchronized void killConn() {
-        try {
-            String query = "USE `information_schema`";
-            if (kcConnection == null || kcConnection.isClosed()){
-                kcConnection = Database.getInstance().getConnection();
-            }
-            kcStatement = kcConnection.prepareStatement(query);
-            kcStatement.execute();
-
-            query = "SELECT * FROM `PROCESSLIST`";
-            kcStatement = kcConnection.prepareStatement(query);
-            kcResult = kcStatement.executeQuery();
-            while (kcResult.next()) {
-                if (kcResult.getString("USER").equals(PropReader.getInstance().getProp().getProperty("mysql.username"))) {
-                    if (kcResult.getInt("TIME") > 10) {
-                        Integer processId = kcResult.getInt("ID");
-                        query = "KILL CONNECTION " + processId;
-                        kcStatement = kcConnection.prepareStatement(query);
-                        kcStatement.execute();
-                    }
-                }
-            }
-            query = "USE `" + PropReader.getInstance().getProp().getProperty("mysql.schema") + "`";
-            kcStatement = kcConnection.prepareStatement(query);
-            kcStatement.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(kcResult, kcStatement, kcConnection);
         }
     }
 
@@ -154,7 +118,6 @@ public class PlatformListener {
                     default:
                         break;
                 }
-                killConn();
             }
         } catch (SQLException e) {
             e.printStackTrace();

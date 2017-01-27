@@ -133,7 +133,7 @@ public class TwitchController extends Twitch {
         });
     }
 
-    public synchronized void checkChannel(Integer platformId) {
+    public final synchronized void checkChannel(Integer platformId) {
 
         GetDbChannels dbChannels = new GetDbChannels();
         CountDbChannels countDbChannels = new CountDbChannels();
@@ -182,41 +182,34 @@ public class TwitchController extends Twitch {
     }
 
     public final synchronized void checkGame(String gameName, String guildId, Integer platformId) {
-        System.out.println("YAY!!");
 
         int[] values = new int[]{0, 0};
-        System.out.println(values[1]);
-        do {
-            RequestParams params = new RequestParams();
-            params.put("limit", 100);
-            params.put("offset", values[0]);
-            params.put("game", gameName);
 
-            this.streams().get(params, new StreamsResponseHandler() {
-                @Override
-                public void onSuccess(int i, List<Stream> list) {
-                    System.out.println(list);
-                    if (values[1] == 0) values[1] = i;
+        RequestParams params = new RequestParams();
+        params.put("game", gameName);
+        params.put("limit", 100);
 
-                    list.forEach(stream -> {
-                        System.out.println("Inside the lambda");
-                        onLiveStream(stream, guildId, platformId, new DiscordController());
-                    });
-                }
+        //for (int count = 0; count < values[1]; count += 100) {
+        params.put("offset", 0);
 
-                @Override
-                public void onFailure(int i, String s, String s1) {
+        this.streams().get(params, new StreamsResponseHandler() {
+            @Override
+            public void onSuccess(int i, List<Stream> list) {
+                if (values[1] == 0) values[1] = i;
+                list.forEach(stream -> onLiveStream(stream, guildId, platformId, new DiscordController()));
+            }
 
-                }
+            @Override
+            public void onFailure(int i, String s, String s1) {
 
-                @Override
-                public void onFailure(Throwable throwable) {
+            }
 
-                }
-            });
-            values[0] += 100;
-            params.put("offset", values[0]);
-        } while (values[0] < values[1]);
+            @Override
+            public void onFailure(Throwable throwable) {
+
+            }
+        });
+        // }
     }
 
     /**
@@ -251,10 +244,8 @@ public class TwitchController extends Twitch {
                 (lang.equalsIgnoreCase(stream.getChannel().getBroadcasterLanguage()) || "all".equals(lang))) {
             if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
                 if (filterCheck(guildId, stream)) {
-                    System.out.println("Passed filter check");
                     CheckStreamTable checkStreamTable = new CheckStreamTable();
                     if (!checkStreamTable.check(guildId, platformId, stream.getChannel().getName())) {
-                        System.out.println("Not found in the stream table");
                         discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
                     }
                 } else {

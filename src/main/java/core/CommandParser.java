@@ -33,9 +33,8 @@ import static platform.discord.controller.DiscordController.sendToChannel;
  * @author Veteran Software by Ague Mort
  */
 public class CommandParser {
-    private static Map<String, Command> commands = new HashMap<>();
-
     private final static CheckPerms perms = new CheckPerms();
+    private static Map<String, Command> commands = new HashMap<>();
 
     CommandParser() {
 

@@ -22,46 +22,31 @@ import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
 
-/**
- * Created by keesh on 1/22/2017.
- */
-public class GetGuildFromMessage {
+public class UpdateMessageId {
 
     private Connection connection;
     private PreparedStatement pStatement;
-    private ResultSet result;
-    private String guildId;
 
-    public String getGuildId(String messageId) {
-        doStuff(messageId);
-        return guildId;
-    }
-
-    private synchronized void doStuff(String messageId) {
-        String query = "SELECT `guildId` FROM `stream` WHERE `messageId` = ?";
-
+    public synchronized void executeUpdate(String guildId, Integer platformId, String channelName, String messageId) {
         try {
+            String query = "UPDATE `stream` SET `messageId` = ? WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, messageId);
-            result = pStatement.executeQuery();
-
-            if (result.isBeforeFirst()) {
-                while (result.next()) {
-                    this.guildId = result.getString("guildId");
-                }
-            }
+            pStatement.setString(2, guildId);
+            pStatement.setInt(3, platformId);
+            pStatement.setString(4, channelName);
+            pStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(result, pStatement, connection);
+            cleanUp(pStatement, connection);
         }
     }
 

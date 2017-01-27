@@ -32,23 +32,23 @@ public class DeleteFromStream {
     private PreparedStatement pStatement;
 
     public synchronized void process(String guildId, Integer platformId, String channelName) {
-            try {
-                String query = "DELETE FROM `streams` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
+        try {
+            String query = "DELETE FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
 
-                if (connection == null || connection.isClosed()) {
-                    connection = Database.getInstance().getConnection();
-                }
-                pStatement = connection.prepareStatement(query);
-                pStatement.setString(1, guildId);
-                pStatement.setInt(2, platformId);
-                pStatement.setString(3, channelName);
-
-                pStatement.executeUpdate();
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } finally {
-                cleanUp(pStatement, connection);
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
             }
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            pStatement.setInt(2, platformId);
+            pStatement.setString(3, channelName);
+
+            pStatement.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(pStatement, connection);
+        }
     }
 }

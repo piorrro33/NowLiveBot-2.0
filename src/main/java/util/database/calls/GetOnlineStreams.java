@@ -47,7 +47,7 @@ public class GetOnlineStreams {
 
     private synchronized void onlineStreams(Integer platformId) {
         try {
-            String query = "SELECT * FROM `streams` WHERE `platformId` = ? ORDER BY `messageId` DESC";
+            String query = "SELECT * FROM `stream` WHERE `platformId` = ? ORDER BY `messageId` DESC";
 
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();

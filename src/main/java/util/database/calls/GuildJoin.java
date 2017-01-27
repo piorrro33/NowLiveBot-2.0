@@ -1,3 +1,21 @@
+/*
+ * Copyright 2016-2017 Ague Mort of Veteran Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package util.database.calls;
 
 import core.Main;
@@ -24,7 +42,7 @@ import static util.database.Database.cleanUp;
  */
 public final class GuildJoin {
 
-    public static final Logger logger = LoggerFactory.getLogger("GuildJoin");
+    private static final Logger logger = LoggerFactory.getLogger("GuildJoin");
     private static List<String> tableList = new ArrayList<>();
     private static Connection connection;
     private static PreparedStatement pStatement;
@@ -33,7 +51,6 @@ public final class GuildJoin {
     private static String query;
     private static String guildId;
     private static String defaultChannel;
-    private static List<String> userIds;
     private static Connection remConnection;
     private static PreparedStatement remStatement;
 
@@ -56,8 +73,10 @@ public final class GuildJoin {
         int failed = 0;
         for (String s : tableList) {
             try {
-                connection = Database.getInstance().getConnection();
                 query = "SELECT `guildId` FROM `" + s + "` WHERE `guildId` = ?";
+                if (connection == null || connection.isClosed()) {
+                    connection = Database.getInstance().getConnection();
+                }
                 pStatement = connection.prepareStatement(query);
                 pStatement.setString(1, gEvent.getGuild().getId());
                 resultSet = pStatement.executeQuery();
@@ -68,8 +87,10 @@ public final class GuildJoin {
                         logger.warn("This guild has data remnants in my database!");
                     }
                     try {
-                        remConnection = Database.getInstance().getConnection();
                         query = "DELETE FROM `" + s + "` WHERE `guildId` = ?";
+                        if (remConnection == null || remConnection.isClosed()) {
+                            remConnection = Database.getInstance().getConnection();
+                        }
                         remStatement = remConnection.prepareStatement(query);
                         remStatement.setString(1, guildId);
                         result = remStatement.executeUpdate();
@@ -110,9 +131,11 @@ public final class GuildJoin {
         switch (s) {
             case "guild":
                 try {
-                    connection = Database.getInstance().getConnection();
                     query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `cleanup`, " +
                             "`emoji`) VALUES (?, ?, 0, 0, ?)";
+                    if (connection == null || connection.isClosed()) {
+                        connection = Database.getInstance().getConnection();
+                    }
                     pStatement = connection.prepareStatement(query);
 
                     pStatement.setString(1, guildId);
@@ -157,7 +180,7 @@ public final class GuildJoin {
     }
 
     private static void addManager(GuildJoinEvent gEvent) {
-        userIds = new ArrayList<>();
+        List<String> userIds = new ArrayList<>();
         // Auto add the guild owner as a manager
         userIds.add(gEvent.getGuild().getOwner().getUser().getId());
         // Pull the roles from the guild
@@ -165,7 +188,7 @@ public final class GuildJoin {
             // Check permissions of each role
             if (role.hasPermission(Permission.MANAGE_SERVER) || role.hasPermission(Permission.ADMINISTRATOR)) {
                 // See if the user in question has the correct role
-                for (Member member : gEvent.getGuild().getMembersWithRoles((role))) {
+                for (Member member : gEvent.getGuild().getMembersWithRoles(role)) {
                     // Add them to the list of authorized managers
                     if (!userIds.contains(member.getUser().getId())) {
                         userIds.add(member.getUser().getId());
@@ -175,8 +198,10 @@ public final class GuildJoin {
         }
         for (String users : userIds) {
             try {
-                connection = Database.getInstance().getConnection();
                 query = "INSERT INTO `manager` (`guildId`, `userId`) VALUES (?, ?)";
+                if (connection == null || connection.isClosed()) {
+                    connection = Database.getInstance().getConnection();
+                }
                 pStatement = connection.prepareStatement(query);
 
                 pStatement.setString(1, guildId);
@@ -198,10 +223,12 @@ public final class GuildJoin {
         }
     }
 
-    public static Integer addNotification() {
+    private static Integer addNotification() {
         try {
-            connection = Database.getInstance().getConnection();
             query = "INSERT INTO `notification` (`guildId`, `level`) VALUES (?, ?)";
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
 
             pStatement.setString(1, guildId);

@@ -19,17 +19,15 @@
 package core.commands;
 
 import core.Command;
+import core.Main;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import util.Const;
+import util.DiscordLogger;
 import util.database.calls.Tracker;
-
-import static core.CommandParser.getCommands;
-import static platform.discord.controller.DiscordController.sendToChannel;
 
 /**
  * @author Veteran Software by Ague Mort
  */
-public class Beam implements Command {
+public class Leave implements Command {
     /**
      * Used to determine if appropriate arguments exist
      *
@@ -39,21 +37,7 @@ public class Beam implements Command {
      */
     @Override
     public boolean called(String args, GuildMessageReceivedEvent event) {
-        if (args != null && !"".equals(args)) {
-            if ("help".equals(args)) {
-                return true;
-            }
-            String secondaryCommand = args.substring(0, args.indexOf(' '));
-            switch (secondaryCommand) {
-                case "add":
-                case "remove":
-                    return true;
-                default:
-                    break;
-            }
-        }
-
-        return false;
+        return true;
     }
 
     /**
@@ -64,30 +48,10 @@ public class Beam implements Command {
      */
     @Override
     public void action(String args, GuildMessageReceivedEvent event) {
-        // Grab the secondary command (add and remove)
-        String secondaryCommand = args.substring(0, args.indexOf(' '));
-        // the args to be passed to the secondaryCommand#called()
-        String calledArgs = args.substring(args.indexOf(' ') + 1);
-        // the args to be passed along with the platform identifier
-        String secondaryArgs = "beam~" + args.substring(args.indexOf(' ') + 1);
-        switch (secondaryCommand) {
-            case "add":
-            case "remove":
-                if (calledArgs.startsWith("channel")) {
-                    if (getCommands().get(secondaryCommand).called(calledArgs, event)) {
-                        getCommands().get(secondaryCommand).action(secondaryArgs, event);
-                    }
-                }
-                break;
-            case "help":
-                if (getCommands().get(secondaryCommand).called(calledArgs, event)) {
-                    getCommands().get(secondaryCommand).help(event);
-                }
-                break;
-            default:
-                // This should never be used
-                break;
-        }
+        new DiscordLogger("Attempting to leave the specified guild.", event);
+        Main.getJDA().getGuildById(args).leave().queue(
+                success -> new DiscordLogger("Successfully left the specified guild.", event)
+        );
     }
 
     /**
@@ -97,7 +61,7 @@ public class Beam implements Command {
      */
     @Override
     public void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.BEAM_HELP);
+        // no help text
     }
 
     /**
@@ -108,6 +72,6 @@ public class Beam implements Command {
      */
     @Override
     public void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Beam");
+        new Tracker("Leave");
     }
 }

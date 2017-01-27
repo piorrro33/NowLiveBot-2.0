@@ -1,3 +1,21 @@
+/*
+ * Copyright 2016-2017 Ague Mort of Veteran Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package core.commands;
 
 import core.Command;
@@ -27,7 +45,6 @@ public class Notify implements Command {
 
     private Connection connection;
     private PreparedStatement pStatement;
-    private Integer result;
 
     /**
      * Used to determine if appropriate arguments exist
@@ -39,23 +56,21 @@ public class Notify implements Command {
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
         if (args != null && !"".equals(args)) {
-            switch (args) {
+
+            switch (args.replaceFirst("@", "")) {
                 case "none":
                 case "here":
                 case "everyone":
                 case "help":
                     return true;
                 default:
-                    sendToChannel(event, Const.INCORRECT_ARGS);
                     if (Main.debugMode()) {
                         logger.info(Const.INCORRECT_ARGS);
                     }
                     return false;
             }
-        } else {
-            sendToChannel(event, Const.EMPTY_ARGS);
-            return false;
         }
+        return false;
     }
 
     /**
@@ -116,28 +131,20 @@ public class Notify implements Command {
 
     private boolean update(GuildMessageReceivedEvent event, Integer level) {
         try {
-            String uId;
-
-            if (level == 1) {
-                uId = event.getAuthor().getId();
-            } else {
-                uId = null;
-            }
-
-            connection = Database.getInstance().getConnection();
             String query = "INSERT INTO `notification` (`guildId`, `level`, `userId`) VALUES (?, ?, ?) " +
                     "ON DUPLICATE KEY UPDATE `level` = ?";
-
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
 
             pStatement.setString(1, event.getGuild().getId());
             pStatement.setInt(2, level);
             pStatement.setNull(3, Types.VARCHAR);
             pStatement.setInt(4, level);
-            result = pStatement.executeUpdate();
 
-            if (result > 0) {
-                new DiscordLogger("Notification level changed to " + level, event);
+            if (pStatement.executeUpdate() > 0) {
+                new DiscordLogger(" :telephone: Notification level changed to " + level, event);
                 System.out.printf("[COMMAND-NOTIFY] Guild: %s has set notification level to %s.%n", event.getGuild()
                         .getName(), level);
                 return true;

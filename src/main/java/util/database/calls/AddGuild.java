@@ -1,3 +1,21 @@
+/*
+ * Copyright 2016-2017 Ague Mort of Veteran Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package util.database.calls;
 
 import core.Main;
@@ -22,18 +40,17 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public class AddGuild {
-    public static final Logger logger = LoggerFactory.getLogger("AddGuild");
-    private static List<String> tableList = new ArrayList<>();
-    private static Connection connection = Database.getInstance().getConnection();
+    private static final Logger logger = LoggerFactory.getLogger("AddGuild");
+    private static Connection connection;
     private static PreparedStatement pStatement;
     private static PreparedStatement pStmt;
     private static PreparedStatement pSt;
     private static ResultSet result;
-    private static String query;
     private static Integer resultInt;
 
     public synchronized static void action(GuildMessageReceivedEvent event) {
 
+        List<String> tableList = new ArrayList<>();
         tableList.add("channel");
         tableList.add("game");
         tableList.add("guild");
@@ -46,10 +63,9 @@ public class AddGuild {
 
         for (String s : tableList) {
             try {
-                connection = Database.getInstance().getConnection();
-                query = "SELECT COUNT(*) AS `count` FROM `" + s + "` WHERE `guildId` = ?";
+                String query = "SELECT COUNT(*) AS `count` FROM `" + s + "` WHERE `guildId` = ?";
 
-                if (connection.isClosed()) {
+                if (connection == null || connection.isClosed()) {
                     connection = Database.getInstance().getConnection();
                 }
                 pStatement = connection.prepareStatement(query);
@@ -60,17 +76,22 @@ public class AddGuild {
                     if (result.getInt("count") == 0) {
                         switch (s) {
                             case "guild":
-                                connection = Database.getInstance().getConnection();
-                                if (connection.isClosed()) {
-                                    connection = Database.getInstance().getConnection();
+                                try {
+                                    if (connection == null || connection.isClosed()) {
+                                        connection = Database.getInstance().getConnection();
+                                    }
+                                    String guildQuery = "INSERT INTO `guild` (`guildId`, `channelId`, `isCompact`, `cleanup`," +
+                                            " `emoji`) VALUES (?, ?, 0, 0, ?)";
+                                    pStmt = connection.prepareStatement(guildQuery);
+                                    pStmt.setString(1, event.getGuild().getId());
+                                    pStmt.setString(2, event.getGuild().getId());
+                                    pStmt.setString(3, ":heart_eyes_cat:");
+                                    resultInt = pStmt.executeUpdate();
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                } finally {
+                                    cleanUp(pStmt, connection);
                                 }
-                                String guildQuery = "INSERT INTO `guild` (`guildId`, `channelId`, `isCompact`, `cleanup`," +
-                                        " `emoji`) VALUES (?, ?, 0, 0, ?)";
-                                pStmt = connection.prepareStatement(guildQuery);
-                                pStmt.setString(1, event.getGuild().getId());
-                                pStmt.setString(2, event.getGuild().getId());
-                                pStmt.setString(3, ":heart_eyes_cat:");
-                                resultInt = pStmt.executeUpdate();
                                 break;
                             case "manager":
                                 List<String> userIds = new ArrayList<>();
@@ -93,9 +114,9 @@ public class AddGuild {
 
                                 for (String users : userIds) {
                                     try {
-                                        connection = Database.getInstance().getConnection();
                                         query = "INSERT INTO `manager` (`guildId`, `userId`) VALUES (?, ?)";
-                                        if (connection.isClosed()) {
+
+                                        if (connection == null || connection.isClosed()) {
                                             connection = Database.getInstance().getConnection();
                                         }
                                         pSt = connection.prepareStatement(query);
@@ -121,9 +142,9 @@ public class AddGuild {
                                 break;
                             case "notification":
                                 try {
-                                    connection = Database.getInstance().getConnection();
                                     query = "INSERT INTO `notification` (`guildId`, `level`) VALUES (?, ?)";
-                                    if (connection.isClosed()) {
+
+                                    if (connection == null || connection.isClosed()) {
                                         connection = Database.getInstance().getConnection();
                                     }
                                     pStatement = connection.prepareStatement(query);
@@ -145,7 +166,6 @@ public class AddGuild {
                         }
                     }
                 }
-
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {

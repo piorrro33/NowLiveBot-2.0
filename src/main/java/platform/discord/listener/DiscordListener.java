@@ -1,8 +1,21 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright 2016-2017 Ague Mort of Veteran Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package platform.discord.listener;
 
 import core.CommandParser;
@@ -20,10 +33,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import platform.generic.listener.PlatformListener;
 import util.Const;
 import util.DiscordLogger;
-import util.database.calls.AddGuild;
-import util.database.calls.CheckBotInGuild;
-import util.database.calls.GuildJoin;
-import util.database.calls.GuildLeave;
+import util.database.calls.*;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
@@ -34,9 +44,11 @@ import static platform.discord.controller.DiscordController.sendToPm;
 import static util.database.Database.logger;
 
 /**
- * @author keesh
+ * @author Veteran Software by Ague Mort
  */
 public class DiscordListener extends ListenerAdapter {
+
+    private String buffer = "";
 
     /**
      * Incoming message handler.
@@ -44,39 +56,48 @@ public class DiscordListener extends ListenerAdapter {
      * @param event JDA GuildMessageReceivedEvent
      */
     @Override
-    public final void onGuildMessageReceived(GuildMessageReceivedEvent event) {
+    public synchronized final void onGuildMessageReceived(GuildMessageReceivedEvent event) {
 
-        String cntMsg = event.getMessage().getContent();
-        String authorID = event.getMessage().getAuthor().getId();
+        new Tracker("Messages");
+        if (!event.getMessage().getContent().equals(this.buffer)) {
 
-        // Pre-check all core.commands to ignore JDA written messages.
-        if (cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND) &&
-                !authorID.equals(event.getJDA().getSelfUser().getId()) &&
-                !event.getMessage().getAuthor().isBot()) {
-            // A check to see if the bot was added to the guild while it was offline and to add it
-            if (!CheckBotInGuild.action(event)) {
-                AddGuild.action(event);
-                new DiscordLogger(" :gear: Fixed broken guild.", event);
-                System.out.printf("[SYSTEM] [%s:%s] [%s:%s] Broken guild fixed.%n",
-                        event.getGuild().getName(),
-                        event.getGuild().getId(),
-                        event.getChannel().getName(),
-                        event.getChannel().getId());
+            this.buffer = event.getMessage().getContent();
+
+            String cntMsg = event.getMessage().getContent();
+            String authorID = event.getMessage().getAuthor().getId();
+
+            //if (!event.getChannel().getId().equals("250045505659207699")) {
+            // Pre-check all core.commands to ignore JDA written messages.
+            if (cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND) &&
+                    !authorID.equals(event.getJDA().getSelfUser().getId()) &&
+                    !event.getMessage().getAuthor().isBot()) {
+
+                // A check to see if the bot was added to the guild while it was offline and to add it
+                if (!CheckBotInGuild.action(event)) {
+                    AddGuild.action(event);
+                    new DiscordLogger(" :gear: Fixed broken guild.", event);
+                    System.out.printf("[SYSTEM] [%s:%s] [%s:%s] Broken guild fixed.%n",
+                            event.getGuild().getName(),
+                            event.getGuild().getId(),
+                            event.getChannel().getName(),
+                            event.getChannel().getId());
+                }
+                try {
+                    new DiscordLogger(" :arrow_left: " + event.getMessage().getContent(), event);
+                    System.out.printf("[COMMAND] [%s:%s] [%s:%s] [%s:%s] %s%n",
+                            event.getGuild().getName(),
+                            event.getGuild().getId(),
+                            event.getChannel().getName(),
+                            event.getChannel().getId(),
+                            event.getAuthor().getName(),
+                            event.getAuthor().getId(),
+                            event.getMessage().getContent());
+                    commandFilter(cntMsg, event);
+                } catch (PropertyVetoException | IOException | SQLException e) {
+                    e.printStackTrace();
+                }
             }
-            try {
-                new DiscordLogger(" :arrow_left: " + event.getMessage().getContent(), event);
-                System.out.printf("[COMMAND] [%s:%s] [%s:%s] [%s:%s] %s%n",
-                        event.getGuild().getName(),
-                        event.getGuild().getId(),
-                        event.getChannel().getName(),
-                        event.getChannel().getId(),
-                        event.getAuthor().getName(),
-                        event.getAuthor().getId(),
-                        event.getMessage().getContent());
-                commandFilter(cntMsg, event);
-            } catch (PropertyVetoException | IOException | SQLException e) {
-                e.printStackTrace();
-            }
+            //}
         }
     }
 
@@ -84,7 +105,7 @@ public class DiscordListener extends ListenerAdapter {
     public final void onPrivateMessageReceived(PrivateMessageReceivedEvent event) {
         if (!event.getAuthor().getId().equals(event.getJDA().getSelfUser().getId())) {
             MessageBuilder message = new MessageBuilder();
-            message.appendString(Const.PRIVATE_MESSAGE_REPLY);
+            message.append(Const.PRIVATE_MESSAGE_REPLY);
             sendToPm(event, message.build());
         }
     }
@@ -92,9 +113,12 @@ public class DiscordListener extends ListenerAdapter {
     @Override
     public final void onDisconnect(DisconnectEvent event) {
         try {
-            new DiscordLogger("Discord had been disconnected. Attempting to reconnect...", event);
+            new DiscordLogger(" :broken_heart: Discord had been disconnected. Attempting to reconnect...", event);
             logger.info("Discord has been disconnected.  Reconnecting...");
             Main.main(null);
+            System.out.println("Client Close Frame: " + event.getClientCloseFrame());
+            System.out.println("Service Close Frame: " + event.getServiceCloseFrame());
+            System.out.println("Response Number: " + event.getResponseNumber());
         } catch (PropertyVetoException | IOException | SQLException e) {
             e.printStackTrace();
         }
@@ -102,6 +126,7 @@ public class DiscordListener extends ListenerAdapter {
 
     @Override
     public final void onReconnect(ReconnectedEvent event) {
+        new DiscordLogger(" :heart: Discord's connection has been reconnected!", event);
         logger.info("JDA has been reconnected.");
         new PlatformListener();
     }
@@ -113,6 +138,7 @@ public class DiscordListener extends ListenerAdapter {
 
     @Override
     public final void onResume(ResumedEvent event) {
+        new DiscordLogger(" :heart: Discord's connection has been resumed!", event);
         logger.info("The JDA instance has been resumed.");
         new PlatformListener();
     }

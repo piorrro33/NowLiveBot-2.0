@@ -18,7 +18,6 @@
 
 package util.database.calls;
 
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import util.database.Database;
 
 import java.sql.Connection;
@@ -29,26 +28,34 @@ import java.sql.SQLException;
 import static util.database.Database.cleanUp;
 
 /**
- * @author Veteran Software by Ague Mort
+ * Created by keesh on 1/22/2017.
  */
-public class CheckBotInGuild {
-    private static Connection connection;
-    private static PreparedStatement pStatement;
-    private static ResultSet result;
+public class GetGuildFromMessage {
 
-    public synchronized static Boolean action(GuildMessageReceivedEvent event) {
-        final String query = "SELECT COUNT(*) AS `count` FROM `guild` WHERE `guildId` = ?";
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private ResultSet result;
+    private String guildId;
+
+    public String getGuildId(String messageId) {
+        doStuff(messageId);
+        return guildId;
+    }
+
+    private synchronized void doStuff(String messageId) {
+        String query = "SELECT `guildId` FROM `stream` WHERE `messageId` = ?";
+
         try {
-            if (connection == null ||connection.isClosed()) {
+            if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, event.getGuild().getId());
+            pStatement.setString(1, messageId);
             result = pStatement.executeQuery();
 
-            while (result.next()) {
-                if (result.getInt("count") == 1) {
-                    return true;
+            if (result.isBeforeFirst()) {
+                while (result.next()) {
+                    this.guildId = result.getString("guildId");
                 }
             }
         } catch (SQLException e) {
@@ -56,6 +63,6 @@ public class CheckBotInGuild {
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        return false; // Bot was added while it was offline
     }
+
 }

@@ -1,3 +1,21 @@
+/*
+ * Copyright 2016-2017 Ague Mort of Veteran Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package core.commands;
 
 import core.Command;
@@ -20,11 +38,9 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public class Move implements Command {
-    public static final Logger logger = LoggerFactory.getLogger(Database.class);
+    private static final Logger logger = LoggerFactory.getLogger(Database.class);
     private Connection connection;
     private PreparedStatement pStatement;
-    private String query;
-    private Integer result;
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
@@ -37,10 +53,8 @@ public class Move implements Command {
             } else {
                 return true;
             }
-        } else {
-            sendToChannel(event, Const.EMPTY_ARGS);
-            return false;
         }
+        return false;
     }
 
     @Override
@@ -51,17 +65,16 @@ public class Move implements Command {
 
             if (textChannel.getGuild().getId().equals(event.getGuild().getId())) {
                 try {
-                    query = "UPDATE `guild` SET `channelId` = ? WHERE `guildId` = ?";
-                    connection = Database.getInstance().getConnection();
+                    String query = "UPDATE `guild` SET `channelId` = ? WHERE `guildId` = ?";
+                    if (connection == null || connection.isClosed()) {
+                        connection = Database.getInstance().getConnection();
+                    }
                     pStatement = connection.prepareStatement(query);
-
 
                     pStatement.setString(1, textChannel.getId());
                     pStatement.setString(2, event.getGuild().getId());
 
-                    result = pStatement.executeUpdate();
-
-                    if (result.equals(1)) {
+                    if (pStatement.executeUpdate() == 1) {
                         sendToChannel(event, Const.MOVE_SUCCESS);
                     } else {
                         sendToChannel(event, Const.MOVE_FAILURE);

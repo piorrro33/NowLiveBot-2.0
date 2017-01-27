@@ -1,3 +1,21 @@
+/*
+ * Copyright 2016-2017 Ague Mort of Veteran Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package util.database.calls;
 
 import core.Main;
@@ -6,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import util.PropReader;
 import util.database.Database;
 
-import java.beans.PropertyVetoException;
 import java.io.*;
 import java.sql.*;
 
@@ -23,7 +40,7 @@ public class SchemaCheck extends Database {
     private static PreparedStatement pStatement;
     private static ResultSet resultSet;
 
-    public SchemaCheck() throws PropertyVetoException, IOException, SQLException {
+    public SchemaCheck() {
         super();
     }
 
@@ -33,7 +50,10 @@ public class SchemaCheck extends Database {
 
         try {
             String query = "SELECT `SCHEMA_NAME` FROM `information_schema`.`SCHEMATA` WHERE `SCHEMA_NAME` = ?";
-            connection = Database.getInstance().getConnection();
+
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, MYSQL_SCHEMA);
             resultSet = pStatement.executeQuery();
@@ -56,7 +76,7 @@ public class SchemaCheck extends Database {
         }
     }
 
-    private static void uploadDatabase() throws SQLException {
+    private static void uploadDatabase() {
 
         String line;
         StringBuilder buffer = new StringBuilder();
@@ -78,7 +98,10 @@ public class SchemaCheck extends Database {
         String[] inst = buffer.toString().split(";");
 
         try {
-            connection = Database.getInstance().getConnection();
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
+
             for (String anInst : inst) {
                 if (!anInst.trim().equals("")) {
                     pStatement = connection.prepareStatement(anInst);

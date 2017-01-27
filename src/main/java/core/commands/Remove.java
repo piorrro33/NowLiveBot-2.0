@@ -1,3 +1,21 @@
+/*
+ * Copyright 2016-2017 Ague Mort of Veteran Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package core.commands;
 
 import core.Command;
@@ -31,7 +49,6 @@ public class Remove implements Command {
     private PreparedStatement pStatement;
     private String query;
     private ResultSet result;
-    private Integer platformId;
     private String[] options = new String[]{"channel", "filter", "game", "manager", "help"};
 
     @Override
@@ -54,10 +71,6 @@ public class Remove implements Command {
                     // If the help argument is the only argument that is passed
                     return true;
                 }
-            } else {
-                // If there are no passed arguments
-                sendToChannel(event, Const.EMPTY_ARGS);
-                return false;
             }
         }
         // If all checks fail
@@ -68,17 +81,13 @@ public class Remove implements Command {
     public final void action(String args, GuildMessageReceivedEvent event) {
 
         DiscordController dController = new DiscordController(event);
-
-        String guildId = dController.getGuildId();
+        String guildId = event.getGuild().getId();
+        Integer platformId;
 
         if (getPlatformId(args) > 0) {
             platformId = getPlatformId(args);
         } else {
             platformId = 1;
-        }
-
-        if (platformId > 0) {
-            args = args.substring(args.indexOf("~") + 1);
         }
 
         for (String s : this.options) {
@@ -93,15 +102,17 @@ public class Remove implements Command {
                                 .getMentionedUsersId()))) {
                             if (managerCount(guildId)) { // Make sure there is going to be enough managers
                                 try {
-                                    connection = Database.getInstance().getConnection();
                                     query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `userId` = ?";
 
+                                    if (connection == null || connection.isClosed()) {
+                                        connection = Database.getInstance().getConnection();
+                                    }
                                     pStatement = connection.prepareStatement(query);
 
                                     pStatement.setString(1, guildId);
                                     pStatement.setString(2, dController.getMentionedUsersId());
                                     Integer removeManager = pStatement.executeUpdate();
-                                    removeResponse(event, guildId, removeManager);
+                                    removeResponse(event, removeManager);
                                 } catch (SQLException e) {
                                     logger.error("Error when deleting info from the " + this.option + " table: ", e);
                                 } finally {
@@ -119,14 +130,16 @@ public class Remove implements Command {
                         query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? AND " +
                                 "`name` LIKE ?";
                         try {
-                            connection = Database.getInstance().getConnection();
+                            if (connection == null || connection.isClosed()) {
+                                connection = Database.getInstance().getConnection();
+                            }
                             pStatement = connection.prepareStatement(query);
 
                             pStatement.setString(1, guildId);
                             pStatement.setInt(2, platformId);
                             pStatement.setString(3, "%" + this.argument + "%");
                             Integer removeOther = pStatement.executeUpdate();
-                            removeResponse(event, guildId, removeOther);
+                            removeResponse(event, removeOther);
                         } catch (SQLException e) {
                             logger.error("Error when deleting info from the " + this.option + " table: ", e);
                         } finally {
@@ -138,7 +151,7 @@ public class Remove implements Command {
         }
     }
 
-    private void removeResponse(GuildMessageReceivedEvent event, String guildId, Integer resultVar) {
+    private void removeResponse(GuildMessageReceivedEvent event, Integer resultVar) {
         if (resultVar > 0) {
             sendToChannel(event, "Removed `" + this.option + "` " + this.argument);
         } else {
@@ -159,8 +172,11 @@ public class Remove implements Command {
 
     private boolean managerCount(String guildId) {
         try {
-            connection = Database.getInstance().getConnection();
             query = "SELECT COUNT(*) AS `count` FROM `manager` WHERE `guildId` = ?";
+
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
 
             pStatement.setString(1, guildId);

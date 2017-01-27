@@ -18,44 +18,48 @@
 
 package util.database.calls;
 
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static util.database.Database.cleanUp;
 
-/**
- * @author Veteran Software by Ague Mort
- */
-public class CheckBotInGuild {
-    private static Connection connection;
-    private static PreparedStatement pStatement;
-    private static ResultSet result;
+public class GetGuildsByStream {
 
-    public synchronized static Boolean action(GuildMessageReceivedEvent event) {
-        final String query = "SELECT COUNT(*) AS `count` FROM `guild` WHERE `guildId` = ?";
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private ResultSet result;
+    private List<String> guildIds = new ArrayList<>();
+
+    public synchronized final List<String> fetch(String channelName) {
         try {
-            if (connection == null ||connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+            String query = "SELECT `guildId` FROM `channel` WHERE `name` = ?";
+            if (connection == null || connection.isClosed()) {
+                this.connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, event.getGuild().getId());
+            this.pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, channelName);
             result = pStatement.executeQuery();
 
+            guildIds.clear();
+
             while (result.next()) {
-                if (result.getInt("count") == 1) {
-                    return true;
-                }
+                guildIds.add(result.getString("guildId"));
             }
+
+            return guildIds;
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        return false; // Bot was added while it was offline
+
+        return guildIds;
     }
 }

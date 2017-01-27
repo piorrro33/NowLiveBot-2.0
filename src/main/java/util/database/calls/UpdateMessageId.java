@@ -18,44 +18,36 @@
 
 package util.database.calls;
 
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
 
-/**
- * @author Veteran Software by Ague Mort
- */
-public class CheckBotInGuild {
-    private static Connection connection;
-    private static PreparedStatement pStatement;
-    private static ResultSet result;
+public class UpdateMessageId {
 
-    public synchronized static Boolean action(GuildMessageReceivedEvent event) {
-        final String query = "SELECT COUNT(*) AS `count` FROM `guild` WHERE `guildId` = ?";
+    private Connection connection;
+    private PreparedStatement pStatement;
+
+    public synchronized void executeUpdate(String guildId, Integer platformId, String channelName, String messageId) {
         try {
-            if (connection == null ||connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+            String query = "UPDATE `stream` SET `messageId` = ? WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
+            if (connection == null || connection.isClosed()) {
+                this.connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, event.getGuild().getId());
-            result = pStatement.executeQuery();
-
-            while (result.next()) {
-                if (result.getInt("count") == 1) {
-                    return true;
-                }
-            }
+            this.pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, messageId);
+            pStatement.setString(2, guildId);
+            pStatement.setInt(3, platformId);
+            pStatement.setString(4, channelName);
+            pStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(result, pStatement, connection);
+            cleanUp(pStatement, connection);
         }
-        return false; // Bot was added while it was offline
     }
+
 }

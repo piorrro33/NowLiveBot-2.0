@@ -49,7 +49,7 @@ public class Remove implements Command {
     private PreparedStatement pStatement;
     private String query;
     private ResultSet result;
-    private String[] options = new String[]{"channel", "filter", "game", "manager", "help"};
+    private String[] options = new String[]{"channel", "filter", "game", "manager", "tag", "help"};
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {

@@ -27,7 +27,9 @@ import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
+import net.dv8tion.jda.core.exceptions.ErrorResponseException;
 import net.dv8tion.jda.core.exceptions.PermissionException;
+import net.dv8tion.jda.core.requests.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.Const;
@@ -53,17 +55,14 @@ public class DiscordController {
     private static final Logger logger = LoggerFactory.getLogger("Discord Controller");
     private static Connection connection;
     private static Connection nlConnection;
-    private static Connection mhConnection;
     private static Connection ceConnection;
     private static Connection gciConnection;
     private static Connection ccConnection;
     private static PreparedStatement nlStatement;
-    private static PreparedStatement mhStatement;
     private static PreparedStatement ceStatement;
     private static PreparedStatement gciStatement;
     private static PreparedStatement pStatement;
     private static String query;
-    private static ResultSet mhResult;
     private static ResultSet ceResult;
     private static ResultSet gciResult;
     private static ResultSet nlResult;
@@ -443,10 +442,6 @@ public class DiscordController {
         return message;
     }
 
-    private synchronized Message editMessage(Map<String, String> stream) {
-        return buildEmbed(stream, "edit");
-    }
-
     private synchronized Message buildEmbed(Map<String, String> streamData, String action) {
         Integer platformId = 1;
         String guildId = streamData.get("guildId");
@@ -519,6 +514,26 @@ public class DiscordController {
         return mBuilder.build();
     }
 
+    private synchronized void unknownMessageHandler(Throwable error, Map<String, String> offline) {
+        if (error instanceof ErrorResponseException) {
+            ErrorResponseException ere = (ErrorResponseException) error;
+            if (ere.getErrorResponse() == ErrorResponse.UNKNOWN_MESSAGE) {
+                System.out.printf("Discord reported unknown message. " +
+                        "ChannelId: %s, MessageId: %s.\n", Main.getJDA()
+                        .getTextChannelById(offline.get("textChannelId")).getId(), offline.get("messageId"));
+                DeleteFromStream deleteStream = new DeleteFromStream();
+                deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
+            } else {
+                System.out.println("Got unexpected ErrorResponse!");
+                System.out.println(ere.getErrorResponse().toString() + " " +
+                        ": " + ere.getErrorResponse().getMeaning());
+            }
+        } else {
+            System.err.println("got unexpected error");
+            error.printStackTrace();
+        }
+    }
+
     public synchronized void offlineStream(Map<String, String> offline) {
 
         GetCleanUp clean = new GetCleanUp();
@@ -532,18 +547,20 @@ public class DiscordController {
                     Main.getJDA()
                             .getTextChannelById(offline.get("textChannelId"))
                             .editMessageById(offline.get("messageId"), buildEmbed(offline, "edit"))
-                            .queue(success -> {
+                            .queue(
+                                    success -> {
 
-                                DeleteFromStream deleteStream = new DeleteFromStream();
-                                deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
+                                        DeleteFromStream deleteStream = new DeleteFromStream();
+                                        deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
 
-                                new DiscordLogger(" :pencil2: " + offline.get("channelName") + " has gone " +
-                                        "offline. Message edited in G:" + Main.getJDA().getGuildById(offline.get("guildId")).getName(), null);
-                                System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
-                                                "announcement was successfully edited in: %s%n",
-                                        offline.get("channelName"),
-                                        Main.getJDA().getGuildById(offline.get("guildId")).getName());
-                            });
+                                        new DiscordLogger(" :pencil2: " + offline.get("channelName") + " has gone " +
+                                                "offline. Message edited in G:" + Main.getJDA().getGuildById(offline.get("guildId")).getName(), null);
+                                        System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
+                                                        "announcement was successfully edited in: %s%n",
+                                                offline.get("channelName"),
+                                                Main.getJDA().getGuildById(offline.get("guildId")).getName());
+                                    },
+                                    error -> unknownMessageHandler(error, offline));
                 }
                 break;
             case 2: // Delete
@@ -552,19 +569,20 @@ public class DiscordController {
                     Main.getJDA()
                             .getTextChannelById(offline.get("textChannelId"))
                             .deleteMessageById(offline.get("messageId"))
-                            .queue(success -> {
+                            .queue(
+                                    success -> {
+                                        DeleteFromStream deleteStream = new DeleteFromStream();
+                                        deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
 
-                                DeleteFromStream deleteStream = new DeleteFromStream();
-                                deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
-
-                                new DiscordLogger(" :x: " + offline.get("channelName") + " has gone " +
-                                        "offline. Message deleted in G:" + Main.getJDA
-                                        ().getGuildById(offline.get("guildId")).getName(), null);
-                                System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
-                                                "announcement was successfully deleted in: %s%n",
-                                        offline.get("channelName"),
-                                        Main.getJDA().getGuildById(offline.get("guildId")).getName());
-                            });
+                                        new DiscordLogger(" :x: " + offline.get("channelName") + " has gone " +
+                                                "offline. Message deleted in G:" + Main.getJDA
+                                                ().getGuildById(offline.get("guildId")).getName(), null);
+                                        System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
+                                                        "announcement was successfully deleted in: %s%n",
+                                                offline.get("channelName"),
+                                                Main.getJDA().getGuildById(offline.get("guildId")).getName());
+                                    },
+                                    error -> unknownMessageHandler(error, offline));
                 }
                 break;
             default:

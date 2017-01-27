@@ -36,7 +36,7 @@ import static platform.generic.controller.PlatformController.getPlatformId;
  */
 public class Add implements Command {
 
-    private final String[] options = new String[]{"channel", "filter", "game", "manager", "help"};
+    private final String[] options = new String[]{"channel", "filter", "game", "manager", "tag", "help"};
     private String option;
     private String argument;
 

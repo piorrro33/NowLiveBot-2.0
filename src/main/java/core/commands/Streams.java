@@ -78,7 +78,7 @@ public class Streams implements Command {
         try {
             // Grab the actual results to iterate through
             String query = "SELECT `platform`.`baseLink` AS `link`, `stream`.`channelName` AS `channel`, `platform`.`name` " +
-                    "AS `platform`, `stream`.`gameName` AS `game` " +
+                    "AS `platform`, `stream`.`streamsGame` AS `game` " +
                     "FROM `stream` " +
                     "INNER JOIN `platform` " +
                     "ON `stream`.`platformId` = `platform`.`id` " +

@@ -35,12 +35,6 @@ public class GetCleanUp {
     private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
-    private Integer cleanup;
-
-    public Integer getCleanup(String guildId) {
-        doStuff(guildId);
-        return cleanup;
-    }
 
     public synchronized Boolean action(String guildId, String query) {
         try {
@@ -60,7 +54,7 @@ public class GetCleanUp {
         return false;
     }
 
-    private synchronized void doStuff(String guildId) {
+    public synchronized Integer doStuff(String guildId) {
         String query = "SELECT `cleanup` FROM `guild` WHERE `guildId` = ?";
         try {
             if (connection == null || connection.isClosed()) {
@@ -71,12 +65,13 @@ public class GetCleanUp {
             result = pStatement.executeQuery();
 
             while (result.next()) {
-                this.cleanup = result.getInt("cleanup");
+                return result.getInt("cleanup");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
+        return 0;
     }
 }

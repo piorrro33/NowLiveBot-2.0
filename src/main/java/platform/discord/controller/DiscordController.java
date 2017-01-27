@@ -522,7 +522,7 @@ public class DiscordController {
     public synchronized void offlineStream(Map<String, String> offline) {
 
         GetCleanUp clean = new GetCleanUp();
-        Integer cleanup = clean.getCleanup(offline.get("guildId"));
+        Integer cleanup = clean.doStuff(offline.get("guildId"));
 
         CheckStreamTable checkStreamTable = new CheckStreamTable();
         switch (cleanup) {
@@ -568,8 +568,12 @@ public class DiscordController {
                             });
                 }
                 break;
-            default: // Do nothing
+            default:
+                if (checkStreamTable.check(offline.get("guildId"), Integer.valueOf(offline.get("platformId")), offline.get("channelName"))) {
 
+                    DeleteFromStream deleteStream = new DeleteFromStream();
+                    deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
+                }
                 break;
         }
     }

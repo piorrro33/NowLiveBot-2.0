@@ -226,7 +226,7 @@ public class TwitchController extends Twitch {
      * @param stream  Stream object
      * @return boolean
      */
-    private boolean filterCheck(String guildId, Stream stream) {
+    private synchronized boolean filterCheck(String guildId, Stream stream) {
         List<String> filters = checkFilters(guildId);
         if (filters == null) {
             return true;

@@ -33,7 +33,7 @@ public class GetOnlineStreams {
 
 
     private HashMap<String, Map<String, String>> onlineStreams = new HashMap<>();
-    private Connection connection = Database.getInstance().getConnection();
+    private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
 

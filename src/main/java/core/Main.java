@@ -137,9 +137,9 @@ public class Main {
                     tableList.add("team");
 
                     try {
-                        connection = Database.getInstance().getConnection();
                         for (String table : tableList) {
                             query = "DELETE FROM `" + table + "` WHERE `guildId` = ?";
+
                             if (connection == null || connection.isClosed()) {
                                 connection = Database.getInstance().getConnection();
                             }

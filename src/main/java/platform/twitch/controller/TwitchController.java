@@ -30,7 +30,10 @@ import org.slf4j.LoggerFactory;
 import platform.discord.controller.DiscordController;
 import util.PropReader;
 import util.database.Database;
-import util.database.calls.*;
+import util.database.calls.CountDbChannels;
+import util.database.calls.GetBroadcasterLang;
+import util.database.calls.GetDbChannels;
+import util.database.calls.GetGuildsByStream;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -62,7 +65,9 @@ public class TwitchController extends Twitch {
         try {
             String query = "SELECT * FROM `filter` WHERE `guildId` = ?";
 
-            connection = Database.getInstance().getConnection();
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
             result = pStatement.executeQuery();
@@ -195,7 +200,9 @@ public class TwitchController extends Twitch {
         this.streams().get(params, new StreamsResponseHandler() {
             @Override
             public void onSuccess(int i, List<Stream> list) {
-                if (values[1] == 0) values[1] = i;
+                if (values[1] == 0) {
+                    values[1] = i;
+                }
                 list.forEach(stream -> onLiveStream(stream, guildId, platformId, new DiscordController()));
             }
 
@@ -220,10 +227,14 @@ public class TwitchController extends Twitch {
      * @return boolean
      */
     private boolean filterCheck(String guildId, Stream stream) {
-        List<String> filters;
-        if ((filters = checkFilters(guildId)) == null) return true;
+        List<String> filters = checkFilters(guildId);
+        if (filters == null) {
+            return true;
+        }
         for (String filter : filters) {
-            if (stream.getGame().equalsIgnoreCase(filter)) return true;
+            if (stream.getGame().equalsIgnoreCase(filter)) {
+                return true;
+            }
         }
         return false;
     }
@@ -244,15 +255,9 @@ public class TwitchController extends Twitch {
                 (lang.equalsIgnoreCase(stream.getChannel().getBroadcasterLanguage()) || "all".equals(lang))) {
             if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
                 if (filterCheck(guildId, stream)) {
-                    CheckStreamTable checkStreamTable = new CheckStreamTable();
-                    if (!checkStreamTable.check(guildId, platformId, stream.getChannel().getName())) {
-                        discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
-                    }
+                    discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
                 } else {
-                    CheckStreamTable checkStreamTable = new CheckStreamTable();
-                    if (!checkStreamTable.check(guildId, platformId, stream.getChannel().getName())) {
-                        discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
-                    }
+                    discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
                 }
             }
         }

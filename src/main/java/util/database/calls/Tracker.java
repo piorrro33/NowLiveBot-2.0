@@ -45,7 +45,10 @@ public final class Tracker {
         try {
             String query = "INSERT INTO `commandtracker` (`commandName`, `commandCount`) VALUES (?, 1) " +
                     "ON DUPLICATE KEY UPDATE `commandCount` = `commandCount` + 1";
-            connection = Database.getInstance().getConnection();
+
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
 
             pStatement.setString(1, command);

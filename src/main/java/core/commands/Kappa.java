@@ -40,7 +40,7 @@ import static util.database.Database.cleanUp;
  */
 public class Kappa implements Command {
 
-    private Connection connection = Database.getInstance().getConnection();
+    private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
 

@@ -32,14 +32,14 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public class CheckBotInGuild {
-    private static Connection connection = Database.getInstance().getConnection();
+    private static Connection connection;
     private static PreparedStatement pStatement;
     private static ResultSet result;
 
     public synchronized static Boolean action(GuildMessageReceivedEvent event) {
         final String query = "SELECT COUNT(*) AS `count` FROM `guild` WHERE `guildId` = ?";
         try {
-            if (connection.isClosed()) {
+            if (connection == null ||connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);

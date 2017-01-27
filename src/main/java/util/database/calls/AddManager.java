@@ -31,13 +31,13 @@ import static util.database.Database.cleanUp;
  */
 public class AddManager {
 
-    private static Connection connection = Database.getInstance().getConnection();
+    private static Connection connection;
     private static PreparedStatement pStatement;
 
     public synchronized static Boolean action(String tableName, String guildId, String userId) {
         final String query = "INSERT INTO `" + tableName + "` (`id`, `guildId`, `userId`) VALUES (null, ?, ?)";
         try {
-            if (connection.isClosed()) {
+            if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);

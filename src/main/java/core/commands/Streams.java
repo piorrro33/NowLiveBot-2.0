@@ -49,14 +49,8 @@ public class Streams implements Command {
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
-        if (args != null && !args.isEmpty()) {
-            if ("help".equals(args)) { // If the help argument is the only argument that is passed
-                return true;
-            } else {
-                return false;
-            }
-        }
-        return true;
+        // If the help argument is the only argument that is passed
+        return !(args != null && !args.isEmpty()) || "help".equals(args);
     }
 
     @Override
@@ -65,13 +59,13 @@ public class Streams implements Command {
             String query = "SELECT COUNT(*) AS `rowCount` FROM `stream` WHERE `guildId` = ?";
 
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
 
-            pStatement = connection.prepareStatement(query);
+            this.pStatement = connection.prepareStatement(query);
 
             pStatement.setString(1, event.getGuild().getId());
-            result = pStatement.executeQuery();
+            this.result = pStatement.executeQuery();
 
             while (result.next()) {
                 rowCount = result.getInt("rowCount");
@@ -89,13 +83,14 @@ public class Streams implements Command {
                     "INNER JOIN `platform` " +
                     "ON `stream`.`platformId` = `platform`.`id` " +
                     "WHERE `stream`.`guildId` = ? ORDER BY `stream`.`channelName`";
+
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
+            this.pStatement = connection.prepareStatement(query);
 
             pStatement.setString(1, event.getGuild().getId());
-            result = pStatement.executeQuery();
+            this.result = pStatement.executeQuery();
 
             if (rowCount < 1) { // If no streams are online
                 MessageBuilder noneOnline = new MessageBuilder();

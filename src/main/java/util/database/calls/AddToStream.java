@@ -29,7 +29,7 @@ import static util.database.Database.cleanUp;
 
 public class AddToStream {
 
-    private Connection connection = Database.getInstance().getConnection();
+    private Connection connection;
     private PreparedStatement pStatement;
 
     public synchronized void process(String guildId, String textChannelId, Integer platformId, Stream stream) {

@@ -136,6 +136,9 @@ public class Add implements Command {
                                 } else {
                                     sendToChannel(event, Const.BEAM_USER_NO_EXIST);
                                 }
+                                break;
+                            default:
+                                break;
                         }
                         break;
                     default:

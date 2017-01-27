@@ -34,7 +34,7 @@ import static util.database.Database.cleanUp;
  */
 public class GetDbChannels {
 
-    private Connection connection = Database.getInstance().getConnection();
+    private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
 
@@ -42,10 +42,10 @@ public class GetDbChannels {
         String query = "SELECT `name` FROM `channel` ORDER BY `timeAdded` ASC LIMIT " + start + ",100";
         try {
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
-            result = pStatement.executeQuery();
+            this.pStatement = connection.prepareStatement(query);
+            this.result = pStatement.executeQuery();
 
             List<String> channels = new ArrayList<>();
 

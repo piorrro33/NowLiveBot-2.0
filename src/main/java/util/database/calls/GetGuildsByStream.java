@@ -31,7 +31,7 @@ import static util.database.Database.cleanUp;
 
 public class GetGuildsByStream {
 
-    private Connection connection = Database.getInstance().getConnection();
+    private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
     private List<String> guildIds = new ArrayList<>();

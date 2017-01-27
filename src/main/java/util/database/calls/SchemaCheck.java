@@ -50,7 +50,10 @@ public class SchemaCheck extends Database {
 
         try {
             String query = "SELECT `SCHEMA_NAME` FROM `information_schema`.`SCHEMATA` WHERE `SCHEMA_NAME` = ?";
-            connection = Database.getInstance().getConnection();
+
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, MYSQL_SCHEMA);
             resultSet = pStatement.executeQuery();
@@ -95,7 +98,10 @@ public class SchemaCheck extends Database {
         String[] inst = buffer.toString().split(";");
 
         try {
-            connection = Database.getInstance().getConnection();
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
+
             for (String anInst : inst) {
                 if (!anInst.trim().equals("")) {
                     pStatement = connection.prepareStatement(anInst);

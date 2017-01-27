@@ -42,7 +42,7 @@ public class CheckPerms {
 
         try {
             String query = "SELECT `userId` FROM `manager` WHERE `guildId` = ?";
-            connection = Database.getInstance().getConnection();
+
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
@@ -69,7 +69,7 @@ public class CheckPerms {
 
         try {
             String query = "SELECT `userId` FROM `admins`";
-            connection = Database.getInstance().getConnection();
+
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }

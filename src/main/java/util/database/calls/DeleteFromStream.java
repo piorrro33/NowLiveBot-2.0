@@ -28,7 +28,7 @@ import static util.database.Database.cleanUp;
 
 public class DeleteFromStream {
 
-    private Connection connection = Database.getInstance().getConnection();
+    private Connection connection;
     private PreparedStatement pStatement;
 
     public synchronized void process(String guildId, Integer platformId, String channelName) {
@@ -36,9 +36,9 @@ public class DeleteFromStream {
             String query = "DELETE FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
 
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
+            this.pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
             pStatement.setInt(2, platformId);
             pStatement.setString(3, channelName);

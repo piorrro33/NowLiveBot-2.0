@@ -32,7 +32,7 @@ import static util.database.Database.cleanUp;
  */
 public class GetCleanUp {
 
-    private Connection connection = Database.getInstance().getConnection();
+    private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
     private Integer cleanup;
@@ -44,7 +44,7 @@ public class GetCleanUp {
 
     public synchronized Boolean action(String guildId, String query) {
         try {
-            if (connection.isClosed()) {
+            if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);

@@ -31,14 +31,14 @@ import static util.database.Database.cleanUp;
  */
 public class AddOther {
 
-    private static Connection connection = Database.getInstance().getConnection();
+    private static Connection connection;
     private static PreparedStatement pStatement;
 
     public synchronized static Boolean action(String tableName, String guildId, int platformId, String name) {
         final String query = "INSERT INTO `" + tableName + "` (`id`, `guildId`, `platformId`, `name`) VALUES (null, " +
                 "?, ?, ?)";
         try {
-            if (connection.isClosed()) {
+            if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);

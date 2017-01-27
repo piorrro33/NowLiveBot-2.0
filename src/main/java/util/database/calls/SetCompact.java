@@ -31,14 +31,14 @@ import static util.database.Database.cleanUp;
  */
 public class SetCompact {
 
-    private static Connection connection = Database.getInstance().getConnection();
+    private static Connection connection;
     private static PreparedStatement pStatement;
 
     public synchronized static Boolean action(String guildId, int isCompact) {
         try {
             String query = "UPDATE `guild` SET `isCompact` = ? WHERE `guildId` = ?";
 
-            if (connection.isClosed()) {
+            if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
 

@@ -42,7 +42,11 @@ public class PlatformController {
     public static String getAnnounceChannel(String guildId, Integer platformId, String channelName) {
         try {
             String query = "SELECT `channelId` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
-            connection = Database.getInstance().getConnection();
+
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
+
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
             pStatement.setInt(2, platformId);
@@ -63,8 +67,12 @@ public class PlatformController {
     public static synchronized String getMessageId(String guildId, Integer platformId, String channelName) {
 
         try {
-            gmiConnection = Database.getInstance().getConnection();
             String query = "SELECT `messageId` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
+
+            if (gmiConnection == null || gmiConnection.isClosed()) {
+                gmiConnection = Database.getInstance().getConnection();
+            }
+
             gmiStatement = gmiConnection.prepareStatement(query);
             gmiStatement.setString(1, guildId);
             gmiStatement.setInt(2, platformId);

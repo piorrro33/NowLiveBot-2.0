@@ -32,14 +32,14 @@ import static util.database.Database.cleanUp;
  */
 public class CountManagers {
 
-    private static Connection connection = Database.getInstance().getConnection();
+    private static Connection connection;
     private static PreparedStatement pStatement;
     private static ResultSet result;
 
     public synchronized static Boolean action(String tableName, String guildId, String userId) {
         final String query = "SELECT COUNT(*) AS `count` FROM `" + tableName + "` WHERE `guildId` = ? AND `userId` = ?";
         try {
-            if (connection.isClosed()) {
+            if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);

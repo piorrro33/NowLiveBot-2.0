@@ -41,7 +41,7 @@ import static util.database.Database.cleanUp;
  */
 public class AddGuild {
     private static final Logger logger = LoggerFactory.getLogger("AddGuild");
-    private static Connection connection = Database.getInstance().getConnection();
+    private static Connection connection;
     private static PreparedStatement pStatement;
     private static PreparedStatement pStmt;
     private static PreparedStatement pSt;
@@ -64,7 +64,6 @@ public class AddGuild {
         for (String s : tableList) {
             try {
                 String query = "SELECT COUNT(*) AS `count` FROM `" + s + "` WHERE `guildId` = ?";
-                connection = Database.getInstance().getConnection();
 
                 if (connection == null || connection.isClosed()) {
                     connection = Database.getInstance().getConnection();
@@ -78,7 +77,6 @@ public class AddGuild {
                         switch (s) {
                             case "guild":
                                 try {
-                                    connection = Database.getInstance().getConnection();
                                     if (connection == null || connection.isClosed()) {
                                         connection = Database.getInstance().getConnection();
                                     }
@@ -116,8 +114,8 @@ public class AddGuild {
 
                                 for (String users : userIds) {
                                     try {
-                                        connection = Database.getInstance().getConnection();
                                         query = "INSERT INTO `manager` (`guildId`, `userId`) VALUES (?, ?)";
+
                                         if (connection == null || connection.isClosed()) {
                                             connection = Database.getInstance().getConnection();
                                         }
@@ -144,8 +142,8 @@ public class AddGuild {
                                 break;
                             case "notification":
                                 try {
-                                    connection = Database.getInstance().getConnection();
                                     query = "INSERT INTO `notification` (`guildId`, `level`) VALUES (?, ?)";
+
                                     if (connection == null || connection.isClosed()) {
                                         connection = Database.getInstance().getConnection();
                                     }

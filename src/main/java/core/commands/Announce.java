@@ -44,17 +44,13 @@ public class Announce implements Command {
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
-        if (args != null && !args.isEmpty()) {
-            return true;
-        }
+        return args != null && !args.isEmpty();
 
-        return false;
     }
 
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
         try {
-            connection = Database.getInstance().getConnection();
             String query = "SELECT `guildId` FROM `guild` ORDER BY `guildId` ASC";
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();

@@ -29,7 +29,7 @@ import static util.database.Database.cleanUp;
 
 public class CheckStreamTable {
 
-    private Connection connection = Database.getInstance().getConnection();
+    private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
 
@@ -38,13 +38,13 @@ public class CheckStreamTable {
             String query = "SELECT COUNT(*) AS `count` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
 
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
+            this.pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
             pStatement.setInt(2, platformId);
             pStatement.setString(3, channelName);
-            result = pStatement.executeQuery();
+            this.result = pStatement.executeQuery();
             while (result.next()) {
                 Integer count = result.getInt("count");
                 if (count.equals(0)) {

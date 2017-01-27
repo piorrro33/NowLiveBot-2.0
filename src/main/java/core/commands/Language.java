@@ -101,6 +101,8 @@ public class Language implements Command {
                 case "all":
                 case "help":
                     return true;
+                default:
+                    return false;
             }
         } else if ("help".equals(args)) {
             return true;
@@ -222,8 +224,6 @@ public class Language implements Command {
             }
             try {
                 String query = "UPDATE `guild` SET `broadcasterLang` = ? WHERE `guildId` = ?";
-
-                connection = Database.getInstance().getConnection();
 
                 if (connection == null || connection.isClosed()) {
                     connection = Database.getInstance().getConnection();

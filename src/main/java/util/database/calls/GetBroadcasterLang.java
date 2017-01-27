@@ -31,14 +31,14 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public class GetBroadcasterLang {
-    private Connection connection = Database.getInstance().getConnection();
+    private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
 
     public synchronized String action(String guildId) {
         try {
             String query = "SELECT `broadcasterLang` FROM `guild` WHERE `guildId` = ?";
-            if (connection.isClosed()) {
+            if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
             this.pStatement = connection.prepareStatement(query);

@@ -35,9 +35,9 @@ public class UpdateMessageId {
         try {
             String query = "UPDATE `stream` SET `messageId` = ? WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
+            this.pStatement = connection.prepareStatement(query);
             pStatement.setString(1, messageId);
             pStatement.setString(2, guildId);
             pStatement.setInt(3, platformId);

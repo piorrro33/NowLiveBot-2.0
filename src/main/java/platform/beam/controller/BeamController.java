@@ -45,7 +45,6 @@ public class BeamController {
         try {
             String query = "SELECT * FROM `filter` WHERE `guildId` = ?";
 
-            connection = Database.getInstance().getConnection();
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }

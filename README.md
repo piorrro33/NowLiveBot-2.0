@@ -106,7 +106,7 @@ Example:
 
 `-nl add manager @<user>`
 
-`-nl add tag <tag>`
+`-nl add tag <tag>` *tags coming soon!*
 
 ### Cleanup (Managers only)
 > Changes what happens when the streamer goes offline
@@ -131,11 +131,13 @@ Example:
 
 `-nl list games`
 
+`-nl list filter`
+
 `-nl list manager`
 
-`-nl list tag`
+`-nl list tag` *coming soon!*
 
-`-nl list team`
+`-nl list team` *coming soon!*
 
 ### Move (Managers only)
 > Change which channel streams are announced in
@@ -160,7 +162,7 @@ Example:
 
 `-nl remove manager @<user>`
 
-`-nl remove tag <tag>`
+`-nl remove tag <tag>` *tags coming soon!*
 
 ### Stream Language (managers only)
 > **IMPORTANT:**  This only affects Twitch streams.
@@ -211,4 +213,4 @@ language, or the native spelling.  Must be a supported language on Twitch that i
 
 ---
 ## Problems?
-If you are having issues with the bot, please do not open an issue here.  Go to the Discord listed above and let the developers know first.  If it's a big enough issue, we'll tell you to open an issue here.  If any issues are opened up here without discussing them first in Discord, they will be automatically closed and not actioned upon.
+If you are having issues with the bot, please do not open an issue here.  Go to [the Now Live Trello Board](https://trello.com/invite/b/kcWshbIU/a94c145e598be9f8dd734197ba07288e/now-live-bot) and let the developers know first.  If it's a big enough issue, we'll tell you to open an issue here.  If any issues are opened up here without bringing it up on Trello first, they will be automatically closed and not actioned upon.

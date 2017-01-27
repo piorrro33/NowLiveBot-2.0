@@ -256,8 +256,6 @@ public class TwitchController extends Twitch {
             if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
                 if (filterCheck(guildId, stream)) {
                     discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
-                } else {
-                    discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
                 }
             }
         }

@@ -34,8 +34,10 @@ public class AddManager {
     private static Connection connection;
     private static PreparedStatement pStatement;
 
-    public synchronized static Boolean action(String tableName, String guildId, String userId) {
-        final String query = "INSERT INTO `" + tableName + "` (`id`, `guildId`, `userId`) VALUES (null, ?, ?)";
+    public synchronized static Boolean action(String guildId, String userId) {
+
+        final String query = "INSERT INTO `manager` (`id`, `guildId`, `userId`) VALUES (null, ?, ?)";
+
         try {
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();

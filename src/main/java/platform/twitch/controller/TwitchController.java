@@ -164,12 +164,12 @@ public class TwitchController extends Twitch {
             this.streams().get(params, new StreamsResponseHandler() {
                 @Override
                 public void onSuccess(int i, List<Stream> list) {
-
+                    DiscordController discord = new DiscordController();
                     list.forEach(stream -> {
 
                         List<String> guildIds = guildsByStream.fetch(stream.getChannel().getName());
 
-                        guildIds.forEach(guildId -> onLiveStream(stream, guildId, platformId, new DiscordController()));
+                        guildIds.forEach(guildId -> onLiveStream(stream, guildId, platformId, discord));
                     });
                 }
 
@@ -200,10 +200,11 @@ public class TwitchController extends Twitch {
         this.streams().get(params, new StreamsResponseHandler() {
             @Override
             public void onSuccess(int i, List<Stream> list) {
+                DiscordController discord = new DiscordController();
                 if (values[1] == 0) {
                     values[1] = i;
                 }
-                list.forEach(stream -> onLiveStream(stream, guildId, platformId, new DiscordController()));
+                list.forEach(stream -> onLiveStream(stream, guildId, platformId, discord));
             }
 
             @Override

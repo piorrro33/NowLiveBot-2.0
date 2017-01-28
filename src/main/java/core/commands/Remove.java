@@ -48,6 +48,7 @@ public class Remove implements Command {
     private Connection connection;
     private PreparedStatement pStatement;
     private String query;
+    private String defaultQuery;
     private ResultSet result;
     private String[] options = new String[]{"channel", "filter", "game", "manager", "tag", "help"};
 
@@ -102,7 +103,7 @@ public class Remove implements Command {
                                 .getMentionedUsersId()))) {
                             if (managerCount(guildId)) { // Make sure there is going to be enough managers
                                 try {
-                                    query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `userId` = ?";
+                                    query = "DELETE FROM `manager` WHERE `guildId` = ? AND `userId` = ?";
 
                                     if (connection == null || connection.isClosed()) {
                                         connection = Database.getInstance().getConnection();
@@ -127,17 +128,32 @@ public class Remove implements Command {
                         break;
 
                     default:
-                        query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? AND " +
-                                "`name` LIKE ?";
+                        switch (option) {
+                            case "channel":
+                                defaultQuery = "DELETE FROM `channel` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                                break;
+                            case "filter":
+                                defaultQuery = "DELETE FROM `filter` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                                break;
+                            case "game":
+                                defaultQuery = "DELETE FROM `game` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                                break;
+                            case "tag":
+                                defaultQuery = "DELETE FROM `tag` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                                break;
+                            default:
+                                break;
+                        }
+
                         try {
                             if (connection == null || connection.isClosed()) {
                                 connection = Database.getInstance().getConnection();
                             }
-                            pStatement = connection.prepareStatement(query);
+                            pStatement = connection.prepareStatement(defaultQuery);
 
                             pStatement.setString(1, guildId);
                             pStatement.setInt(2, platformId);
-                            pStatement.setString(3, "%" + this.argument + "%");
+                            pStatement.setString(3, argument);
                             Integer removeOther = pStatement.executeUpdate();
                             removeResponse(event, removeOther);
                         } catch (SQLException e) {

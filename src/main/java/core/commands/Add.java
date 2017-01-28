@@ -105,7 +105,7 @@ public class Add implements Command {
                                 if (!event.getJDA().getUserById(userId).isBot()) {
                                     if (!CountManagers.action(this.option, guildId, userId)) {
 
-                                        returnStatement(AddManager.action(this.option, guildId, userId), event);
+                                        returnStatement(AddManager.action(guildId, userId), event);
                                     } else {
                                         sendToChannel(event, Const.ALREADY_MANAGER);
                                     }

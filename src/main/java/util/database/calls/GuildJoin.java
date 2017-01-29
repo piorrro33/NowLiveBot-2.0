@@ -32,8 +32,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
@@ -43,7 +43,7 @@ import static util.database.Database.cleanUp;
 public final class GuildJoin {
 
     private static final Logger logger = LoggerFactory.getLogger("GuildJoin");
-    private static List<String> tableList = new ArrayList<>();
+    private static List<String> tableList = new CopyOnWriteArrayList<>();
     private static Connection connection;
     private static PreparedStatement pStatement;
     private static Integer result = 0;
@@ -180,7 +180,7 @@ public final class GuildJoin {
     }
 
     private static void addManager(GuildJoinEvent gEvent) {
-        List<String> userIds = new ArrayList<>();
+        List<String> userIds = new CopyOnWriteArrayList<>();
         // Auto add the guild owner as a manager
         userIds.add(gEvent.getGuild().getOwner().getUser().getId());
         // Pull the roles from the guild

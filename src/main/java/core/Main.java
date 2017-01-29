@@ -39,8 +39,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
@@ -57,7 +57,7 @@ public class Main {
     private static Connection connection;
     private static PreparedStatement pStatement;
     private static ResultSet result;
-    private static List<String> tableList = new ArrayList<>();
+    private static List<String> tableList = new CopyOnWriteArrayList<>();
 
     public static void setJda(JDA jda) {
         Main.jda = jda;

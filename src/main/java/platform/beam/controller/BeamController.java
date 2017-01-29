@@ -26,8 +26,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
@@ -52,7 +52,7 @@ public class BeamController {
             pStatement.setString(1, guildId);
             result = pStatement.executeQuery();
 
-            List<String> filters = new ArrayList<>();
+            List<String> filters = new CopyOnWriteArrayList<>();
 
             if (result.isBeforeFirst()) {
                 while (result.next()) {

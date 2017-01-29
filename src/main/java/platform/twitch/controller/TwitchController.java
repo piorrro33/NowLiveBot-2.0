@@ -39,10 +39,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static platform.discord.controller.DiscordController.getChannelId;
 import static util.database.Database.cleanUp;
@@ -72,7 +72,7 @@ public class TwitchController extends Twitch {
             pStatement.setString(1, guildId);
             result = pStatement.executeQuery();
 
-            List<String> filters = new ArrayList<>();
+            List<String> filters = new CopyOnWriteArrayList<>();
 
             if (result.isBeforeFirst()) {
                 while (result.next()) {

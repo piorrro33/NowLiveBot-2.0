@@ -31,8 +31,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
@@ -50,7 +50,7 @@ public class AddGuild {
 
     public synchronized static void action(GuildMessageReceivedEvent event) {
 
-        List<String> tableList = new ArrayList<>();
+        List<String> tableList = new CopyOnWriteArrayList<>();
         tableList.add("channel");
         tableList.add("game");
         tableList.add("guild");
@@ -94,7 +94,7 @@ public class AddGuild {
                                 }
                                 break;
                             case "manager":
-                                List<String> userIds = new ArrayList<>();
+                                List<String> userIds = new CopyOnWriteArrayList<>();
                                 // Auto add the guild owner as a manager
                                 userIds.add(Main.getJDA().getGuildById(event.getGuild().getId()).getOwner().getUser().getId());
                                 // Pull the roles from the guild

@@ -48,7 +48,7 @@ public class List implements Command {
     private String option;
     private String query;
     private String guildId;
-    private String[] options = new String[]{"channel", "filter", "game", "manager", "streamLang", "tag", "team", "help"};
+    private String[] options = new String[]{"channel", "filter", "game", "manager", "streamLang", "tag", "team", "help", "setting"};
 
     private Message createNotificationMessage(MessageBuilder message, GuildMessageReceivedEvent event) {
         try {
@@ -105,6 +105,7 @@ public class List implements Command {
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
         for (String s : this.options) { // Iterate through the available options for this command
+            if(args.endsWith("s")) args = args.substring(0,args.length()-1);
             if (args != null && !args.isEmpty()) {
                 if (args.equals(s)) {
                     // Sets the class scope variables that will be used by action()
@@ -159,11 +160,102 @@ public class List implements Command {
                 query = "SELECT `name`, `platformId` FROM `team` WHERE `guildId` = ? " +
                         "ORDER BY `platformId` ASC, `name` ASC";
                 break;
+            case "setting":
+                sendToPm(event,getSettings(message));
+                return;
             default:
                 break;
         }
 
         sendToPm(event, createNotificationMessage(message, event));
+    }
+
+    private String getLanguage(String name) {
+        switch(name) {
+            case "en" :
+                return "English";
+            case "da" :
+                return "Danish/Dansk";
+            case "de" :
+                return "German/Deutsch";
+            case "es" :
+                return "Spanish/Español";
+            case "fr" :
+                return "French/Français";
+            case "it" :
+                return "Italian/Italiano";
+            case "hu" :
+                return "Hungarian/Magyar";
+            case "nn" :
+                return "Norwegian/Norsk";
+            case "pl" :
+                return "Polish/Polski";
+            case "pt" :
+                return "Portugese/Português";
+            case "sl" :
+                return "Slovenian/Slovenščina/Slovenčina";
+            case "fi" :
+                return "Finnish/Suomi";
+            case "sv" :
+                return "Swedish/Svenska";
+            case "vi" :
+                return "Vietnamese/Tiếng Việt";
+            case "tr" :
+                return "Turkish/Türkçe";
+            case "cs" :
+                return "Czech/Čeština";
+            case "el" :
+                return "Greek/ελληνικά";
+            case "bg" :
+                return "Bulgarian/български";
+            case "ru" :
+                return "Russian/русский";
+            case "ar" :
+                return "Arabic/العربية";
+            case "th" :
+                return "Thai/ภาษาไทย";
+            case "zh" :
+                return "Chinese/中文";
+            case "ja" :
+                return "Japanese/日本語";
+            case "ko" :
+                return "Korean/한국어";
+            case "all" :
+                return "all";
+        }
+        return "";
+    }
+
+
+
+    private Message getSettings(MessageBuilder message) {
+
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
+            pStatement = connection.prepareStatement("SELECT `isCompact`, `notification`, `cleanup`, `broadcasterLang`, `serverLang` FROM `guild` WHERE `guildId` =?");
+            pStatement.setString(1, guildId);
+            resultSet = pStatement.executeQuery();
+
+            int compact = resultSet.getInt(1);
+            int notify = resultSet.getInt(2);
+            int cleanup = resultSet.getInt(3);
+            String broadLang = resultSet.getString(4);
+            String serverLang = resultSet.getString(5);
+
+            message.append("/n/t" + "Compact mode is " + (compact==0?"On":"Off"));
+            message.append("/n/t" + "Notification is set to " + (notify==0?"no one":notify==2?"here":"everyone") + ".");
+            message.append("/n/t" + "Cleanup is set to " + (cleanup==0?"do nothing":cleanup==1?"edit":"delete") + ".");
+            message.append("/n/t" + "Broadcaster language is set to " + getLanguage(broadLang));
+            message.append("n/t" + "Server language is set to " + getLanguage(serverLang));
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(resultSet, pStatement, connection);
+        }
+        return message.build();
     }
 
     /**

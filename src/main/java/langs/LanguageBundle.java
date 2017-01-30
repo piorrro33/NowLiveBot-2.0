@@ -29,26 +29,26 @@ import java.util.ListResourceBundle;
 public class LanguageBundle extends ListResourceBundle {
 
     private Object[][] contents = {
-            {"emptyArgs", "I think you forgot some of the command.  Check the help command for more info."},
-            {"emptyCommand", "Next time you wake me up, please send a command as well."},
+            {"emptyArgs", "I think you forgot some of the command.  Check the help command for more info."},//DONE
+            {"emptyCommand", "Next time you wake me up, please send a command as well."},//DONE
             {"helpPrivateMessage", "Hey there!  I heard you needed some help.  Below is the list of commands I " +
-                    "recognize.\n\n"},
+                    "recognize.\n\n"},//NOT FOUND
             {"incorrectArgs", "You passed incorrect or missing arguments to me.  Check the help command for more info" +
-                    "."},
+                    "."},//DONE
             {"ping", "When I was in China on the All-American Ping Pong team, I just loved playing ping-pong with my " +
-                    "Flexolite ping pong paddle."},
+                    "Flexolite ping pong paddle."},//DONE
             {"privateMessageReply", "I'm sorry, but the bot you are trying to reach has a voice mail box that has not" +
-                    " been setup yet.  Please try your PM again later."},
-            {"typeOnce", "You only need to type that part once, silly."},
-            {"wrongCommand", ":thinking: I don't know that command."},
-            {"alreadyExists", "It looks like you already added that to my database. ¯\\_(ツ)_/¯"},
-            {"beamUserNoExist", "That Beam user does not exist! Check your spelling and try again!"},
-            {"discordUserNoExist", "That person isn't a Discord user!  Try again!"},
-            {"doesNotExist", "That was never added to my database."},
-            {"adminOverride", "*Permission of this command have been overridden by a bot developer.*"},
-            {"broadcasterLangSuccess", ":ok_hand: I'll only look for streams that are in that language!"},
-            {"broadcasterLangAllSuccess", ":ok_hand: I'll only look for streams that all languages!"},
-            {"broadcasterLangFail", ""},
+                    " been setup yet.  Please try your PM again later."},//DONE
+            {"typeOnce", "You only need to type that part once, silly."},//DONE
+            {"wrongCommand", ":thinking: I don't know that command."},//DONE
+            {"alreadyExists", "It looks like you already added that to my database. ¯\\_(ツ)_/¯"},//DONE
+            {"beamUserNoExist", "That Beam user does not exist! Check your spelling and try again!"},//DONE
+            {"discordUserNoExist", "That person isn't a Discord user!  Try again!"},//DONE
+            {"doesNotExist", "That was never added to my database."},//NOT FOUND
+            {"adminOverride", "*Permission of this command have been overridden by a bot developer.*"},//DONE
+            {"broadcasterLangSuccess", ":ok_hand: I'll only look for streams that are in that language!"},//DONE
+            {"broadcasterLangAllSuccess", ":ok_hand: I'll only look for streams that all languages!"},//DONE
+            {"broadcasterLangFail", ""},//NEED TO BUILD STRING
             {"cleanupSuccessNone", ":ok_hand: I won't do anything to my announcements."},
             {"cleanupSuccessEdit", "Editing my announcements, it is."},
             {"cleanupSuccessDelete", "Sir, yes Sir!  I will delete all my announcements from now on!"},

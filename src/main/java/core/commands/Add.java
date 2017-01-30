@@ -19,6 +19,7 @@
 package core.commands;
 
 import core.Command;
+import langs.LocaleString;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import platform.beam.controller.BeamController;
@@ -49,7 +50,8 @@ public class Add implements Command {
     }
 
     public static void missingArguments(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.INCORRECT_ARGS);
+
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "incorrectArgs"));
     }
 
     @Override
@@ -114,14 +116,14 @@ public class Add implements Command {
                                 }
                             }
                         } catch (NullPointerException npe) {
-                            sendToChannel(event, Const.DISCORD_USER_NO_EXIST);
+                            sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "discordUserNoExist"));
                         }
                         break;
                     case "channel":
                         switch (platformId) {
                             case 1:
                                 if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
-                                    sendToChannel(event, Const.ALREADY_EXISTS);
+                                    sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
                                 } else {
                                     returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
                                 }
@@ -129,12 +131,12 @@ public class Add implements Command {
                             case 2:
                                 if (BeamController.channelExists(this.argument)) {
                                     if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
-                                        sendToChannel(event, Const.ALREADY_EXISTS);
+                                        sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
                                     } else {
                                         returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
                                     }
                                 } else {
-                                    sendToChannel(event, Const.BEAM_USER_NO_EXIST);
+                                    sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "beamUserNoExist"));
                                 }
                                 break;
                             default:
@@ -144,7 +146,7 @@ public class Add implements Command {
                     default:
 
                         if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
-                            sendToChannel(event, Const.ALREADY_EXISTS);
+                            sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
                         } else {
                             returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
                         }

@@ -20,6 +20,7 @@ package core.commands;
 
 import core.Command;
 import core.Main;
+import langs.LocaleString;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +66,7 @@ public class Notify implements Command {
                     return true;
                 default:
                     if (Main.debugMode()) {
-                        logger.info(Const.INCORRECT_ARGS);
+                        logger.info(LocaleString.getString(event.getMessage().getGuild().getId(), "incorrectArgs"));
                     }
                     return false;
             }
@@ -99,7 +100,7 @@ public class Notify implements Command {
                 }
                 break;
             default:
-                sendToChannel(event, Const.INCORRECT_ARGS);
+                sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "incorrectArgs"));
                 if (Main.debugMode()) {
                     logger.info("There was an error checking for the command arguments in Notify.");
                 }

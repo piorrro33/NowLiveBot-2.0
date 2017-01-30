@@ -19,6 +19,7 @@
 package core.commands;
 
 import core.Command;
+import langs.LocaleString;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import util.Const;
@@ -57,7 +58,7 @@ public class Help implements Command {
 
     @Override
     public final void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.TYPE_ONCE);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "typeOnce"));
     }
 
     @Override

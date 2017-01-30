@@ -19,6 +19,7 @@
 package core.commands;
 
 import core.Command;
+import langs.LocaleString;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import util.Const;
 import util.database.calls.SetCompact;
@@ -62,7 +63,7 @@ public class Compact implements Command {
                 intArg = 0;
                 break;
             default:
-                sendToChannel(event, Const.INCORRECT_ARGS);
+                sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "incorrectArgs"));
                 break;
         }
 

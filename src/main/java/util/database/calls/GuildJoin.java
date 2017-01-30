@@ -131,7 +131,7 @@ public final class GuildJoin {
         switch (s) {
             case "guild":
                 try {
-                    query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `cleanup`, " +
+                    query = "INSERT INTO `guild` (`guildId`, `channelId`, `isCompact`, `cleanup`, " +
                             "`emoji`) VALUES (?, ?, 0, 0, ?)";
                     if (connection == null || connection.isClosed()) {
                         connection = Database.getInstance().getConnection();

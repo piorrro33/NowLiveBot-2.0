@@ -20,6 +20,7 @@ package platform.discord.listener;
 
 import core.CommandParser;
 import core.Main;
+import langs.LocaleString;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.events.DisconnectEvent;
 import net.dv8tion.jda.core.events.ReconnectedEvent;
@@ -105,7 +106,7 @@ public class DiscordListener extends ListenerAdapter {
     public final void onPrivateMessageReceived(PrivateMessageReceivedEvent event) {
         if (!event.getAuthor().getId().equals(event.getJDA().getSelfUser().getId())) {
             MessageBuilder message = new MessageBuilder();
-            message.append(Const.PRIVATE_MESSAGE_REPLY);
+            message.append(LocaleString.getString(event.getMessage().getGuild().getId(), "privateMessageReply"));
             sendToPm(event, message.build());
         }
     }

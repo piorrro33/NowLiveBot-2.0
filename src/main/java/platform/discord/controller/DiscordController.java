@@ -171,156 +171,6 @@ public class DiscordController {
         }
     }
 
-    /*public static synchronized void offlineStream(String guildId, Integer platformId, String channelName,
-                                                  String channelId) {
-        if (checkStreamTable(guildId, platformId, channelName)) {
-            try {
-                mhConnection = Database.getInstance().getConnection();
-                query = "SELECT `cleanup`, `channelId` FROM `guild` WHERE `guildId` = ?";
-
-                mhStatement = mhConnection.prepareStatement(query);
-
-                mhStatement.setString(1, guildId);
-                mhResult = mhStatement.executeQuery();
-
-                while (mhResult.next()) {
-                    String messageId = getMessageId(guildId, platformId, channelName);
-
-                    // Grab the old message
-                    if (messageId != null
-                            && Main.getJDA().getTextChannelById(channelId) != null
-                            && Main.getJDA().getTextChannelById(channelId).getMessageById(messageId) != null) {
-
-                        RestAction<Message> oldMessage = Main.getJDA().getTextChannelById(channelId)
-                                .getMessageById(messageId);
-
-                        switch (mhResult.getInt("cleanup")) {
-                            case 1: // Edit old message
-                                oldMessage.queue(
-                                        success -> {
-                                            Message message = editMessage(platformId, channelName);
-
-                                            // Update the old message
-                                            try {
-                                                success.editMessage(message).queue(
-                                                        editSuccess -> {
-                                                            // Remove the entry from the stream table
-                                                            deleteFromStream(guildId, platformId, channelName);
-
-                                                            new DiscordLogger(" :pencil2: " + channelName + " has gone " +
-                                                                    "offline. Message edited in G:" + Main.getJDA
-                                                                    ().getGuildById(guildId).getName(), null);
-                                                            System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
-                                                                            "announcement was successfully edited in: %s%n",
-                                                                    channelName,
-                                                                    Main.getJDA().getGuildById(guildId).getName());
-                                                        }
-                                                );
-                                            } catch (UnsupportedOperationException ose) {
-                                                System.out.printf("[~ERROR~] Message has no content.  Cannot " +
-                                                                "send the edited message. G:%s:%s C:%s:%s, M:%s%n",
-                                                        Main.getJDA().getGuildById(guildId).getName(),
-                                                        guildId,
-                                                        Main.getJDA().getTextChannelById(channelId).getName(),
-                                                        channelId, messageId);
-                                            }
-                                        },
-                                        error -> {
-                                            if (error instanceof ErrorResponseException) {
-                                                ErrorResponseException ere = (ErrorResponseException) error;
-                                                if (ere.getErrorResponse() == ErrorResponse.UNKNOWN_MESSAGE) {
-                                                    System.out.printf("Discord reported unknown message. " +
-                                                            "ChannelId: %s, MessageId: %s.\n", Main.getJDA()
-                                                            .getTextChannelById(channelId).getId(), messageId);
-                                                } else {
-                                                    System.out.println("Got unexpected ErrorResponse!");
-                                                    System.out.println(ere.getErrorResponse().toString() + " " +
-                                                            ": " + ere.getErrorResponse().getMeaning());
-                                                }
-                                                deleteFromStream(guildId, platformId, channelName);
-                                            } else {
-                                                System.err.println("got unexpected error");
-                                                error.printStackTrace();
-                                            }
-                                        });
-                                break;
-                            case 2: // Delete old message
-                                oldMessage.queue(
-                                        success -> {
-
-                                            // Delete the old message
-                                            success.deleteMessage().queue(
-                                                    deleteSuccess -> {
-                                                        // Remove the entry from the stream table
-                                                        deleteFromStream(guildId, platformId, channelName);
-
-                                                        new DiscordLogger(" :x: " + channelName + " has gone " +
-                                                                "offline. Message deleted in G:" + Main.getJDA
-                                                                ().getGuildById(guildId).getName(), null);
-                                                        System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
-                                                                        "announcement was successfully deleted from: %s%n",
-                                                                channelName,
-                                                                Main.getJDA().getGuildById(guildId).getName());
-                                                    }
-                                            );
-                                        },
-                                        error -> {
-                                            if (error instanceof ErrorResponseException) {
-                                                ErrorResponseException ere = (ErrorResponseException) error;
-                                                if (ere.getErrorResponse() == ErrorResponse.UNKNOWN_MESSAGE) {
-                                                    System.out.printf("Discord reported unknown message. " +
-                                                            "ChannelId: %s, MessageId: %s.\n", Main.getJDA()
-                                                            .getTextChannelById(channelId).getId(), messageId);
-                                                } else {
-                                                    System.out.println("Got unexpected ErrorResponse!");
-                                                    System.out.println(ere.getErrorResponse().toString() + " " +
-                                                            ": " + ere.getErrorResponse().getMeaning());
-                                                }
-                                            } else {
-                                                System.err.println("got unexpected error");
-                                                error.printStackTrace();
-                                            }
-                                            new DiscordLogger(" :x: :x: " + channelName + " has gone " +
-                                                    "offline. Error deleting message in G:" + Main.getJDA
-                                                    ().getGuildById(guildId).getName(), null);
-                                            System.out.printf("[~ERROR~] %s has gone offline. There was an " +
-                                                            "error deleting it from guild: %s%n",
-                                                    channelName,
-                                                    Main.getJDA().getGuildById(guildId).getName());
-                                            error.printStackTrace();
-                                            deleteFromStream(guildId, platformId, channelName);
-                                        });
-                                break;
-                            default:
-                                // No action taken, but still need to remove the entry from the stream table
-                                deleteFromStream(guildId, platformId, channelName);
-                                break;
-                        }
-                    } else {
-                        deleteFromStream(guildId, platformId, channelName);
-                    }
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } catch (PermissionException pe) {
-                new DiscordLogger(" :no_entry: Permissions error editing/deleting in G:" + Main.getJDA
-                        ().getGuildById(guildId).getName() + ":" + Main.getJDA().getGuildById(guildId).getId(), null);
-                System.out.printf("[~ERROR~] There was a permission exception when trying to read message " +
-                                "history in G:%s, C:%s, M:%s%n",
-                        Main.getJDA().getGuildById(guildId).getName(),
-                        Main.getJDA().getTextChannelById(getChannelId(guildId)).getName(),
-                        getMessageId(guildId, platformId, channelName));
-            } catch (NullPointerException npe) {
-                logger.error("There was a NPE when trying to edit/delete a message.",
-                        npe.getMessage());
-                npe.printStackTrace();
-            } finally {
-                cleanUp(mhResult, mhStatement, mhConnection);
-            }
-        }
-
-    }*/
-
     private static synchronized Integer checkCompact(String guildId) {
         try {
             query = "SELECT `isCompact` FROM `guild` WHERE `guildId` = ?";
@@ -445,7 +295,6 @@ public class DiscordController {
     private synchronized Message buildEmbed(Map<String, String> streamData, String action) {
         Integer platformId = 1;
         String guildId = streamData.get("guildId");
-        String channelName = streamData.get("channelName");
         String displayName = streamData.get("channelDisplayName");
         String streamTitle = streamData.get("channelStatus");
         String url = streamData.get("channelUrl");
@@ -543,29 +392,32 @@ public class DiscordController {
         switch (cleanup) {
             case 1: // Edit
                 if (checkStreamTable.check(offline.get("guildId"), Integer.parseInt(offline.get("platformId")), offline.get("channelName"))) {
+                    if (offline.get("messageId") != null) {
+                        Main.getJDA()
+                                .getTextChannelById(offline.get("textChannelId"))
+                                .editMessageById(offline.get("messageId"), buildEmbed(offline, "edit"))
+                                .queue(
+                                        success -> {
 
-                    Main.getJDA()
-                            .getTextChannelById(offline.get("textChannelId"))
-                            .editMessageById(offline.get("messageId"), buildEmbed(offline, "edit"))
-                            .queue(
-                                    success -> {
+                                            DeleteFromStream deleteStream = new DeleteFromStream();
+                                            deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
 
-                                        DeleteFromStream deleteStream = new DeleteFromStream();
-                                        deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
-
-                                        new DiscordLogger(" :pencil2: " + offline.get("channelName") + " has gone " +
-                                                "offline. Message edited in G:" + Main.getJDA().getGuildById(offline.get("guildId")).getName(), null);
-                                        System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
-                                                        "announcement was successfully edited in: %s%n",
-                                                offline.get("channelName"),
-                                                Main.getJDA().getGuildById(offline.get("guildId")).getName());
-                                    },
-                                    error -> unknownMessageHandler(error, offline));
+                                            new DiscordLogger(" :pencil2: " + offline.get("channelName") + " has gone " +
+                                                    "offline. Message edited in G:" + Main.getJDA().getGuildById(offline.get("guildId")).getName(), null);
+                                            System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
+                                                            "announcement was successfully edited in: %s%n",
+                                                    offline.get("channelName"),
+                                                    Main.getJDA().getGuildById(offline.get("guildId")).getName());
+                                        },
+                                        error -> unknownMessageHandler(error, offline));
+                    } else {
+                        DeleteFromStream deleteStream = new DeleteFromStream();
+                        deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
+                    }
                 }
                 break;
             case 2: // Delete
                 if (checkStreamTable.check(offline.get("guildId"), Integer.valueOf(offline.get("platformId")), offline.get("channelName"))) {
-
                     if (offline.get("messageId") != null) {
                         Main.getJDA()
                                 .getTextChannelById(offline.get("textChannelId"))
@@ -584,10 +436,10 @@ public class DiscordController {
                                                     Main.getJDA().getGuildById(offline.get("guildId")).getName());
                                         },
                                         error -> unknownMessageHandler(error, offline));
+                    } else {
+                        DeleteFromStream deleteStream = new DeleteFromStream();
+                        deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
                     }
-                } else {
-                    DeleteFromStream deleteStream = new DeleteFromStream();
-                    deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
                 }
                 break;
             default:
@@ -601,24 +453,6 @@ public class DiscordController {
     }
 
     public synchronized void announceStream(String guildId, String textChannelId, Integer platformId, Stream stream) {
-
-        HashMap<String, String> streamData = new HashMap<>();
-        streamData.put("guildId", guildId);
-        streamData.put("textChannelId", textChannelId);
-        streamData.put("streamsGame", stream.getGame());
-        streamData.put("streamsViewers", String.valueOf(stream.getViewers()));
-        streamData.put("channelStatus", stream.getChannel().getStatus());
-        streamData.put("channelDisplayName", stream.getChannel().getDisplayName());
-        streamData.put("channelLanguage", stream.getChannel().getBroadcasterLanguage());
-        streamData.put("channelId", String.valueOf(stream.getChannel().getId()));
-        streamData.put("channelName", stream.getChannel().getName());
-        streamData.put("channelLogo", stream.getChannel().getLogo());
-        streamData.put("channelProfileBanner", stream.getChannel().getProfileBanner());
-        streamData.put("channelUrl", stream.getChannel().getUrl());
-        streamData.put("channelViews", String.valueOf(stream.getChannel().getViews()));
-        streamData.put("channelFollowers", String.valueOf(stream.getChannel().getFollowers()));
-
-        Message message = buildEmbed(streamData, "new");
 
         // If the channel doesn't exist, reset it to the default public channel which is the guildId
         if (Main.getJDA().getTextChannelById(textChannelId) == null) {
@@ -644,6 +478,24 @@ public class DiscordController {
                 logger.error("There was a NPE in Discord Controller");
             }
         }
+
+        HashMap<String, String> streamData = new HashMap<>();
+        streamData.put("guildId", guildId);
+        streamData.put("textChannelId", textChannelId);
+        streamData.put("streamsGame", stream.getGame());
+        streamData.put("streamsViewers", String.valueOf(stream.getViewers()));
+        streamData.put("channelStatus", stream.getChannel().getStatus());
+        streamData.put("channelDisplayName", stream.getChannel().getDisplayName());
+        streamData.put("channelLanguage", stream.getChannel().getBroadcasterLanguage());
+        streamData.put("channelId", String.valueOf(stream.getChannel().getId()));
+        streamData.put("channelName", stream.getChannel().getName());
+        streamData.put("channelLogo", stream.getChannel().getLogo());
+        streamData.put("channelProfileBanner", stream.getChannel().getProfileBanner());
+        streamData.put("channelUrl", stream.getChannel().getUrl());
+        streamData.put("channelViews", String.valueOf(stream.getChannel().getViews()));
+        streamData.put("channelFollowers", String.valueOf(stream.getChannel().getFollowers()));
+
+        Message message = buildEmbed(streamData, "new");
 
         CheckStreamTable checkStreamTable = new CheckStreamTable();
         if (!checkStreamTable.check(guildId, platformId, streamData.get("channelName"))) {

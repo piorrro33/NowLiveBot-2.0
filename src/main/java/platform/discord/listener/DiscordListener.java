@@ -112,16 +112,11 @@ public class DiscordListener extends ListenerAdapter {
 
     @Override
     public final void onDisconnect(DisconnectEvent event) {
-        try {
-            new DiscordLogger(" :broken_heart: Discord had been disconnected. Attempting to reconnect...", event);
-            logger.info("Discord has been disconnected.  Reconnecting...");
-            Main.main(null);
-            System.out.println("Client Close Frame: " + event.getClientCloseFrame());
-            System.out.println("Service Close Frame: " + event.getServiceCloseFrame());
-            System.out.println("Response Number: " + event.getResponseNumber());
-        } catch (PropertyVetoException | IOException | SQLException e) {
-            e.printStackTrace();
-        }
+        new DiscordLogger(" :broken_heart: Discord had been disconnected. Attempting to reconnect...", event);
+        logger.info("Discord has been disconnected.  Reconnecting...");
+        System.out.println("Client Close Frame: " + event.getClientCloseFrame());
+        System.out.println("Service Close Frame: " + event.getServiceCloseFrame());
+        System.out.println("Response Number: " + event.getResponseNumber());
     }
 
     @Override

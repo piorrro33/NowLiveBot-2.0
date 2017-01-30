@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static platform.discord.controller.DiscordController.getChannelId;
 import static util.database.Database.cleanUp;
@@ -56,6 +57,7 @@ public class TwitchController extends Twitch {
     private static PreparedStatement pStatement;
     private static ResultSet result;
     private Logger logger = LoggerFactory.getLogger("Twitch Controller");
+    private ReentrantLock lock = new ReentrantLock();
 
     public TwitchController() {
         this.setClientId(PropReader.getInstance().getProp().getProperty("twitch.client.id"));
@@ -76,7 +78,7 @@ public class TwitchController extends Twitch {
 
             if (result.isBeforeFirst()) {
                 while (result.next()) {
-                    filters.add(result.getString("name"));
+                    filters.add(result.getString("name").replaceAll("''", "'"));
                 }
                 return filters;
             }
@@ -114,39 +116,36 @@ public class TwitchController extends Twitch {
 
     public final synchronized void checkOffline(HashMap<String, Map<String, String>> streams, Integer platformId) {
 
-        streams.forEach((String messageId, Map<String, String> streamData) -> {
-
-            this.streams().get(streamData.get("channelName"), new StreamResponseHandler() {
-                @Override
-                public void onSuccess(Stream stream) {
-                    if (stream == null) {
-                        DiscordController discord = new DiscordController();
-                        discord.offlineStream(streamData);
+        streams.forEach((String messageId, Map<String, String> streamData) ->
+                this.streams().get(streamData.get("channelName"), new StreamResponseHandler() {
+                    @Override
+                    public void onSuccess(Stream stream) {
+                        if (stream == null) {
+                            DiscordController discord = new DiscordController();
+                            discord.offlineStream(streamData);
+                        }
                     }
-                }
 
-                @Override
-                public void onFailure(int i, String s, String s1) {
+                    @Override
+                    public void onFailure(int i, String s, String s1) {
 
-                }
+                    }
 
-                @Override
-                public void onFailure(Throwable throwable) {
+                    @Override
+                    public void onFailure(Throwable throwable) {
 
-                }
-            });
-        });
+                    }
+                }));
     }
 
     public final synchronized void checkChannel(Integer platformId) {
 
-        GetDbChannels dbChannels = new GetDbChannels();
         CountDbChannels countDbChannels = new CountDbChannels();
-        GetGuildsByStream guildsByStream = new GetGuildsByStream();
-
         Integer amount = countDbChannels.fetch();
 
         for (Integer c = 0; c <= amount; c += 100) {
+
+            GetDbChannels dbChannels = new GetDbChannels();
             List<String> channels = dbChannels.fetch(c);
 
             StringBuilder channelString = new StringBuilder();
@@ -166,8 +165,8 @@ public class TwitchController extends Twitch {
                 public void onSuccess(int i, List<Stream> list) {
                     DiscordController discord = new DiscordController();
                     list.forEach(stream -> {
-
-                        List<String> guildIds = guildsByStream.fetch(stream.getChannel().getName());
+                        GetGuildsByStream guildsByStream = new GetGuildsByStream();
+                        CopyOnWriteArrayList<String> guildIds = guildsByStream.fetch(stream.getChannel().getName());
 
                         guildIds.forEach(guildId -> onLiveStream(stream, guildId, platformId, discord));
                     });
@@ -200,10 +199,10 @@ public class TwitchController extends Twitch {
         this.streams().get(params, new StreamsResponseHandler() {
             @Override
             public void onSuccess(int i, List<Stream> list) {
-                DiscordController discord = new DiscordController();
                 if (values[1] == 0) {
                     values[1] = i;
                 }
+                DiscordController discord = new DiscordController();
                 list.forEach(stream -> onLiveStream(stream, guildId, platformId, discord));
             }
 

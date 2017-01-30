@@ -138,6 +138,7 @@ public interface En {
             + Const.COMMAND
             + " list <option>"
             + "\n\t<option>"
+            + "\n\tfilter - I'll list all of the game filters that you have set up"
             + "\n\tgame - List the games that I'm tracking for you"
             + "\n\tchannel - I'll list out all of the individual stream channels you want me to watch```";
     String MOVE_HELP = "```Ruby\nMOVE:  Change where I make my announcements.\nUSAGE:  "

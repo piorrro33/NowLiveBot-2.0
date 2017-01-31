@@ -19,12 +19,12 @@
 package core.commands;
 
 import core.Command;
+import langs.LocaleString;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import platform.discord.controller.DiscordController;
-import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
@@ -244,6 +244,7 @@ public class List implements Command {
                 String broadLang = resultSet.getString(3);
                 String serverLang = resultSet.getString(4);
 
+                // TODO: Localization of strings
                 message.append("\n\t" + "Compact mode is " + (compact == 0 ? "On" : "Off"));
                 //message.append("\n\t" + "Notification is set to " + (notify == 0 ? "no one" : notify == 2 ? "here" : "everyone") + ".");
                 message.append("\n\t" + "Cleanup is set to " + (cleanup == 0 ? "do nothing" : cleanup == 1 ? "edit" : "delete") + ".");
@@ -266,7 +267,7 @@ public class List implements Command {
      */
     @Override
     public final void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.LIST_HELP);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "listHelp"));
     }
 
     /**

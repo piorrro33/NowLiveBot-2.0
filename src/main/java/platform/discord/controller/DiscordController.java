@@ -20,6 +20,7 @@ package platform.discord.controller;
 
 import com.mb3364.twitch.api.models.Stream;
 import core.Main;
+import langs.LocaleString;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
@@ -259,6 +260,7 @@ public class DiscordController {
             nlStatement.setString(1, guildId);
             nlResult = nlStatement.executeQuery();
 
+            // Not going to add these to the Lang files because they will eventually be tokenized for customization
             while (nlResult.next()) {
                 switch (nlResult.getInt("level")) {
                     case 1: // User wants a @User mention
@@ -329,10 +331,12 @@ public class DiscordController {
 
         switch (action) {
             case "new":
-                eBuilder.setAuthor(displayName + " is now streaming!", url, Const.BOT_LOGO);
+                eBuilder.setAuthor(displayName + LocaleString.getString(guildId, "nowStreamingEmbed"),
+                        url, Const.BOT_LOGO);
                 break;
             case "edit":
-                eBuilder.setAuthor(displayName + " has gone offline!", url, Const.BOT_LOGO);
+                eBuilder.setAuthor(displayName + LocaleString.getString(guildId, "offlineEmbed"),
+                        url, Const.BOT_LOGO);
                 break;
             default:
                 break;
@@ -340,8 +344,8 @@ public class DiscordController {
 
         eBuilder.setTitle(url);
 
-        eBuilder.addField("Now Playing", game, false);
-        eBuilder.addField("Stream Title", streamTitle, false);
+        eBuilder.addField(LocaleString.getString(guildId, "nowPlayingEmbed"), game, false);
+        eBuilder.addField(LocaleString.getString(guildId, "streamTitleEmbed"), streamTitle, false);
 
         if (logo != null) {
             eBuilder.setThumbnail(logo);
@@ -351,8 +355,8 @@ public class DiscordController {
             if (profileBanner != null) {
                 eBuilder.setImage(profileBanner);
             }
-            eBuilder.addField("Followers", followers, true);
-            eBuilder.addField("Total Views", views, true);
+            eBuilder.addField(LocaleString.getString(guildId, "followersEmbed"), followers, true);
+            eBuilder.addField(LocaleString.getString(guildId, "totalViewsEmbed"), views, true);
         }
 
 

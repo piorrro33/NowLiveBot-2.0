@@ -20,6 +20,7 @@ package core.commands;
 
 import core.Command;
 import core.Main;
+import langs.LocaleString;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Guild;
@@ -61,6 +62,7 @@ public class Status implements Command {
 
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
+        // TODO: Clean this up and make it less bulky and more condensed
         DecimalFormat numFormat = new DecimalFormat("###,###,###,###");
         // Total of all guilds the bot is in
         Integer guildCount = Main.getJDA().getGuilds().size();
@@ -145,7 +147,7 @@ public class Status implements Command {
 
     @Override
     public final void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.STATUS_HELP);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "statusHelp"));
 
     }
 

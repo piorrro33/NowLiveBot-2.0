@@ -21,7 +21,6 @@ package core.commands;
 import core.Command;
 import langs.LocaleString;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import util.Const;
 import util.database.calls.Tracker;
 
 import static core.CommandParser.getCommands;
@@ -99,7 +98,7 @@ public class Twitch implements Command {
      */
     @Override
     public void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.TWITCH_HELP);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "twitchHelp"));
     }
 
     /**

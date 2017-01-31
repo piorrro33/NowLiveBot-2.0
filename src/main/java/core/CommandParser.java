@@ -86,7 +86,7 @@ public class CommandParser {
                     if (adminCheck) {
                         runCommand(cmd);
                     } else {
-                        sendToChannel(cmd.event, Const.NOT_AN_ADMIN);
+                        sendToChannel(cmd.event, LocaleString.getString(cmd.event.getMessage().getGuild().getId(), "notAnAdmin"));
                     }
                     break;
                 case "add":
@@ -104,7 +104,7 @@ public class CommandParser {
                         }
                         runCommand(cmd);
                     } else {
-                        sendToChannel(cmd.event, Const.NOT_A_MANAGER);
+                        sendToChannel(cmd.event, LocaleString.getString(cmd.event.getMessage().getGuild().getId(), "notAManager"));
                     }
                     break;
                 default:

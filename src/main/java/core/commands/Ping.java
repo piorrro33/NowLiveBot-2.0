@@ -21,7 +21,6 @@ package core.commands;
 import core.Command;
 import langs.LocaleString;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import util.Const;
 import util.database.calls.Tracker;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
@@ -46,7 +45,7 @@ public class Ping implements Command {
 
     @Override
     public final void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.PING_HELP);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "pingHelp"));
     }
 
     @Override

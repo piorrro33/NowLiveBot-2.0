@@ -21,7 +21,6 @@ package core.commands;
 import core.Command;
 import langs.LocaleString;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
@@ -241,7 +240,7 @@ public class Language implements Command {
                         sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "broadcasterLangSuccess"));
                     }
                 } else {
-                    sendToChannel(event, Const.BROADCASTER_LANG_FAIL);
+                    sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "broadcasterLangFail"));
                 }
 
             } catch (SQLException e) {
@@ -260,7 +259,7 @@ public class Language implements Command {
      */
     @Override
     public void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.STREAMLANG_HELP);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "streamlangHelp"));
     }
 
     /**

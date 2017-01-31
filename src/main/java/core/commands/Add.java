@@ -23,7 +23,6 @@ import langs.LocaleString;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import platform.beam.controller.BeamController;
-import util.Const;
 import util.database.calls.*;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
@@ -109,10 +108,10 @@ public class Add implements Command {
 
                                         returnStatement(AddManager.action(guildId, userId), event);
                                     } else {
-                                        sendToChannel(event, Const.ALREADY_MANAGER);
+                                        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "alreadyManager"));
                                     }
                                 } else {
-                                    sendToChannel(event, Const.NO_BOT_MANAGER);
+                                    sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "noBotManager"));
                                 }
                             }
                         } catch (NullPointerException npe) {
@@ -158,15 +157,17 @@ public class Add implements Command {
 
     private void returnStatement(Boolean success, GuildMessageReceivedEvent event) {
         if (success) {
-            sendToChannel(event, "Added `" + this.option + "` " + this.argument.replaceAll("''", "'"));
+            sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "added") +
+                    "`" + this.option + "` " + this.argument.replaceAll("''", "'"));
         } else {
-            sendToChannel(event, "Failed to add `" + this.option + "` " + this.argument.replaceAll("''", "'"));
+            sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "addFail") +
+                    "`" + this.option + "` " + this.argument.replaceAll("''", "'"));
         }
     }
 
     @Override
     public final void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.ADD_HELP);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "addHelp"));
     }
 
     @Override

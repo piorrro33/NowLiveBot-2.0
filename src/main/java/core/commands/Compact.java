@@ -21,7 +21,6 @@ package core.commands;
 import core.Command;
 import langs.LocaleString;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import util.Const;
 import util.database.calls.SetCompact;
 import util.database.calls.Tracker;
 
@@ -71,11 +70,11 @@ public class Compact implements Command {
             if (SetCompact.action(event.getGuild().getId(), intArg)) {
                 switch (args) {
                     case "off":
-                        sendToChannel(event, Const.COMPACT_MODE_OFF);
+                        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "compactOff"));
 
                         break;
                     case "on":
-                        sendToChannel(event, Const.COMPACT_MODE_ON);
+                        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "compactOn"));
                         break;
                     default:
                         System.out.println("[~ERROR~] This statement should never be reached.");
@@ -87,7 +86,7 @@ public class Compact implements Command {
 
     @Override
     public final void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.COMPACT_HELP);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "compactHelp"));
     }
 
     @Override

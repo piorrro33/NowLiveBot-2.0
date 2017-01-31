@@ -165,7 +165,7 @@ public class DiscordListener extends ListenerAdapter {
                     !cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND + " remove channel")) {
                 CommandParser.handleCommand(Main.parser.parse(cntMsg, event));
             } else {
-                sendToChannel(event, Const.USE_PLATFORM);
+                sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "usePlatform"));
             }
         }
     }

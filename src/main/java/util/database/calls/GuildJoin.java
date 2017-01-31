@@ -19,13 +19,13 @@
 package util.database.calls;
 
 import core.Main;
+import langs.LocaleString;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.Const;
 import util.database.Database;
 
 import java.sql.Connection;
@@ -116,7 +116,7 @@ public final class GuildJoin {
             }
         }
         if (failed == 0) {
-            gEvent.getGuild().getPublicChannel().sendMessage(Const.GUILD_JOIN_SUCCESS).queue(
+            gEvent.getGuild().getPublicChannel().sendMessage(LocaleString.getString(gEvent.getGuild().getId(), "guildJoinSuccess")).queue(
                     guildJoinSuccess -> System.out.printf("[SYSTEM] Joined G:%s:%s%n",
                             gEvent.getGuild().getName(),
                             gEvent.getGuild().getId())
@@ -182,7 +182,7 @@ public final class GuildJoin {
     private static void addManager(GuildJoinEvent gEvent) {
         List<String> userIds = new CopyOnWriteArrayList<>();
         // Auto add the guild owner as a manager
-        userIds.add(gEvent.getGuild().getOwner().getUser().getId());
+        userIds.add(gEvent.getGuild().getOwner().getUser().getId());// Add guild owner by default
         // Pull the roles from the guild
         for (Role role : gEvent.getGuild().getRoles()) {
             // Check permissions of each role

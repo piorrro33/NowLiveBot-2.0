@@ -29,9 +29,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-/**
- * Created by keesh on 1/22/2017.
- */
 public class GetDbChannels {
 
     private Connection connection;

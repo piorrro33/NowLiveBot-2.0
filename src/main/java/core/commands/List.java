@@ -105,6 +105,7 @@ public class List implements Command {
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
         for (String s : this.options) { // Iterate through the available options for this command
+            if(args.endsWith("s")) args = args.substring(0,args.length()-1);
             if (args != null && !args.isEmpty()) {
                 if (args.endsWith("s")) args = args.substring(0, args.length() - 1);
                 if (args.equals(s)) {
@@ -161,7 +162,7 @@ public class List implements Command {
                         "ORDER BY `platformId` ASC, `name` ASC";
                 break;
             case "setting":
-                sendToPm(event, getSettings(message));
+                sendToPm(event,getSettings(message));
                 return;
             default:
                 break;
@@ -227,30 +228,40 @@ public class List implements Command {
     }
 
 
+
     private Message getSettings(MessageBuilder message) {
 
         try {
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement("SELECT `isCompact`, `cleanup`, `broadcasterLang`, `serverLang` FROM `guild` WHERE `guildId` = ?");
+
+            PreparedStatement pStatement = connection.prepareStatement("SELECT `isCompact`, `notification`, `cleanup`, `broadcasterLang`, `serverLang` FROM `guild` WHERE `guildId` =?");
             pStatement.setString(1, guildId);
             resultSet = pStatement.executeQuery();
 
-            while (resultSet.next()) {
-                int compact = resultSet.getInt(1);
-                //int notify = resultSet.getInt(2);
-                int cleanup = resultSet.getInt(2);
-                String broadLang = resultSet.getString(3);
-                String serverLang = resultSet.getString(4);
+            int compact = resultSet.getInt(1);
+            int cleanup = resultSet.getInt(2);
+            String broadLang = resultSet.getString(3);
+            String serverLang = resultSet.getString(4);
 
-                // TODO: Localization of strings
-                message.append("\n\t" + "Compact mode is " + (compact == 0 ? "On" : "Off"));
-                //message.append("\n\t" + "Notification is set to " + (notify == 0 ? "no one" : notify == 2 ? "here" : "everyone") + ".");
-                message.append("\n\t" + "Cleanup is set to " + (cleanup == 0 ? "do nothing" : cleanup == 1 ? "edit" : "delete") + ".");
-                message.append("\n\t" + "Broadcaster language is set to " + getLanguage(broadLang));
-                message.append("\n\t" + "Server language is set to " + getLanguage(serverLang));
-            }
+            PreparedStatement pStatement2 = connection.prepareStatement("SELECT `level` FROM `notification` WHERE `guildId` =?");
+            pStatement2.setString(1, guildId);
+            ResultSet resultSet2 = pStatement2.executeQuery();
+
+            int notify = resultSet2.getInt(1);
+
+            String changingMessage = "```Ruby"+
+            "/n/t" + "Compact mode is " + "compactSetting"+ "." +
+            "/n/t" + "Notification is set to " + "notificationSetting" + "."+
+            "/n/t" + "Cleanup is set to " + "cleanupSetting" + "."+
+            "/n/t" + "Broadcaster language is set to " + "broadLang"  + "." +
+            "n/t" + "Server language is set to " + "serverLang"+ "." +
+            "```";
+
+            message.append(util.Const.LIST_SETTINGS.replace("compactSetting", (compact==0?"On":"Off")).replace("notificationSetting",(notify==0?"no one":notify==2?"here":"everyone"))
+                    .replace("cleanupSetting",(cleanup==0?"do nothing":cleanup==1?"edit":"delete")).replace("broadLang", getLanguage(broadLang))
+                    .replace("serverLang", getLanguage(serverLang)));
 
         } catch (SQLException e) {
             e.printStackTrace();

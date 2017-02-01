@@ -19,21 +19,21 @@
 package util.database.calls;
 
 import core.Main;
+import langs.LocaleString;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.Const;
 import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
@@ -43,7 +43,7 @@ import static util.database.Database.cleanUp;
 public final class GuildJoin {
 
     private static final Logger logger = LoggerFactory.getLogger("GuildJoin");
-    private static List<String> tableList = new ArrayList<>();
+    private static List<String> tableList = new CopyOnWriteArrayList<>();
     private static Connection connection;
     private static PreparedStatement pStatement;
     private static Integer result = 0;
@@ -116,7 +116,7 @@ public final class GuildJoin {
             }
         }
         if (failed == 0) {
-            gEvent.getGuild().getPublicChannel().sendMessage(Const.GUILD_JOIN_SUCCESS).queue(
+            gEvent.getGuild().getPublicChannel().sendMessage(LocaleString.getString(gEvent.getGuild().getId(), "guildJoinSuccess")).queue(
                     guildJoinSuccess -> System.out.printf("[SYSTEM] Joined G:%s:%s%n",
                             gEvent.getGuild().getName(),
                             gEvent.getGuild().getId())
@@ -131,7 +131,7 @@ public final class GuildJoin {
         switch (s) {
             case "guild":
                 try {
-                    query = "INSERT INTO `" + s + "` (`guildId`, `channelId`, `isCompact`, `cleanup`, " +
+                    query = "INSERT INTO `guild` (`guildId`, `channelId`, `isCompact`, `cleanup`, " +
                             "`emoji`) VALUES (?, ?, 0, 0, ?)";
                     if (connection == null || connection.isClosed()) {
                         connection = Database.getInstance().getConnection();
@@ -180,9 +180,9 @@ public final class GuildJoin {
     }
 
     private static void addManager(GuildJoinEvent gEvent) {
-        List<String> userIds = new ArrayList<>();
+        List<String> userIds = new CopyOnWriteArrayList<>();
         // Auto add the guild owner as a manager
-        userIds.add(gEvent.getGuild().getOwner().getUser().getId());
+        userIds.add(gEvent.getGuild().getOwner().getUser().getId());// Add guild owner by default
         // Pull the roles from the guild
         for (Role role : gEvent.getGuild().getRoles()) {
             // Check permissions of each role

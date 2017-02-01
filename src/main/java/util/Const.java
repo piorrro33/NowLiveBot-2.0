@@ -18,7 +18,7 @@
 
 package util;
 
-import langs.En;
+import langs.*;
 
 /**
  * Common variables used throughout
@@ -34,8 +34,8 @@ public interface Const {
     String DISCORD_URL = "https://discord.gg/gKbbrFK";
     String BOT_LOGO = "https://cdn.discordapp.com/attachments/251541740484296705/251973422521778177/nl2_bot.png";
     String COMMAND_PREFIX = "-";// Requires single, regex safe character (at the moment) wahahahaha
-    String BOT_NAME = "Now Live";
     String COMMAND = "nl";
+    String BOT_NAME = "Now Live";
     String PLAYING = COMMAND_PREFIX + COMMAND + " help";
     String LOG_CHANNEL = PropReader.getInstance().getProp().getProperty("discord.log.chan");
     String WARN = "warning";
@@ -106,4 +106,5 @@ public interface Const {
     String STATUS_HELP = En.STATUS_HELP;
     String TWITCH_HELP = En.TWITCH_HELP;
     String USE_PLATFORM = En.USE_PLATFORM;
+    String LIST_SETTINGS = En.LIST_SETTINGS;
 }

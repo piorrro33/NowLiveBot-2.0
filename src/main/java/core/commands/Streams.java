@@ -19,11 +19,11 @@
 package core.commands;
 
 import core.Command;
+import langs.LocaleString;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
@@ -94,20 +94,20 @@ public class Streams implements Command {
 
             if (rowCount < 1) { // If no streams are online
                 MessageBuilder noneOnline = new MessageBuilder();
-                noneOnline.append(Const.NONE_ONLINE);
+                noneOnline.append(LocaleString.getString(event.getMessage().getGuild().getId(), "noneOnline"));
                 sendToPm(event, noneOnline.build());
             } else { // If there's at least one stream online
                 MessageBuilder message = new MessageBuilder();
-                message.append(Const.ONLINE_STREAM_PM_1);
+                message.append(LocaleString.getString(event.getMessage().getGuild().getId(), "onlineStreamPm1"));
                 message.append(String.valueOf(rowCount));
-                message.append(Const.ONLINE_STREAM_PM_2);
+                message.append(LocaleString.getString(event.getMessage().getGuild().getId(), "onlineStreamPm2"));
                 while (result.next()) {
                     message.append("**" + result.getString("channel") + "**"); // Channel Name
-                    message.append(Const.NOW_PLAYING_LOWER); // " is now playing"
+                    message.append(LocaleString.getString(event.getMessage().getGuild().getId(), "nowPlayingLower")); // " is now playing"
                     message.append("**" + result.getString("game") + "**"); // name of the game
-                    message.append(Const.ON); // " on "
+                    message.append(LocaleString.getString(event.getMessage().getGuild().getId(), "on")); // " on "
                     message.append("**" + result.getString("platform") + "**!\n\t");
-                    message.append(Const.WATCH_THEM_HERE);
+                    message.append(LocaleString.getString(event.getMessage().getGuild().getId(), "watchThemHere"));
                     message.append("__*" + result.getString("link") + result.getString("channel") + "*__\n\n");
                     if (message.length() >= 1800) {
                         sendToPm(event, message.build());
@@ -127,7 +127,7 @@ public class Streams implements Command {
 
     @Override
     public final void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.STREAMS_HELP);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "streamsHelp"));
     }
 
     @Override

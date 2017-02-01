@@ -20,6 +20,7 @@
 package core;
 
 import core.commands.*;
+import langs.LocaleString;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import util.Const;
 import util.database.calls.CheckPerms;
@@ -85,7 +86,7 @@ public class CommandParser {
                     if (adminCheck) {
                         runCommand(cmd);
                     } else {
-                        sendToChannel(cmd.event, Const.NOT_AN_ADMIN);
+                        sendToChannel(cmd.event, LocaleString.getString(cmd.event.getMessage().getGuild().getId(), "notAnAdmin"));
                     }
                     break;
                 case "add":
@@ -99,11 +100,11 @@ public class CommandParser {
                 case "twitch":
                     if (managerCheck || adminCheck || cmd.event.getAuthor().getId().equals("146275186142871552")) {
                         if (adminCheck) {
-                            sendToChannel(cmd.event, Const.ADMIN_OVERRIDE);
+                            sendToChannel(cmd.event, LocaleString.getString(cmd.event.getMessage().getGuild().getId(), "adminOverride"));
                         }
                         runCommand(cmd);
                     } else {
-                        sendToChannel(cmd.event, Const.NOT_A_MANAGER);
+                        sendToChannel(cmd.event, LocaleString.getString(cmd.event.getMessage().getGuild().getId(), "notAManager"));
                     }
                     break;
                 default:
@@ -113,7 +114,7 @@ public class CommandParser {
                     break;
             }
         } else {
-            sendToChannel(cmd.event, Const.WRONG_COMMAND);
+            sendToChannel(cmd.event, LocaleString.getString(cmd.event.getMessage().getGuild().getId(), "wrongCommand"));
         }
     }
 
@@ -127,7 +128,7 @@ public class CommandParser {
                 getCommands().get(cmd.invoke).action(cmd.args, cmd.event);
             }
         } else {
-            sendToChannel(cmd.event, Const.INCORRECT_ARGS);
+            sendToChannel(cmd.event, LocaleString.getString(cmd.event.getMessage().getGuild().getId(), "incorrectArgs"));
         }
         getCommands().get(cmd.invoke).executed(safe, cmd.event);
     }
@@ -153,7 +154,7 @@ public class CommandParser {
             invoke = beheaded;
             args = "";
         } else {
-            sendToChannel(event, Const.EMPTY_COMMAND);
+            sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "emptyCommand"));
         }
 
         return new CommandContainer(invoke, args, event);

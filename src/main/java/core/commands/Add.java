@@ -19,10 +19,10 @@
 package core.commands;
 
 import core.Command;
+import langs.LocaleString;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import platform.beam.controller.BeamController;
-import util.Const;
 import util.database.calls.*;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
@@ -36,7 +36,7 @@ import static platform.generic.controller.PlatformController.getPlatformId;
  */
 public class Add implements Command {
 
-    private final String[] options = new String[]{"channel", "filter", "game", "manager", "help"};
+    private final String[] options = new String[]{"channel", "filter", "game", "manager", "tag", "help"};
     private String option;
     private String argument;
 
@@ -49,7 +49,8 @@ public class Add implements Command {
     }
 
     public static void missingArguments(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.INCORRECT_ARGS);
+
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "incorrectArgs"));
     }
 
     @Override
@@ -105,23 +106,23 @@ public class Add implements Command {
                                 if (!event.getJDA().getUserById(userId).isBot()) {
                                     if (!CountManagers.action(this.option, guildId, userId)) {
 
-                                        returnStatement(AddManager.action(this.option, guildId, userId), event);
+                                        returnStatement(AddManager.action(guildId, userId), event);
                                     } else {
-                                        sendToChannel(event, Const.ALREADY_MANAGER);
+                                        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "alreadyManager"));
                                     }
                                 } else {
-                                    sendToChannel(event, Const.NO_BOT_MANAGER);
+                                    sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "noBotManager"));
                                 }
                             }
                         } catch (NullPointerException npe) {
-                            sendToChannel(event, Const.DISCORD_USER_NO_EXIST);
+                            sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "discordUserNoExist"));
                         }
                         break;
                     case "channel":
                         switch (platformId) {
                             case 1:
                                 if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
-                                    sendToChannel(event, Const.ALREADY_EXISTS);
+                                    sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
                                 } else {
                                     returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
                                 }
@@ -129,12 +130,12 @@ public class Add implements Command {
                             case 2:
                                 if (BeamController.channelExists(this.argument)) {
                                     if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
-                                        sendToChannel(event, Const.ALREADY_EXISTS);
+                                        sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
                                     } else {
                                         returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
                                     }
                                 } else {
-                                    sendToChannel(event, Const.BEAM_USER_NO_EXIST);
+                                    sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "beamUserNoExist"));
                                 }
                                 break;
                             default:
@@ -144,7 +145,7 @@ public class Add implements Command {
                     default:
 
                         if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
-                            sendToChannel(event, Const.ALREADY_EXISTS);
+                            sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
                         } else {
                             returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
                         }
@@ -156,15 +157,17 @@ public class Add implements Command {
 
     private void returnStatement(Boolean success, GuildMessageReceivedEvent event) {
         if (success) {
-            sendToChannel(event, "Added `" + this.option + "` " + this.argument.replaceAll("''", "'"));
+            sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "added") +
+                    "`" + this.option + "` " + this.argument.replaceAll("''", "'"));
         } else {
-            sendToChannel(event, "Failed to add `" + this.option + "` " + this.argument.replaceAll("''", "'"));
+            sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "addFail") +
+                    "`" + this.option + "` " + this.argument.replaceAll("''", "'"));
         }
     }
 
     @Override
     public final void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.ADD_HELP);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "addHelp"));
     }
 
     @Override

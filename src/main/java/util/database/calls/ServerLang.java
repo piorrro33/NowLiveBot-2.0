@@ -27,39 +27,61 @@ import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
 
-public class GetGuildFromMessage {
+/**
+ * Created by keesh on 1/30/2017.
+ */
+public class ServerLang {
 
     private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
-    private String guildId;
+    private String langCode;
 
-    public String getGuildId(String messageId) {
-        doStuff(messageId);
-        return guildId;
-    }
-
-    private synchronized void doStuff(String messageId) {
-        String query = "SELECT `guildId` FROM `stream` WHERE `messageId` = ?";
+    public synchronized void setLang(String guildId, String language) {
+        switch (language.toLowerCase()) {
+            case "french":
+                langCode = "fr";
+                break;
+            default: // English
+                langCode = "en";
+            break;
+        }
 
         try {
+            String query = "UPDATE `guild` SET `serverLang` = ? WHERE `guildId` = ?";
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, messageId);
-            result = pStatement.executeQuery();
+            this.pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, langCode);
+            pStatement.setString(2, guildId);
+            pStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(pStatement, connection);
+        }
+    }
 
-            if (result.isBeforeFirst()) {
-                while (result.next()) {
-                    this.guildId = result.getString("guildId");
-                }
+    public synchronized String getLangCode(String guildId) {
+        try {
+            String query = "SELECT `serverLang` FROM `guild` WHERE `guildId` = ?";
+            if (connection == null || connection.isClosed()) {
+                this.connection = Database.getInstance().getConnection();
+            }
+            this.pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            this.result = pStatement.executeQuery();
+
+            while (result.next()) {
+                return result.getString("serverLang");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
+        return null;
     }
 
 }

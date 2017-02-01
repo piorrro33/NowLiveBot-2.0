@@ -19,11 +19,11 @@
 package core.commands;
 
 import core.Command;
+import langs.LocaleString;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
@@ -48,7 +48,7 @@ public class Move implements Command {
             if (args.substring(0, 1).equals("#") && !args.contains(" ")) {
                 return true;
             } else if (!"help".equals(args)) {
-                sendToChannel(event, Const.INCORRECT_ARGS);
+                sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "incorrectArgs"));
                 return false;
             } else {
                 return true;
@@ -75,9 +75,9 @@ public class Move implements Command {
                     pStatement.setString(2, event.getGuild().getId());
 
                     if (pStatement.executeUpdate() == 1) {
-                        sendToChannel(event, Const.MOVE_SUCCESS);
+                        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "moveSuccess"));
                     } else {
-                        sendToChannel(event, Const.MOVE_FAILURE);
+                        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "moveFail"));
                     }
                 } catch (SQLException e) {
                     logger.error("There was a problem updating Move in the database", e);
@@ -92,7 +92,7 @@ public class Move implements Command {
 
     @Override
     public final void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.MOVE_HELP);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "moveHelp"));
     }
 
     @Override

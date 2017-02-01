@@ -20,10 +20,10 @@ package core.commands;
 
 import core.Command;
 import core.Main;
+import langs.LocaleString;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.Const;
 import util.DiscordLogger;
 import util.database.Database;
 import util.database.calls.Tracker;
@@ -65,7 +65,7 @@ public class Notify implements Command {
                     return true;
                 default:
                     if (Main.debugMode()) {
-                        logger.info(Const.INCORRECT_ARGS);
+                        logger.info(LocaleString.getString(event.getMessage().getGuild().getId(), "incorrectArgs"));
                     }
                     return false;
             }
@@ -84,22 +84,22 @@ public class Notify implements Command {
         switch (args.toLowerCase()) {
             case "none":
                 if (update(event, 0)) {
-                    sendToChannel(event, Const.NOTIFY_NONE);
+                    sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "notifyNone"));
                 }
                 break;
             // Removed option "me"
             case "here":
                 if (update(event, 2)) {
-                    sendToChannel(event, Const.NOTIFY_HERE);
+                    sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "notifyHere"));
                 }
                 break;
             case "everyone":
                 if (update(event, 3)) {
-                    sendToChannel(event, Const.NOTIFY_EVERYONE);
+                    sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "notifyEveryone"));
                 }
                 break;
             default:
-                sendToChannel(event, Const.INCORRECT_ARGS);
+                sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "incorrectArgs"));
                 if (Main.debugMode()) {
                     logger.info("There was an error checking for the command arguments in Notify.");
                 }
@@ -115,7 +115,7 @@ public class Notify implements Command {
      */
     @Override
     public final void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.NOTIFY_HELP);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "notifyHelp"));
     }
 
     /**
@@ -149,7 +149,7 @@ public class Notify implements Command {
                         .getName(), level);
                 return true;
             } else {
-                sendToChannel(event, Const.OOPS);
+                sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "oops"));
                 return false;
             }
         } catch (SQLException e) {

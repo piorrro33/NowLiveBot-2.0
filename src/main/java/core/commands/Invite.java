@@ -19,8 +19,8 @@
 package core.commands;
 
 import core.Command;
+import langs.LocaleString;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import util.Const;
 import util.database.calls.Tracker;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
@@ -44,12 +44,12 @@ public class Invite implements Command {
 
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.INVITE);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "invite"));
     }
 
     @Override
     public final void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.INVITE_HELP);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "inviteHelp"));
     }
 
     @Override

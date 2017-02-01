@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import platform.twitch.controller.TwitchController;
 import util.DiscordLogger;
-import util.PropReader;
 import util.database.Database;
 import util.database.calls.GetOnlineStreams;
 
@@ -66,38 +65,6 @@ public class PlatformListener {
         checkLiveChannels();
         checkLiveGames();
         checkOfflineStreams();
-    }
-
-    private static synchronized void killConn() {
-        try {
-            String query = "USE `information_schema`";
-            if (kcConnection == null || kcConnection.isClosed()) {
-                kcConnection = Database.getInstance().getConnection();
-            }
-            kcStatement = kcConnection.prepareStatement(query);
-            kcStatement.execute();
-
-            query = "SELECT * FROM `PROCESSLIST`";
-            kcStatement = kcConnection.prepareStatement(query);
-            kcResult = kcStatement.executeQuery();
-            while (kcResult.next()) {
-                if (kcResult.getString("USER").equals(PropReader.getInstance().getProp().getProperty("mysql.username"))) {
-                    if (kcResult.getInt("TIME") > 10) {
-                        Integer processId = kcResult.getInt("ID");
-                        query = "KILL CONNECTION " + processId;
-                        kcStatement = kcConnection.prepareStatement(query);
-                        kcStatement.execute();
-                    }
-                }
-            }
-            query = "USE `" + PropReader.getInstance().getProp().getProperty("mysql.schema") + "`";
-            kcStatement = kcConnection.prepareStatement(query);
-            kcStatement.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(kcResult, kcStatement, kcConnection);
-        }
     }
 
     // jda.getUserById("123456789").getJDA().getPresence().getGame().getUrl();

@@ -68,3 +68,4 @@ OFFLINEconfig.properties
 ONLINEconfig.properties
 *.json
 *.jar
+*.sql

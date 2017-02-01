@@ -24,14 +24,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-/**
- * Created by keesh on 1/22/2017.
- */
 public class GetDbChannels {
 
     private Connection connection;
@@ -47,7 +44,7 @@ public class GetDbChannels {
             this.pStatement = connection.prepareStatement(query);
             this.result = pStatement.executeQuery();
 
-            List<String> channels = new ArrayList<>();
+            List<String> channels = new CopyOnWriteArrayList<>();
 
             while (result.next()) {
                 if (!channels.contains(result.getString("name"))) {

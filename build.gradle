@@ -1,0 +1,100 @@
+/*
+ * Copyright 2016-2017 Ague Mort of Veteran Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+plugins {
+    id 'java'
+    id 'application'
+    id 'eclipse'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.1'
+}
+
+mainClassName = 'core.Main'
+
+def appName = 'NowLive'
+group 'com.nowlivebot'
+version '0.1-VS-PreRelease'
+
+compileJava.options.encoding = 'UTF-8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+task copyExtra {
+    outputs.file new File("$buildDir/LICENSE")
+    doLast {
+        copy {
+            from "LICENSE"
+            into "$buildDir"
+        }
+    }
+    outputs.file new File("$buildDir/Dockerfile")
+    doLast {
+        copy {
+            from "Dockerfile"
+            into "$buildDir"
+        }
+    }
+}
+
+applicationDistribution.from(copyExtra) {
+    into ""
+}
+
+task fatJar(type: Jar) {
+    baseName rootProject.name
+    manifest {
+        attributes('Implementation-Title': appName, 'Implementation-Version': version)
+        attributes('Main-Class': mainClassName)
+    }
+    classifier = 'all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+            {
+                exclude "META-INF/*.SF"
+                exclude "META-INF/*.DSA"
+                exclude "META-INF/*.RSA"
+            }
+    with jar
+}
+
+artifacts {
+    archives fatJar
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven { url "https://jitpack.io" }
+    maven {
+        name "beam"
+        url "https://maven.beam.pro/content/repositories/snapshots"
+    }
+}
+dependencies {
+    compile group: 'net.dv8tion', name: 'JDA', version: '3.0.BETA2_123'
+    compile group: 'com.github.avluis', name: 'Java-Twitch-Api-Wrapper', version: '0.3.1'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.22'
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.22'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.5'
+    compile group: 'com.mchange', name: 'c3p0', version: '0.9.5.2'
+    compile group: 'com.mchange', name: 'mchange-commons-java', version: '0.2.12'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}

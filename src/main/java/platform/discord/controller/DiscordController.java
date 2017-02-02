@@ -425,24 +425,29 @@ public class DiscordController {
                 if (checkStreamTable.check(offline.get("guildId"), Integer.valueOf(offline.get("platformId")), offline.get("channelName"))) {
                     if (offline.get("messageId") != null) {
 
-                        Main.getJDA()
-                                .getTextChannelById(offline.get("textChannelId"))
-                                .deleteMessageById(offline.get("messageId"))
-                                .queue(
-                                        success -> {
+                        try {
+                            Main.getJDA()
+                                    .getTextChannelById(offline.get("textChannelId"))
+                                    .deleteMessageById(offline.get("messageId"))
+                                    .queue(
+                                            success -> {
 
-                                            new DiscordLogger(" :x: " + offline.get("channelName") + " has gone " +
-                                                    "offline. Message deleted in G:" + Main.getJDA
-                                                    ().getGuildById(offline.get("guildId")).getName(), null);
-                                            System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
-                                                            "announcement was successfully deleted in: %s%n",
-                                                    offline.get("channelName"),
-                                                    Main.getJDA().getGuildById(offline.get("guildId")).getName());
+                                                new DiscordLogger(" :x: " + offline.get("channelName") + " has gone " +
+                                                        "offline. Message deleted in G:" + Main.getJDA
+                                                        ().getGuildById(offline.get("guildId")).getName(), null);
+                                                System.out.printf("[OFFLINE STREAM] %s has gone offline. The " +
+                                                                "announcement was successfully deleted in: %s%n",
+                                                        offline.get("channelName"),
+                                                        Main.getJDA().getGuildById(offline.get("guildId")).getName());
 
-                                            DeleteFromStream deleteStream = new DeleteFromStream();
-                                            deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
-                                        },
-                                        error -> unknownMessageHandler(error, offline));
+                                                DeleteFromStream deleteStream = new DeleteFromStream();
+                                                deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
+                                            },
+                                            error -> unknownMessageHandler(error, offline));
+                        } catch (NullPointerException npe) {
+                            DeleteFromStream deleteStream = new DeleteFromStream();
+                            deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));
+                        }
                     } else {
                         DeleteFromStream deleteStream = new DeleteFromStream();
                         deleteStream.process(offline.get("guildId"), 1, offline.get("channelName"));

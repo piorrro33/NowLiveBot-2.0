@@ -69,3 +69,4 @@ ONLINEconfig.properties
 *.json
 *.jar
 *.sql
+*.gradle

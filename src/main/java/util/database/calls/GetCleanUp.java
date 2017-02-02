@@ -39,9 +39,9 @@ public class GetCleanUp {
     public synchronized Boolean action(String guildId, String query) {
         try {
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
+            this.pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
             if (pStatement.executeUpdate() == 1) {
                 return true;
@@ -64,7 +64,7 @@ public class GetCleanUp {
             pStatement.setString(1, guildId);
             result = pStatement.executeQuery();
 
-            while (result.next()) {
+            if (result.next()) {
                 return result.getInt("cleanup");
             }
         } catch (SQLException e) {

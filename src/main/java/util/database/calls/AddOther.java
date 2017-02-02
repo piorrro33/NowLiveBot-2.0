@@ -33,10 +33,27 @@ public class AddOther {
 
     private static Connection connection;
     private static PreparedStatement pStatement;
+    private static String query;
 
     public synchronized static Boolean action(String tableName, String guildId, int platformId, String name) {
-        final String query = "INSERT INTO `" + tableName + "` (`id`, `guildId`, `platformId`, `name`) VALUES (null, " +
-                "?, ?, ?)";
+
+        switch (tableName) {
+            case "channel":
+                query = "INSERT INTO `channel` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
+                break;
+            case "filter":
+                query = "INSERT INTO `filter` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
+                break;
+            case "game":
+                query = "INSERT INTO `game` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
+                break;
+            case "tag":
+                query = "INSERT INTO `tag` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
+                break;
+            default:
+                break;
+        }
+
         try {
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();

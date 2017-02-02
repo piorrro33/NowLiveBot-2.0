@@ -19,8 +19,8 @@
 package core.commands;
 
 import core.Command;
+import langs.LocaleString;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import util.Const;
 import util.database.calls.GetCleanUp;
 import util.database.calls.Tracker;
 
@@ -60,15 +60,15 @@ public class CleanUp implements Command {
         switch (args) {
             case "none":
                 query = "UPDATE `guild` SET `cleanup` = 0 WHERE `guildId` = ?";
-                returnStatement = Const.CLEANUP_SUCCESS_NONE;
+                returnStatement = LocaleString.getString(event.getMessage().getGuild().getId(), "cleanupSuccessNone");
                 break;
             case "edit":
                 query = "UPDATE `guild` SET `cleanup` = 1 WHERE `guildId` = ?";
-                returnStatement = Const.CLEANUP_SUCCESS_EDIT;
+                returnStatement = LocaleString.getString(event.getMessage().getGuild().getId(), "cleanupSuccessEdit");
                 break;
             case "delete":
                 query = "UPDATE `guild` SET `cleanup` = 2 WHERE `guildId` = ?";
-                returnStatement = Const.CLEANUP_SUCCESS_DELETE;
+                returnStatement = LocaleString.getString(event.getMessage().getGuild().getId(), "cleanupSuccessDelete");
                 break;
             default:
                 return;
@@ -77,7 +77,7 @@ public class CleanUp implements Command {
         if (cleanup.action(event.getGuild().getId(), query)) {
             sendToChannel(event, returnStatement);
         } else {
-            sendToChannel(event, Const.CLEANUP_FAIL);
+            sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "cleanupFail"));
         }
     }
 
@@ -88,7 +88,7 @@ public class CleanUp implements Command {
      */
     @Override
     public final void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.CLEANUP_HELP);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "cleanupHelp"));
     }
 
     /**

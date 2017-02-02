@@ -64,7 +64,7 @@ public class Database {
         cpds.setPassword(MYSQL_PASSWORD);
         // Optional c3p0 settings below
         cpds.setInitialPoolSize(3);
-        cpds.setMaxPoolSize(100);
+        cpds.setMaxPoolSize(120);
         cpds.setMaxIdleTime(9);
         cpds.setMinPoolSize(3);
         cpds.setAcquireIncrement(3);

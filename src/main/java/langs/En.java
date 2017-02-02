@@ -138,8 +138,11 @@ public interface En {
             + Const.COMMAND
             + " list <option>"
             + "\n\t<option>"
+            + "\n\tfilter - I'll list all of the game filters that you have set up"
             + "\n\tgame - List the games that I'm tracking for you"
-            + "\n\tchannel - I'll list out all of the individual stream channels you want me to watch```";
+            + "\n\tchannel - I'll list out all of the individual stream channels you want me to watch"
+            + "\n\tmanager - Lists the managers of your channel"
+            + "\n\tsetting - Lists other settings```";
     String MOVE_HELP = "```Ruby\nMOVE:  Change where I make my announcements.\nUSAGE:  "
             + Const.COMMAND_PREFIX
             + Const.COMMAND
@@ -184,4 +187,9 @@ public interface En {
             + "\n\t<sub-command> <option> <argument>"
             + "\n\tadd channel <channel-name>"
             + "\n\tremove channel <channel-name>```";
+    String LIST_SETTINGS = "```Ruby/n/t" + "Compact mode is " + "compactSetting"+ "." +
+            "/n/t" + "Notification is set to " + "notificationSetting" + "."+
+            "/n/t" + "Cleanup is set to " + "cleanupSetting" + "."+
+            "/n/t" + "Broadcaster language is set to " + "broadLang"  + "." +
+            "n/t" + "Server language is set to " + "serverLang"+ "./n/t```";
 }

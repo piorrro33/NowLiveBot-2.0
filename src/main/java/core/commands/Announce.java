@@ -19,8 +19,8 @@
 package core.commands;
 
 import core.Command;
+import langs.LocaleString;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import util.Const;
 import util.DiscordLogger;
 import util.database.Database;
 import util.database.calls.Tracker;
@@ -60,7 +60,7 @@ public class Announce implements Command {
             result = pStatement.executeQuery();
             while (result.next()) {
                 event.getJDA().getGuildById(result.getString("guildId")).getPublicChannel()
-                        .sendMessage("*Message from the " + Const.BOT_NAME + " developers:*\n\n\t" + args).queue();
+                        .sendMessage(LocaleString.getString(event.getMessage().getGuild().getId(), "devMessage") + args).queue();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -68,7 +68,7 @@ public class Announce implements Command {
             cleanUp(result, pStatement, connection);
         }
 
-        sendToChannel(event, "*Message from the " + Const.BOT_NAME + " developers:*\n\n\t" + args);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "devMessage") + args);
         new DiscordLogger(" :globe_with_meridians: Global announcement sent.", event);
         System.out.println("[SYSTEM] Global announcement sent.");
     }
@@ -76,7 +76,7 @@ public class Announce implements Command {
     @Override
     public final void help(GuildMessageReceivedEvent event) {
         // TODO: Add some sort of check for being a bot admin here so this doesn't show up to guild owners and users
-        sendToChannel(event, Const.ANNOUNCE_HELP);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "announceHelp"));
     }
 
     @Override

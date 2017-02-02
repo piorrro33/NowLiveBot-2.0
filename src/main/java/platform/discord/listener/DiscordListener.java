@@ -20,6 +20,7 @@ package platform.discord.listener;
 
 import core.CommandParser;
 import core.Main;
+import langs.LocaleString;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.events.DisconnectEvent;
 import net.dv8tion.jda.core.events.ReconnectedEvent;
@@ -105,23 +106,18 @@ public class DiscordListener extends ListenerAdapter {
     public final void onPrivateMessageReceived(PrivateMessageReceivedEvent event) {
         if (!event.getAuthor().getId().equals(event.getJDA().getSelfUser().getId())) {
             MessageBuilder message = new MessageBuilder();
-            message.append(Const.PRIVATE_MESSAGE_REPLY);
+            message.append(LocaleString.getString(event.getMessage().getGuild().getId(), "privateMessageReply"));
             sendToPm(event, message.build());
         }
     }
 
     @Override
     public final void onDisconnect(DisconnectEvent event) {
-        try {
-            new DiscordLogger(" :broken_heart: Discord had been disconnected. Attempting to reconnect...", event);
-            logger.info("Discord has been disconnected.  Reconnecting...");
-            Main.main(null);
-            System.out.println("Client Close Frame: " + event.getClientCloseFrame());
-            System.out.println("Service Close Frame: " + event.getServiceCloseFrame());
-            System.out.println("Response Number: " + event.getResponseNumber());
-        } catch (PropertyVetoException | IOException | SQLException e) {
-            e.printStackTrace();
-        }
+        new DiscordLogger(" :broken_heart: Discord had been disconnected. Attempting to reconnect...", event);
+        logger.info("Discord has been disconnected.  Reconnecting...");
+        System.out.println("Client Close Frame: " + event.getClientCloseFrame());
+        System.out.println("Service Close Frame: " + event.getServiceCloseFrame());
+        System.out.println("Response Number: " + event.getResponseNumber());
     }
 
     @Override
@@ -169,7 +165,7 @@ public class DiscordListener extends ListenerAdapter {
                     !cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND + " remove channel")) {
                 CommandParser.handleCommand(Main.parser.parse(cntMsg, event));
             } else {
-                sendToChannel(event, Const.USE_PLATFORM);
+                sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "usePlatform"));
             }
         }
     }

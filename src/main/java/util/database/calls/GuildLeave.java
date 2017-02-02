@@ -26,8 +26,8 @@ import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
@@ -36,7 +36,7 @@ import static util.database.Database.cleanUp;
  */
 public final class GuildLeave {
     private static final Logger logger = LoggerFactory.getLogger("Guild Leave");
-    private static List<String> tableList = new ArrayList<>();
+    private static List<String> tableList = new CopyOnWriteArrayList<>();
     private static Connection connection;
     private static PreparedStatement pStatement;
 

@@ -16,27 +16,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package util;
+package langs;
 
-import langs.*;
+import util.database.calls.ServerLang;
 
-/**
- * Common variables used throughout
- *
- * @author Veteran Software
- * @version 1.0
- * @since 10/1/2016
- */
-public interface Const {
+import java.util.Locale;
+import java.util.ResourceBundle;
 
-    // Commonly used Constants
+public class LocaleString {
 
-    String DISCORD_URL = "https://discord.gg/gKbbrFK";
-    String BOT_LOGO = "https://cdn.discordapp.com/attachments/251541740484296705/251973422521778177/nl2_bot.png";
-    String COMMAND_PREFIX = "-";// Requires single, regex safe character (at the moment) wahahahaha
-    String COMMAND = "nl";
-    String BOT_NAME = "Now Live";
-    String PLAYING = COMMAND_PREFIX + COMMAND + " help";
-    String LOG_CHANNEL = PropReader.getInstance().getProp().getProperty("discord.log.chan");
-    String LIST_SETTINGS = En.LIST_SETTINGS;
+    public static synchronized String getString(String guildId, String outputString) {
+        ServerLang serverLang = new ServerLang();
+        String langCode = serverLang.getLangCode(guildId);
+
+        Locale locale = new Locale(langCode);
+
+        ResourceBundle langBundle = ResourceBundle.getBundle("langs.LanguageBundle", locale);
+
+        return langBundle.getObject(outputString).toString();
+    }
+
 }

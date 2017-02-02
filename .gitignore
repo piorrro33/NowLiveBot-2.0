@@ -52,8 +52,8 @@ Thumbs.db
 .flooignore
 
 .settings/
-config.properties
-nowlive_schema.sql
+*.properties
+*.sql
 out/
 src/resources/
 src/test/
@@ -64,7 +64,5 @@ libs/
 *.txt
 restart.sh
 start.sh
-OFFLINEconfig.properties
-ONLINEconfig.properties
 *.json
 *.jar

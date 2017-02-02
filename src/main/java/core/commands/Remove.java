@@ -19,11 +19,11 @@
 package core.commands;
 
 import core.Command;
+import langs.LocaleString;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import platform.discord.controller.DiscordController;
-import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
@@ -48,8 +48,9 @@ public class Remove implements Command {
     private Connection connection;
     private PreparedStatement pStatement;
     private String query;
+    private String defaultQuery;
     private ResultSet result;
-    private String[] options = new String[]{"channel", "filter", "game", "manager", "help"};
+    private String[] options = new String[]{"channel", "filter", "game", "manager", "tag", "help"};
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
@@ -78,7 +79,7 @@ public class Remove implements Command {
     }
 
     @Override
-    public final void action(String args, GuildMessageReceivedEvent event) {
+    public final synchronized void action(String args, GuildMessageReceivedEvent event) {
 
         DiscordController dController = new DiscordController(event);
         String guildId = event.getGuild().getId();
@@ -102,12 +103,12 @@ public class Remove implements Command {
                                 .getMentionedUsersId()))) {
                             if (managerCount(guildId)) { // Make sure there is going to be enough managers
                                 try {
-                                    query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `userId` = ?";
+                                    query = "DELETE FROM `manager` WHERE `guildId` = ? AND `userId` = ?";
 
                                     if (connection == null || connection.isClosed()) {
-                                        connection = Database.getInstance().getConnection();
+                                        this.connection = Database.getInstance().getConnection();
                                     }
-                                    pStatement = connection.prepareStatement(query);
+                                    this.pStatement = connection.prepareStatement(query);
 
                                     pStatement.setString(1, guildId);
                                     pStatement.setString(2, dController.getMentionedUsersId());
@@ -119,25 +120,40 @@ public class Remove implements Command {
                                     cleanUp(pStatement, connection);
                                 }
                             } else {
-                                sendToChannel(event, Const.NEED_ONE_MANAGER);
+                                sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "needOneManager"));
                             }
                         } else {
-                            sendToChannel(event, Const.CANT_REMOVE_OWNER);
+                            sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "canNotRemoveOwner"));
                         }
                         break;
 
                     default:
-                        query = "DELETE FROM `" + this.option + "` WHERE `guildId` = ? AND `platformId` = ? AND " +
-                                "`name` LIKE ?";
+                        switch (this.option) {
+                            case "channel":
+                                defaultQuery = "DELETE FROM `channel` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                                break;
+                            case "filter":
+                                defaultQuery = "DELETE FROM `filter` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                                break;
+                            case "game":
+                                defaultQuery = "DELETE FROM `game` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                                break;
+                            case "tag":
+                                defaultQuery = "DELETE FROM `tag` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                                break;
+                            default:
+                                break;
+                        }
+
                         try {
                             if (connection == null || connection.isClosed()) {
                                 connection = Database.getInstance().getConnection();
                             }
-                            pStatement = connection.prepareStatement(query);
+                            pStatement = connection.prepareStatement(defaultQuery);
 
                             pStatement.setString(1, guildId);
                             pStatement.setInt(2, platformId);
-                            pStatement.setString(3, "%" + this.argument + "%");
+                            pStatement.setString(3, argument);
                             Integer removeOther = pStatement.executeUpdate();
                             removeResponse(event, removeOther);
                         } catch (SQLException e) {
@@ -151,18 +167,19 @@ public class Remove implements Command {
         }
     }
 
-    private void removeResponse(GuildMessageReceivedEvent event, Integer resultVar) {
+    private synchronized void removeResponse(GuildMessageReceivedEvent event, Integer resultVar) {
         if (resultVar > 0) {
-            sendToChannel(event, "Removed `" + this.option + "` " + this.argument);
+            sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "removed") +
+                    "`" + this.option + "` " + this.argument);
         } else {
-            sendToChannel(event, "I can't remove `" + this.option + "` " + this.argument + " because " +
-                    "it's not in my database.");
+            sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "removeFail1") +
+                    "`" + this.option + "`" + this.argument + LocaleString.getString(event.getMessage().getGuild().getId(), "removeFail2"));
         }
     }
 
     @Override
     public final void help(GuildMessageReceivedEvent event) {
-        sendToChannel(event, Const.REMOVE_HELP);
+        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "removeHelp"));
     }
 
     @Override
@@ -170,7 +187,7 @@ public class Remove implements Command {
         new Tracker("Remove");
     }
 
-    private boolean managerCount(String guildId) {
+    private synchronized boolean managerCount(String guildId) {
         try {
             query = "SELECT COUNT(*) AS `count` FROM `manager` WHERE `guildId` = ?";
 

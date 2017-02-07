@@ -228,6 +228,11 @@ public class List implements Command {
 
 
     private Message getSettings(MessageBuilder message) {
+        Integer compact = 0;
+        Integer cleanup = 0;
+        String broadLang = "";
+        String serverLang = "";
+        Integer notify = 0;
 
         try {
             if (connection == null || connection.isClosed()) {
@@ -238,18 +243,20 @@ public class List implements Command {
             pStatement.setString(1, guildId);
             resultSet = pStatement.executeQuery();
 
-            resultSet.next();
-            Integer compact = resultSet.getInt(1);
-            Integer cleanup = resultSet.getInt(2);
-            String broadLang = resultSet.getString(3);
-            String serverLang = resultSet.getString(4);
+            if (resultSet.next()) {
+                compact = resultSet.getInt(1);
+                cleanup = resultSet.getInt(2);
+                broadLang = resultSet.getString(3);
+                serverLang = resultSet.getString(4);
+            }
 
             pStatement = connection.prepareStatement("SELECT `level` FROM `notification` WHERE `guildId` = ?");
             pStatement.setString(1, guildId);
             resultSet = pStatement.executeQuery();
 
-            resultSet.next();
-            Integer notify = resultSet.getInt(1);
+            if (resultSet.next()) {
+                notify = resultSet.getInt(1);
+            }
 
             message.append(util.Const.LIST_SETTINGS
                     .replace("compactSetting", (compact == 0 ? "On" : "Off"))

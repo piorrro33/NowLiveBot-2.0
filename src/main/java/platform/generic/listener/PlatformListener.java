@@ -44,11 +44,8 @@ import static util.database.Database.cleanUp;
 public class PlatformListener {
     private static Logger logger = LoggerFactory.getLogger("Platform Listener");
     private static Connection clgConnection;
-    private static Connection kcConnection;
     private static PreparedStatement clgStatement;
-    private static PreparedStatement kcStatement;
     private static ResultSet clgResult;
-    private static ResultSet kcResult;
     private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
     public PlatformListener() {

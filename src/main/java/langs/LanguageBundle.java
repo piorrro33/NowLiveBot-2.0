@@ -39,8 +39,8 @@ public class LanguageBundle extends ListResourceBundle {
                     + "\n\tfilter - The game name that you want to filter streamers by"
                     + "\n\tgame - The name of the game exactly as it appears on the streaming platform"
                     + "\n\tmanager - The @ mention of the user to add as a manager```"},
-            {"adminOverride", "*Permission of this command have been overridden by a bot developer.*"},//DONE
-            {"alreadyExists", "It looks like you already added that to my database. ¯\\_(ツ)_/¯"},//DONE
+            {"adminOverride", "*Permission of this command have been overridden by a bot developer.*"},
+            {"alreadyExists", "It looks like you already added that to my database. ¯\\_(ツ)_/¯"},
             {"alreadyManager", "It seems I've already hired that user as a manager.  Find moar humanz!"},
             {"announceHelp", "```Ruby\nANNOUNCE:  Shhh...  I'm a secret...\nUSAGE:  "
                     + Const.COMMAND_PREFIX
@@ -53,24 +53,32 @@ public class LanguageBundle extends ListResourceBundle {
                     + "\n\t<sub-command> <option> <argument>"
                     + "\n\tadd channel <channel-name>"
                     + "\n\tremove channel <channel-name>```"},
-            {"beamUserNoExist", "That Beam user does not exist! Check your spelling and try again!"},//DONE
-            {"broadcasterLangAllSuccess", " :ok_hand: I'll only look for streams that all languages!"},//DONE
+            {"beamUserNoExist", "That Beam user does not exist! Check your spelling and try again!"},
+            {"botLangFail", "Something went wrong and my language is still the same."},
+            {"botLangHelp", "```Ruby\nBOTLANG: Used to change the language of my responses.\nUSAGE: "
+                    + Const.COMMAND_PREFIX
+                    + Const.COMMAND
+                    + " botlang language"
+                    + "Enter either the English spelling or the native spelling of the language you wish to set."},
+            {"botLangSuccess", "You've successfully changed my language."},
+            {"botLangUnsupported", "That language is currently not supported."},
+            {"broadcasterLangAllSuccess", " :ok_hand: I'll look for streams from all languages."},
             {"broadcasterLangFail", "Something went wrong and I'm still looking for all languages."},
-            {"broadcasterLangSuccess", " :ok_hand: I'll only look for streams that are in that language!"},//DONE
+            {"broadcasterLangSuccess", " :ok_hand: I'll only look for streams that are in that language!"},
             {"canNotRemoveOwner", "Silly human, you can't remove the server owner from the manager list. :laughing: " +
                     ":laughing:"},
-            {"cleanupFail", "Ah, man...  Something went wrong... Better try that again."},//DONE
+            {"cleanupFail", "Ah, man...  Something went wrong... Better try that again."},
             {"cleanupHelp", "```Ruby\nCLEANUP:  Change the way I clean up my stream announcements.\nUSAGE:"
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
                     + " cleanup <option>"
                     + "\n<option>"
                     + "\n\tnone - I won't change a thing to my announcements! (default)"
-                    + "\n\tedit - I'll edit my announcements to say \"OFFLINE\" whe the streamer goes offline"
+                    + "\n\tedit - I'll edit my announcements to say \"OFFLINE\" when the streamer goes offline"
                     + "\n\tdelete - I'll just delete the announcement when the streamer is no longer live```"},
-            {"cleanupSuccessDelete", "Sir, yes Sir!  I will delete all my announcements from now on!"},//DONE
-            {"cleanupSuccessEdit", "Editing my announcements, it is."},//DONE
-            {"cleanupSuccessNone", " :ok_hand: I won't do anything to my announcements."},//DONE
+            {"cleanupSuccessDelete", "Sir, yes Sir!  I will delete all my announcements from now on!"},
+            {"cleanupSuccessEdit", "Editing my announcements, it is."},
+            {"cleanupSuccessNone", " :ok_hand: I won't do anything to my announcements."},
             {"compactFail", "Um, something went wrong.  My compact mode is unchanged."},
             {"compactHelp", "```Ruby\nCOMPACT:  Switch my announcements to a shorter version.\nUSAGE:  "
                     + Const.COMMAND_PREFIX
@@ -82,10 +90,10 @@ public class LanguageBundle extends ListResourceBundle {
             {"compactOff", " :compression: Compact mode has been turned off."},
             {"compactOn", " :compression: Compact mode has been turned on."},
             {"devMessage", "*Message from the " + Const.BOT_NAME + " developers:*\n\n\t"},
-            {"discordUserNoExist", "That person isn't a Discord user!  Try again!"},//DONE
-            {"doesNotExist", "That was never added to my database."},//NOT FOUND
-            {"emptyArgs", "I think you forgot some of the command.  Check the help command for more info."},//DONE
-            {"emptyCommand", "Next time you wake me up, please send a command as well."},//DONE
+            {"discordUserNoExist", "That person isn't a Discord user!  Try again!"},
+            {"doesNotExist", "That was never added to my database."},
+            {"emptyArgs", "I think you forgot some of the command.  Check the help command for more info."},
+            {"emptyCommand", "Next time you wake me up, please send a command as well."},
             {"followersEmbed", "Followers"},
             {"guildJoinSuccess", "Hi there!  I'm Now Live, the stream announcing bot!  Type `" + Const.COMMAND_PREFIX
                     + Const.COMMAND + " help` for a list of my commands.\n\nIf you need some help setting me up, come " +
@@ -103,7 +111,7 @@ public class LanguageBundle extends ListResourceBundle {
                     "server!  just click this link to join:  " + Const.DISCORD_URL + "\n\n" +
                     "*P.S. I don't monitor this mailbox, so please don't send me any messages through PM*"},
             {"incorrectArgs", "You passed incorrect or missing arguments to me.  Check the help command for more info" +
-                    "."},//DONE
+                    "."},
             {"invite", "Hey buddy! Invite me to your server!\n\n\t"
                     + "**Click here:** https://discordapp.com/oauth2/authorize?&client_id="
                     + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=8"},
@@ -161,11 +169,11 @@ public class LanguageBundle extends ListResourceBundle {
                     "out: \n\n"},
             {"oops", "Oops!  Something went wrong and nothing was changed!  Let's try that again."},
             {"ping", "When I was in China on the All-American Ping Pong team, I just loved playing ping-pong with my " +
-                    "Flexolite ping pong paddle."},//DONE
+                    "Flexolite ping pong paddle."},
             {"pingHelp", "```Ruby\nPING:  Used to ping me. If I am working correctly, I'll send you a pong.\nUSAGE: "
                     + Const.COMMAND_PREFIX + "ping```"},
             {"privateMessageReply", "I'm sorry, but the bot you are trying to reach has a voice mail box that has not " +
-                    "been setup yet.  Please try your PM again later."},//DONE
+                    "been setup yet.  Please try your PM again later."},
             {"removed", "Removed "},
             {"removeFail1", "I can't remove "},
             {"removeFail2", " because it's not in my database."},
@@ -201,11 +209,11 @@ public class LanguageBundle extends ListResourceBundle {
                     + "\n\t<sub-command> <option> <argument>"
                     + "\n\tadd channel <channel-name>"
                     + "\n\tremove channel <channel-name>```"},
-            {"typeOnce", "You only need to type that part once, silly."},//DONE
+            {"typeOnce", "You only need to type that part once, silly."},
             {"usePlatform", "Oops!  That's the old way of doing things!  Use the platform specific command!  Type `" +
                     Const.COMMAND_PREFIX + Const.COMMAND + " help` for more info."},
             {"watchThemHere", "Watch them here: "},
-            {"wrongCommand", " :thinking: I don't know that command."}//DONE
+            {"wrongCommand", " :thinking: I don't know that command."}
     };
 
     @Override

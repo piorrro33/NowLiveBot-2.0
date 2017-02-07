@@ -43,6 +43,7 @@ public class CommandParser {
         commands.put("add", new Add());
         commands.put("announce", new Announce());
         commands.put("beam", new Beam());
+        commands.put("botlang", new BotLanguage());
         commands.put("cleanup", new CleanUp());
         commands.put("compact", new Compact());
         commands.put("help", new Help());

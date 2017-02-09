@@ -50,12 +50,12 @@ public class BotLanguage implements Command {
                 case "english":
                     //case "danish": // Danish
                     //case "dansk":
-                    //case "german": // German
-                    //case "deutsch":
+                case "german": // German
+                case "deutsch":
                 case "spanish": // Spanish
                 case "español":
-                    //case "french": // French
-                    //case "français":
+                case "french": // French
+                case "français":
                     //case "italian": // Italian
                     //case "italiano":
                     //case "hungarian": // Hungarian
@@ -124,19 +124,19 @@ public class BotLanguage implements Command {
                 /*case "danish": // Danish
                 case "dansk":
                     langCode = "da";
-                    break;
+                    break;*/
                 case "german": // German
                 case "deutsch":
                     langCode = "de";
-                    break;*/
+                    break;
                 case "spanish": // Spanish
                 case "español":
                     langCode = "es";
                     break;
-                /*case "french": // French
+                case "french": // French
                 case "français":
                     langCode = "fr";
-                    break;
+                    break;/*
                 case "italian": // Italian
                 case "italiano":
                     langCode = "it";

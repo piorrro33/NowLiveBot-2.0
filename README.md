@@ -108,6 +108,32 @@ Example:
 
 `-nl add tag <tag>` *tags coming soon!*
 
+### Bot Language (Managers only)
+> **IMPORTANT:**  This will affect all of the bot's responses.  Native spelling is allowed!  
+If you don't know how to type the non-English characters, use the English version
+
+> **Currently supported languages:**  English, French, German, & Spanish
+
+> Change the language of the bots responses to a language other than English.
+
+
+`-nl botlang <language>`
+
+#### Examples
+`-nl botlang english` (default)
+
+> French
+
+`-nl botlang french` or `-nl botlang français` 
+
+> German
+
+`-nl botlang german` or `-nl botlang deutsch`
+
+> Spanish
+
+`-nl botlang spanish` or `-nl botlang español`
+
 ### Cleanup (Managers only)
 > Changes what happens when the streamer goes offline
 
@@ -164,7 +190,7 @@ Example:
 
 `-nl remove tag <tag>` *tags coming soon!*
 
-### Stream Language (managers only)
+### Stream Language (Managers only)
 > **IMPORTANT:**  This only affects Twitch streams.
 
 > Allows you to filter streams by the language it is being broadcast in.  This supports the English spelling of the 

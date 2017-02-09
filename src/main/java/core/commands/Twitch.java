@@ -40,13 +40,16 @@ public class Twitch implements Command {
     @Override
     public boolean called(String args, GuildMessageReceivedEvent event) {
         if (args != null && !"".equals(args)) {
+
             String calledArgs = args.trim().substring(args.lastIndexOf(' ') + 1);
-            String pattern = "^[a-zA-Z0-9_]{4,25}$";
-            if (calledArgs.matches(pattern)) {
+
+            if (calledArgs.matches("^[a-zA-Z0-9_]{4,25}$")) {
                 if ("help".equals(args)) {
                     return true;
                 }
-                String secondaryCommand = args.substring(0, args.indexOf(' '));
+
+                String secondaryCommand = args.trim().substring(0, args.indexOf(' '));
+
                 switch (secondaryCommand) {
                     case "add":
                     case "remove":
@@ -68,11 +71,11 @@ public class Twitch implements Command {
     @Override
     public void action(String args, GuildMessageReceivedEvent event) {
         // Grab the secondary command (add and remove)
-        String secondaryCommand = args.substring(0, args.indexOf(' '));
+        String secondaryCommand = args.trim().substring(0, args.indexOf(' '));
         // the args to be passed to the secondaryCommand#called()
-        String calledArgs = args.substring(args.indexOf(' ') + 1).trim();
+        String calledArgs = args.trim().substring(args.indexOf(' ') + 1).trim();
         // the args to be passed along with the platform identifier
-        String secondaryArgs = "twitch~" + args.substring(args.indexOf(' ') + 1);
+        String secondaryArgs = "twitch~" + args.trim().substring(args.indexOf(' ') + 1);
         switch (secondaryCommand) {
             case "add":
             case "remove":

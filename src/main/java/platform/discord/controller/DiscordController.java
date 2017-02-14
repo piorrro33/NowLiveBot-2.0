@@ -18,7 +18,6 @@
 
 package platform.discord.controller;
 
-import com.mb3364.twitch.api.models.Stream;
 import core.Main;
 import langs.LocaleString;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -33,6 +32,7 @@ import net.dv8tion.jda.core.exceptions.PermissionException;
 import net.dv8tion.jda.core.requests.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import platform.twitch.models.Stream;
 import util.Const;
 import util.DiscordLogger;
 import util.database.Database;
@@ -267,17 +267,17 @@ public class DiscordController {
                         String userId = nlResult.getString("userId");
                         User user = Main.getJDA().getUserById(userId);
                         message.append("Hey ");
-                        message.appendMention(user);
+                        message.append(user);
                         message.append("! Check out this streamer that just went live!");
                         break;
                     case 2: // User wants @here mention
                         message.append("Hey ");
-                        message.appendHereMention();
+                        message.append(MessageBuilder.HERE_MENTION);
                         message.append("! Check out this streamer that just went live!");
                         break;
                     case 3: // User wants @everyone mention
                         message.append("Hey ");
-                        message.appendEveryoneMention();
+                        message.append(MessageBuilder.EVERYONE_MENTION);
                         message.append("! Check out this streamer that just went live!");
                         break;
                     default:
@@ -342,7 +342,7 @@ public class DiscordController {
                 break;
         }
 
-        eBuilder.setTitle(url);
+        eBuilder.setTitle(url, url);
 
         eBuilder.addField(LocaleString.getString(guildId, "nowPlayingEmbed"), game, false);
         eBuilder.addField(LocaleString.getString(guildId, "streamTitleEmbed"), streamTitle, false);

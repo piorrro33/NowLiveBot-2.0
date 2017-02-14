@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.org/VeteranSoftware/NowLiveBot-2.0.svg?branch=master)](https://travis-ci.org/VeteranSoftware/NowLiveBot-2.0)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/af8f87629fd84849a8789530683231e7)](https://www.codacy.com/app/VeteranSoftware/NowLiveBot-2-0?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=VeteranSoftware/NowLiveBot-2.0&amp;utm_campaign=Badge_Grade)
 [![Dependency Status](https://www.versioneye.com/user/projects/58324817eaa74b0049b51498/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/58324817eaa74b0049b51498)
+![Discord Badge](https://discordapp.com/api/guilds/250045505659207699/widget.png?style=shield)
 
 > A Discord bot that announces streamers as they go live!
 

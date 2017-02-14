@@ -46,7 +46,7 @@ public class PlatformListener {
     private static Connection clgConnection;
     private static PreparedStatement clgStatement;
     private static ResultSet clgResult;
-    private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
 
     public PlatformListener() {
 
@@ -135,6 +135,6 @@ public class PlatformListener {
         HashMap<String, Map<String, String>> streams = onlineStreams.getOnlineStreams(1);
 
         TwitchController twitch = new TwitchController();
-        twitch.checkOffline(streams, 1);
+        twitch.checkOffline(streams);
     }
 }

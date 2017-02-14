@@ -18,16 +18,14 @@
 
 package platform.twitch.controller;
 
-import com.mb3364.http.RequestParams;
-import com.mb3364.twitch.api.Twitch;
-import com.mb3364.twitch.api.handlers.ChannelResponseHandler;
-import com.mb3364.twitch.api.handlers.StreamResponseHandler;
-import com.mb3364.twitch.api.handlers.StreamsResponseHandler;
-import com.mb3364.twitch.api.models.Channel;
-import com.mb3364.twitch.api.models.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.HttpClientBuilder;
 import platform.discord.controller.DiscordController;
+import platform.twitch.models.*;
 import util.PropReader;
 import util.database.Database;
 import util.database.calls.CountDbChannels;
@@ -35,6 +33,10 @@ import util.database.calls.GetBroadcasterLang;
 import util.database.calls.GetDbChannels;
 import util.database.calls.GetGuildsByStream;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -43,7 +45,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static platform.discord.controller.DiscordController.getChannelId;
 import static util.database.Database.cleanUp;
@@ -51,28 +52,97 @@ import static util.database.Database.cleanUp;
 /**
  * @author keesh
  */
-public class TwitchController extends Twitch {
+public class TwitchController {
 
-    private static Connection connection;
-    private static PreparedStatement pStatement;
-    private static ResultSet result;
-    private Logger logger = LoggerFactory.getLogger("Twitch Controller");
-    private ReentrantLock lock = new ReentrantLock();
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private ResultSet result;
+    private HttpClient client = HttpClientBuilder.create().build();
+    private HttpGet get;
+    private HttpResponse response;
 
     public TwitchController() {
-        this.setClientId(PropReader.getInstance().getProp().getProperty("twitch.client.id"));
     }
 
-    private static synchronized List<String> checkFilters(String guildId) {
+    private synchronized URIBuilder setBaseUrl(String endpoint) {
+        URIBuilder builder = new URIBuilder();
+        builder.setScheme("https").setHost("api.twitch.tv").setPath("/kraken" + endpoint);
+        return builder;
+    }
+
+    public synchronized String convertNameToId(String name) {
+        URIBuilder uriBuilder = setBaseUrl("/users");
+        uriBuilder.setParameter("login", name);
+
+        try {
+            URI uri = uriBuilder.build();
+            get = new HttpGet(uri);
+            get.addHeader("Cache-Control", "no-cache");
+            get.addHeader("Accept", "application/vnd.twitchtv.v5+json");
+            get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+            response = client.execute(get);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            IdConversion idConversion = objectMapper.readValue(
+                    new InputStreamReader(response.getEntity().getContent()), IdConversion.class);
+
+            if (idConversion.getTotal().equals(1)) {
+                System.out.println("User or channel found.");
+                return idConversion.getUsers().get(0).getId();
+            }
+
+        } catch (URISyntaxException | IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("User or channel NOT found.");
+        return null;
+    }
+
+    private synchronized List<User> convertNameToId(List<String> names) {
+        URIBuilder uriBuilder = setBaseUrl("/users");
+        StringBuilder nameList = new StringBuilder();
+        names.forEach(name -> {
+            if (nameList.length() > 0) {
+                nameList.append(",");
+            }
+            nameList.append(name);
+        });
+        uriBuilder.setParameter("login", nameList.toString());
+
+        try {
+            URI uri = uriBuilder.build();
+            get = new HttpGet(uri);
+            get.addHeader("Cache-Control", "no-cache");
+            get.addHeader("Accept", "application/vnd.twitchtv.v5+json");
+            get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+            response = client.execute(get);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            IdConversion idConversion = objectMapper.readValue(
+                    new InputStreamReader(response.getEntity().getContent()), IdConversion.class);
+
+            if (idConversion.getTotal() > 0) {
+                System.out.println("Users or channels found.");
+                return idConversion.getUsers();
+            }
+
+        } catch (URISyntaxException | IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Users or channels NOT found.");
+        return null;
+    }
+
+    private synchronized List<String> checkFilters(String guildId) {
         try {
             String query = "SELECT * FROM `filter` WHERE `guildId` = ?";
 
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
+            this.pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
-            result = pStatement.executeQuery();
+            this.result = pStatement.executeQuery();
 
             List<String> filters = new CopyOnWriteArrayList<>();
 
@@ -91,51 +161,34 @@ public class TwitchController extends Twitch {
         return null;
     }
 
-    public final synchronized Boolean checkExists(String channelName) {
-        final Boolean[] exists = {false};
+    public final synchronized void checkOffline(HashMap<String, Map<String, String>> streams) {
 
-        this.channels().get(channelName, new ChannelResponseHandler() {
-            @Override
-            public void onSuccess(Channel channel) {
-                logger.info("Channel exists!");
-                exists[0] = true;
-            }
+        streams.forEach((String messageId, Map<String, String> streamData) -> {
 
-            @Override
-            public void onFailure(int i, String s, String s1) {
-                exists[0] = false;
-            }
+            URIBuilder uriBuilder = setBaseUrl("/streams");
+            uriBuilder.setParameter("channel", streamData.get("channelId"));
 
-            @Override
-            public void onFailure(Throwable throwable) {
-                exists[0] = false;
+            try {
+                URI uri = uriBuilder.build();
+                get = new HttpGet(uri);
+                get.addHeader("Cache-Control", "no-cache");
+                get.addHeader("Accept", "application/vnd.twitchtv.v5+json");
+                get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+                response = client.execute(get);
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                Streams stream = objectMapper.readValue(
+                        new InputStreamReader(response.getEntity().getContent()), Streams.class
+                );
+
+                if (stream == null) {
+                    DiscordController discord = new DiscordController();
+                    discord.offlineStream(streamData);
+                }
+            } catch (URISyntaxException | IOException e) {
+                e.printStackTrace();
             }
         });
-        return exists[0].equals(true);
-    }
-
-    public final synchronized void checkOffline(HashMap<String, Map<String, String>> streams, Integer platformId) {
-
-        streams.forEach((String messageId, Map<String, String> streamData) ->
-                this.streams().get(streamData.get("channelName"), new StreamResponseHandler() {
-                    @Override
-                    public void onSuccess(Stream stream) {
-                        if (stream == null) {
-                            DiscordController discord = new DiscordController();
-                            discord.offlineStream(streamData);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(int i, String s, String s1) {
-
-                    }
-
-                    @Override
-                    public void onFailure(Throwable throwable) {
-
-                    }
-                }));
     }
 
     public final synchronized void checkChannel(Integer platformId) {
@@ -146,77 +199,89 @@ public class TwitchController extends Twitch {
         for (Integer c = 0; c <= amount; c += 100) {
 
             GetDbChannels dbChannels = new GetDbChannels();
-            List<String> channels = dbChannels.fetch(c);
+            List<User> channels = convertNameToId(dbChannels.fetch(c));
 
-            StringBuilder channelString = new StringBuilder();
+            if (channels != null) {
+                StringBuilder channelString = new StringBuilder();
 
-            channels.forEach(channel -> {
-                if (channelString.length() > 0) {
-                    channelString.append(",");
+                channels.forEach(channel -> {
+                    if (channelString.length() > 0) {
+                        channelString.append(",");
+                    }
+                    channelString.append(channel.getId());
+                });
+
+                URIBuilder uriBuilder = setBaseUrl("/streams");
+                uriBuilder.setParameter("channel", channelString.toString());
+                uriBuilder.setParameter("limit", "100");
+
+                try {
+                    URI uri = uriBuilder.build();
+                    get = new HttpGet(uri);
+                    get.addHeader("Cache-Control", "no-cache");
+                    get.addHeader("Accept", "application/vnd.twitchtv.v5+json");
+                    get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+                    response = client.execute(get);
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    Streams streams = objectMapper.readValue(
+                            new InputStreamReader(response.getEntity().getContent()), Streams.class
+                    );
+
+                    if (streams.getTotal() > 0) {
+                        DiscordController discord = new DiscordController();
+                        streams.getStreams().forEach(stream -> {
+                            GetGuildsByStream guildsByStream = new GetGuildsByStream();
+                            CopyOnWriteArrayList<String> guildIds = guildsByStream.fetch(stream.getChannel().getName());
+
+                            guildIds.forEach(guildId -> onLiveStream(stream, guildId, platformId, discord));
+                        });
+                    }
+                } catch (URISyntaxException | IOException e) {
+                    e.printStackTrace();
                 }
-                channelString.append(channel);
-            });
-
-            RequestParams params = new RequestParams();
-            params.put("channel", channelString.toString());
-
-            this.streams().get(params, new StreamsResponseHandler() {
-                @Override
-                public void onSuccess(int i, List<Stream> list) {
-                    DiscordController discord = new DiscordController();
-                    list.forEach(stream -> {
-                        GetGuildsByStream guildsByStream = new GetGuildsByStream();
-                        CopyOnWriteArrayList<String> guildIds = guildsByStream.fetch(stream.getChannel().getName());
-
-                        guildIds.forEach(guildId -> onLiveStream(stream, guildId, platformId, discord));
-                    });
-                }
-
-                @Override
-                public void onFailure(int i, String s, String s1) {
-
-                }
-
-                @Override
-                public void onFailure(Throwable throwable) {
-
-                }
-            });
+            }
         }
+    }
+
+    public final synchronized void checkTeam(String team, String guildId, Integer platformId) {
+
     }
 
     public final synchronized void checkGame(String gameName, String guildId, Integer platformId) {
 
         int[] values = new int[]{0, 0};
 
-        RequestParams params = new RequestParams();
-        params.put("game", gameName);
-        params.put("limit", 100);
+        for (int count = 0; count < values[1]; count += 100) {
+            URIBuilder uriBuilder = setBaseUrl("/streams");
+            uriBuilder.setParameter("game", gameName);
+            uriBuilder.setParameter("limit", "100");
+            uriBuilder.setParameter("offset", String.valueOf(values[0]));
 
-        //for (int count = 0; count < values[1]; count += 100) {
-        params.put("offset", 0);
+            try {
+                URI uri = uriBuilder.build();
+                get = new HttpGet(uri);
+                get.addHeader("Cache-Control", "no-cache");
+                get.addHeader("Accept", "application/vnd.twitchtv.v5+json");
+                get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+                response = client.execute(get);
 
-        this.streams().get(params, new StreamsResponseHandler() {
-            @Override
-            public void onSuccess(int i, List<Stream> list) {
-                if (values[1] == 0) {
-                    values[1] = i;
+                ObjectMapper objectMapper = new ObjectMapper();
+                StreamsGames games = objectMapper.readValue(
+                        new InputStreamReader(response.getEntity().getContent()), StreamsGames.class
+                );
+
+                if (games.getTotal() > 0) {
+                    if (values[1] == 0) {
+                        values[1] = games.getTotal();
+                    }
+                    DiscordController discord = new DiscordController();
+                    games.getStreams().forEach(stream -> onLiveStream(stream, guildId, platformId, discord));
                 }
-                DiscordController discord = new DiscordController();
-                list.forEach(stream -> onLiveStream(stream, guildId, platformId, discord));
+            } catch (URISyntaxException | IOException e) {
+                e.printStackTrace();
             }
-
-            @Override
-            public void onFailure(int i, String s, String s1) {
-
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-
-            }
-        });
-        // }
+        }
     }
 
     /**

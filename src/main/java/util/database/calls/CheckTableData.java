@@ -37,8 +37,22 @@ public class CheckTableData {
     private static ResultSet result;
 
     public synchronized static Boolean action(String tableName, String guildId, Integer platformId, String name) {
-        final String query = "SELECT `name` FROM `" + tableName + "` WHERE `guildId` = ? AND `platformId` = ? AND " +
-                "`name` = ?";
+        String query = "";
+        switch (tableName) {
+            case "channel":
+                query = "SELECT `channelName` FROM `channel` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
+                break;
+            case "filter":
+                query = "SELECT `name` FROM `filter` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                break;
+            case "game":
+                query = "SELECT `name` FROM `game` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                break;
+            case "tag":
+                query = "SELECT `name` FROM `tag` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                break;
+        }
+
         try {
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();

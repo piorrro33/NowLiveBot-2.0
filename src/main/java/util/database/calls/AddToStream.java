@@ -18,7 +18,7 @@
 
 package util.database.calls;
 
-import com.mb3364.twitch.api.models.Stream;
+import platform.twitch.models.Stream;
 import util.database.Database;
 
 import java.sql.Connection;

@@ -36,7 +36,7 @@ public class GetDbChannels {
     private ResultSet result;
 
     public synchronized List<String> fetch(Integer start) {
-        String query = "SELECT `name` FROM `channel` ORDER BY `timeAdded` ASC LIMIT " + start + ",100";
+        String query = "SELECT `channelName` FROM `channel` ORDER BY `timeAdded` ASC LIMIT " + start + ",100";
         try {
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
@@ -47,8 +47,8 @@ public class GetDbChannels {
             List<String> channels = new CopyOnWriteArrayList<>();
 
             while (result.next()) {
-                if (!channels.contains(result.getString("name"))) {
-                    channels.add(result.getString("name"));
+                if (!channels.contains(result.getString("channelName"))) {
+                    channels.add(result.getString("channelName"));
                 }
             }
             return channels;

@@ -130,7 +130,7 @@ public class Remove implements Command {
                     default:
                         switch (this.option) {
                             case "channel":
-                                defaultQuery = "DELETE FROM `channel` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                                defaultQuery = "DELETE FROM `channel` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
                                 break;
                             case "filter":
                                 defaultQuery = "DELETE FROM `filter` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";

@@ -31,9 +31,15 @@ import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
 import platform.generic.listener.PlatformListener;
 import util.Const;
 import util.DiscordLogger;
+import util.PropReader;
 import util.database.calls.*;
 
 import java.beans.PropertyVetoException;
@@ -146,15 +152,17 @@ public class DiscordListener extends ListenerAdapter {
         System.out.printf("[GUILD JOIN] Now Live has joined G:%s:%s%n",
                 event.getGuild().getName(),
                 event.getGuild().getId());
+        //updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
     }
 
     @Override
     public final void onGuildLeave(GuildLeaveEvent event) {
         GuildLeave.leaveGuild(event);
         new DiscordLogger(null, event);
-        System.out.printf("[GUILD LEAVE] Now Live has been dismissed from G:%s:%s%n",
+        System.out.printf("[GUILD LEAVE] Now Live has been dismissed/left from G:%s:%s%n",
                 event.getGuild().getName(),
                 event.getGuild().getId());
+        //updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
     }
 
     private void commandFilter(String cntMsg, GuildMessageReceivedEvent event)
@@ -167,6 +175,30 @@ public class DiscordListener extends ListenerAdapter {
             } else {
                 sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "usePlatform"));
             }
+        }
+    }
+
+    private void updateDiscordBotsServerCount(Integer count) {
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpPost post = new HttpPost("https://bots.discords.pw/api/bots/240729664035880961/stats");
+
+        post.addHeader("Authorization", PropReader.getInstance().getProp().getProperty("discord.bots.auth"));
+        post.addHeader("Content-Type", "application/json");
+        String json = "{ \"server_count\": " + count + "}";
+        try {
+            StringEntity entity = new StringEntity(json);
+            post.setEntity(entity);
+
+            HttpResponse response = client.execute(post);
+
+            if (response.getStatusLine().getStatusCode() != 200) {
+                System.out.println("~[ERROR] Failed updating server count on bots.discord.pw");
+            } else {
+                System.out.println("[SYSTEM] Successfully updated server count on bots.discord.pw");
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

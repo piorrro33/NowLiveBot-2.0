@@ -59,8 +59,8 @@ public class LanguageBundle_de extends ListResourceBundle {
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
                     + " botlang Sprache"
-                    + "Geben Sie entweder die englische Schreibweise oder die native Schreibweise der Sprache ein, die "
-                    + "Sie einstellen möchten."},
+                    + "\n\tGeben Sie entweder die englische Schreibweise oder die native Schreibweise der Sprache ein, die "
+                    + "Sie einstellen möchten.```"},
             {"botLangSuccess", "Sie haben meine Sprache erfolgreich geändert."},
             {"broadcasterLangAllSuccess", " :ok_hand: Ich werde nach Streams in allen Sprachen suchen!"},
             {"broadcasterLangFail", "Etwas ging schief und ich suche immernoch nach allen Sprachen."},

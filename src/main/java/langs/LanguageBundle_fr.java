@@ -59,7 +59,7 @@ public class LanguageBundle_fr extends ListResourceBundle {
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
                     + " botlang <la langue>"
-                    + "Entrez l'orthographe anglaise ou l'orthographe native de la langue que vous souhaitez définir."},
+                    + "\n\tEntrez l'orthographe anglaise ou l'orthographe native de la langue que vous souhaitez définir.```"},
             {"botLangSuccess", "Vous avez changé ma langue."},
             {"broadcasterLangAllSuccess", " :ok_hand: Je ne chercherai que des streams disponibles dans toutes les langues !"},
             {"broadcasterLangFail", "Quelque chose s'est mal passé, donc je continue à chercher des streams disponibles dans toutes les langues."},

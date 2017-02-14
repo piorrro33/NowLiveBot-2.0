@@ -37,7 +37,7 @@ public class GetGuildsByStream {
 
     public synchronized final CopyOnWriteArrayList<String> fetch(String channelName) {
         try {
-            String query = "SELECT `guildId` FROM `channel` WHERE `name` = ?";
+            String query = "SELECT `guildId` FROM `channel` WHERE `channelName` = ?";
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }

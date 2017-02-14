@@ -35,11 +35,11 @@ public class AddOther {
     private static PreparedStatement pStatement;
     private static String query;
 
-    public synchronized static Boolean action(String tableName, String guildId, int platformId, String name) {
+    public synchronized static Boolean action(String tableName, String guildId, int platformId, String name, String id) {
 
         switch (tableName) {
             case "channel":
-                query = "INSERT INTO `channel` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
+                query = "INSERT INTO `channel` (`id`, `guildId`, `platformId`, `channelName`, `channelId`) VALUES (null,?,?,?,?)";
                 break;
             case "filter":
                 query = "INSERT INTO `filter` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
@@ -61,6 +61,9 @@ public class AddOther {
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
             pStatement.setInt(2, platformId);
+            if (tableName.equalsIgnoreCase("channel")) {
+                pStatement.setString(4, id);
+            }
             pStatement.setString(3, name);
             if (pStatement.executeUpdate() == 1) {
                 return true;

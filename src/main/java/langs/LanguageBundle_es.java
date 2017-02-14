@@ -59,7 +59,7 @@ public class LanguageBundle_es extends ListResourceBundle {
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
                     + " botlang idioma"
-                    + "Introduzca la ortografía en inglés o la ortografía nativa del idioma que desee establecer."},
+                    + "\n\tIntroduzca la ortografía en inglés o la ortografía nativa del idioma que desee establecer.```"},
             {"botLangSuccess", "Has cambiado mi idioma con éxito."},
             {"botLangUnsupported", "Ese idioma actualmente no es compatible."},
             {"broadcasterLangAllSuccess", " :ok_hand: Solo buscaré streamers en todos los idiomas!"},

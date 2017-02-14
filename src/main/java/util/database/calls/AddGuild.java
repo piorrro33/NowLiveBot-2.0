@@ -61,9 +61,40 @@ public class AddGuild {
         tableList.add("tag");
         tableList.add("team");
 
-        for (String s : tableList) {
+        for (String table : tableList) {
             try {
-                String query = "SELECT COUNT(*) AS `count` FROM `" + s + "` WHERE `guildId` = ?";
+                String query = "";
+                switch (table) {
+                    case "channel":
+                        query = "SELECT COUNT(*) AS `count` FROM `channel` WHERE `guildId` = ?";
+                        break;
+                    case "filter":
+                        query = "SELECT COUNT(*) AS `count` FROM `filter` WHERE `guildId` = ?";
+                        break;
+                    case "guild":
+                        query = "SELECT COUNT(*) AS `count` FROM `guild` WHERE `guildId` = ?";
+                        break;
+                    case "manager":
+                        query = "SELECT COUNT(*) AS `count` FROM `manager` WHERE `guildId` = ?";
+                        break;
+                    case "notification":
+                        query = "SELECT COUNT(*) AS `count` FROM `notification` WHERE `guildId` = ?";
+                        break;
+                    case "permission":
+                        query = "SELECT COUNT(*) AS `count` FROM `permission` WHERE `guildId` = ?";
+                        break;
+                    case "stream":
+                        query = "SELECT COUNT(*) AS `count` FROM `stream` WHERE `guildId` = ?";
+                        break;
+                    case "tag":
+                        query = "SELECT COUNT(*) AS `count` FROM `tag` WHERE `guildId` = ?";
+                        break;
+                    case "team":
+                        query = "SELECT COUNT(*) AS `count` FROM `team` WHERE `guildId` = ?";
+                        break;
+                    default:
+                        break;
+                }
 
                 if (connection == null || connection.isClosed()) {
                     connection = Database.getInstance().getConnection();
@@ -74,7 +105,7 @@ public class AddGuild {
 
                 while (result.next()) {
                     if (result.getInt("count") == 0) {
-                        switch (s) {
+                        switch (table) {
                             case "guild":
                                 try {
                                     if (connection == null || connection.isClosed()) {

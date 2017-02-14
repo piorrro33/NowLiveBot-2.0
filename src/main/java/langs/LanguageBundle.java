@@ -59,7 +59,7 @@ public class LanguageBundle extends ListResourceBundle {
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
                     + " botlang language"
-                    + "Enter either the English spelling or the native spelling of the language you wish to set."},
+                    + "\n\tEnter either the English spelling or the native spelling of the language you wish to set.```"},
             {"botLangSuccess", "You've successfully changed my language."},
             {"botLangUnsupported", "That language is currently not supported."},
             {"broadcasterLangAllSuccess", " :ok_hand: I'll look for streams from all languages."},

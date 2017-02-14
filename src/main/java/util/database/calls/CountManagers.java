@@ -37,7 +37,7 @@ public class CountManagers {
     private static ResultSet result;
 
     public synchronized static Boolean action(String tableName, String guildId, String userId) {
-        final String query = "SELECT COUNT(*) AS `count` FROM `" + tableName + "` WHERE `guildId` = ? AND `userId` = ?";
+        final String query = "SELECT COUNT(*) AS `count` FROM `manager` WHERE `guildId` = ? AND `userId` = ?";
         try {
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();

@@ -22,52 +22,32 @@ import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-public class GetDbChannels {
+/**
+ * Created by Ague Mort of Veteran Software on 2/15/2017.
+ */
+public class UpdateChannelId {
 
     private Connection connection;
     private PreparedStatement pStatement;
-    private ResultSet result;
 
-    public synchronized List<String> fetch(Integer start) {
-        String query;
-        switch (start) {
-            case -1:
-                query = "SELECT `channelName` FROM `channel` WHERE `channelId` IS NULL ORDER BY `timeAdded` ASC";
-                break;
-            default:
-                query = "SELECT `channelName` FROM `channel` ORDER BY `timeAdded` ASC LIMIT " + start + ",100";
-                break;
-        }
-
+    public synchronized void executeUpdate(String channelId, String channelName) {
         try {
+            String query = "UPDATE `channel` SET `channelId` = ? WHERE `channelName` = ? AND `platformId` = 1";
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
             this.pStatement = connection.prepareStatement(query);
-            this.result = pStatement.executeQuery();
-
-            List<String> channels = new CopyOnWriteArrayList<>();
-
-            while (result.next()) {
-                if (!channels.contains(result.getString("channelName"))) {
-                    channels.add(result.getString("channelName"));
-                }
-            }
-            return channels;
-
+            pStatement.setString(1, channelId);
+            pStatement.setString(2, channelName);
+            pStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(result, pStatement, connection);
+            cleanUp(pStatement, connection);
         }
-        return null;
     }
-
 }

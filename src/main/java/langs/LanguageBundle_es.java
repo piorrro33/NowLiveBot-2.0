@@ -54,14 +54,6 @@ public class LanguageBundle_es extends ListResourceBundle {
                     + "\n\tadd channel <nombre-de-el-canal>"
                     + "\n\tremove channel <nombre-de-el-canal>```"},
             {"beamUserNoExist", "Este usuario Beam no existe, revisa como lo has escrito e intentalo de nuevo."},
-            {"botLangFail", "Algo salió mal y mi lenguaje sigue siendo el mismo."},
-            {"botLangHelp", "```Ruby\nBOTLANG: Se utiliza para cambiar el idioma de mis respuestas.\nUSAGE: "
-                    + Const.COMMAND_PREFIX
-                    + Const.COMMAND
-                    + " botlang idioma"
-                    + "\n\tIntroduzca la ortografía en inglés o la ortografía nativa del idioma que desee establecer.```"},
-            {"botLangSuccess", "Has cambiado mi idioma con éxito."},
-            {"botLangUnsupported", "Ese idioma actualmente no es compatible."},
             {"broadcasterLangAllSuccess", " :ok_hand: Solo buscaré streamers en todos los idiomas!"},
             {"broadcasterLangFail", "Algo ha salido mal, seguiré buscando en todos los idiomas."},
             {"broadcasterLangSuccess", " :ok_hand: Solo buscaré streamers en ese idioma!"},
@@ -99,12 +91,12 @@ public class LanguageBundle_es extends ListResourceBundle {
                     + Const.COMMAND + " help` para una lista de comandos.\n\nSi necesitas ayuda configurandome, ven, " +
                     "únete a mi discord " + Const.DISCORD_URL + " y revisa how-to-setup y commands-list " +
                     "para toda la info!\n\nNo olvides saludar!"},
-            {"helpPm", "Hola amigo! %s!\n\n" +
+            {"helpPm", "Hola %s!\n\n" +
                     "Entonces.. Buscas ayuda?  Aquí abajo hay una lista de comandos. para saber lo que hace " +
-                    "cada uno, escribe" + Const.COMMAND_PREFIX + Const.COMMAND + "<comando> help\n\n" +
+                    "cada uno, escribe " + Const.COMMAND_PREFIX + Const.COMMAND + "<comando> help\n\n" +
                     "```Ruby\n* add\n* beam\n* cleanup\n* compact\n* invite\n* list\n* move\n* notify\n* ping\n* remove" +
                     "\n* streamlang\n* streams\n* twitch```\n" +
-                    "Para que lo sepas, Ague sigue trabajando duro para pulirme, ya que muchos de los" +
+                    "Para que lo sepas, Ague sigue trabajando duro para pulirme, ya que muchos de los " +
                     "comandos aquí puede que no funcionen!  Pero sus trabajos funcionan!.  Puedes ayudar a los tíos " +
                     "que trabajan duro para que esto funcione!\n\n\t~~" + Const.BOT_NAME + "\n\n" +
                     "Además puedes obtener algo de ayuda de mi desarrollador y el resto de la comunidad de Now Live " +
@@ -162,12 +154,12 @@ public class LanguageBundle_es extends ListResourceBundle {
             {"nowPlayingLower", " Está reproduciendo "},
             {"nowStreamingEmbed", " Está streameando!"},
             {"offline", "OFFLINE!\n"},
-            {"offlineEmbed", " Se ha descoenctado!"},
+            {"offlineEmbed", " Se ha desconectado!"},
             {"on", " on "},
             {"onlineStreamPm1", "Hey!  Ahora hay "},
             {"onlineStreamPm2", " streamers en linea que te pueden interesar! Miralos y puede que te gusten! \n\n"},
             {"oops", "Oops!  Algo ha salido mal, pero no se ha cambiado nada!  intentemoslo de nuevo."},
-            {"ping", "Cuando estaba en china, en el equipo 'All-American Ping Pong', me encantaba jugar al ping-pong con " +
+            {"ping", "Cuando estaba en china, en el equipo \"All-American Ping Pong\", me encantaba jugar al ping-pong con " +
                     "raqueta Flexolite. Viejos tiempos."},
             {"pingHelp", "```Ruby\nPING:  Se usa para pingearme. Si funciono bien, te enviaré un pong.\nUSAGE: "
                     + Const.COMMAND_PREFIX + "ping```"},

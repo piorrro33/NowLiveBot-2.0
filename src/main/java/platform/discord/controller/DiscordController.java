@@ -392,9 +392,10 @@ public class DiscordController {
         GetCleanUp clean = new GetCleanUp();
         Integer cleanup = clean.doStuff(offline.get("guildId"));
 
-        CheckStreamTable checkStreamTable = new CheckStreamTable();
+        CheckStreamTable checkStreamTable;
         switch (cleanup) {
             case 1: // Edit
+                checkStreamTable = new CheckStreamTable();
                 if (checkStreamTable.check(offline.get("guildId"), Integer.parseInt(offline.get("platformId")), offline.get("channelName"))) {
                     if (offline.get("messageId") != null) {
 
@@ -422,6 +423,7 @@ public class DiscordController {
                 }
                 break;
             case 2: // Delete
+                checkStreamTable = new CheckStreamTable();
                 if (checkStreamTable.check(offline.get("guildId"), Integer.valueOf(offline.get("platformId")), offline.get("channelName"))) {
                     if (offline.get("messageId") != null) {
 
@@ -455,6 +457,7 @@ public class DiscordController {
                 }
                 break;
             default:
+                checkStreamTable = new CheckStreamTable();
                 if (checkStreamTable.check(offline.get("guildId"), Integer.valueOf(offline.get("platformId")), offline.get("channelName"))) {
 
                     DeleteFromStream deleteStream = new DeleteFromStream();
@@ -519,7 +522,6 @@ public class DiscordController {
                             UpdateMessageId updateMessageId = new UpdateMessageId();
                             updateMessageId.executeUpdate(guildId, platformId, streamData.get("channelName"), sentMessage.getId());
 
-                            // TODO: Fix this ugly mess!!
                             MessageBuilder discord = new MessageBuilder();
 
                             discord.append(" :tada: ");

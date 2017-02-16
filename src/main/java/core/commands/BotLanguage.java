@@ -77,8 +77,8 @@ public class BotLanguage implements Command {
                     //case "tiếng việt":
                     //case "turkish": // Turkish
                     //case "türkçe":
-                    //case "czech": // Czech
-                    //case "čeština":
+                case "czech": // Czech
+                case "čeština":
                     //case "greek": // Greek
                     //case "ελληνικά":
                     //case "bulgarian": // Bulgarian
@@ -177,11 +177,11 @@ public class BotLanguage implements Command {
                 case "turkish": // Turkish
                 case "türkçe":
                     langCode = "tr";
-                    break;
+                    break;*/
                 case "czech": // Czech
                 case "čeština":
                     langCode = "cs";
-                    break;
+                    break;/*
                 case "greek": // Greek
                 case "ελληνικά":
                     langCode = "el";

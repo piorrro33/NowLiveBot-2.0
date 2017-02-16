@@ -86,15 +86,13 @@ public class TwitchController {
             IdConversion idConversion = objectMapper.readValue(
                     new InputStreamReader(response.getEntity().getContent()), IdConversion.class);
 
-            if (idConversion.getTotal().equals(1)) {
-                System.out.println("User or channel found.");
+            if (idConversion.getTotal() != null && idConversion.getTotal().equals(1)) {
                 return idConversion.getUsers().get(0).getId();
             }
 
         } catch (URISyntaxException | IOException e) {
             e.printStackTrace();
         }
-        System.out.println("User or channel NOT found.");
         return null;
     }
 
@@ -122,14 +120,12 @@ public class TwitchController {
                     new InputStreamReader(response.getEntity().getContent()), IdConversion.class);
 
             if (idConversion.getTotal() > 0) {
-                System.out.println("Users or channels found.");
                 return idConversion.getUsers();
             }
 
         } catch (URISyntaxException | IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Users or channels NOT found.");
         return null;
     }
 
@@ -157,7 +153,6 @@ public class TwitchController {
         } finally {
             cleanUp(result, pStatement, connection);
         }
-
         return null;
     }
 
@@ -252,11 +247,11 @@ public class TwitchController {
 
         int[] values = new int[]{0, 0};
 
-        for (int count = 0; count < values[1]; count += 100) {
+        //for (int count = 0; count < values[1]; count += 100) {
             URIBuilder uriBuilder = setBaseUrl("/streams");
             uriBuilder.setParameter("game", gameName);
             uriBuilder.setParameter("limit", "100");
-            uriBuilder.setParameter("offset", String.valueOf(values[0]));
+            uriBuilder.setParameter("offset", "0");
 
             try {
                 URI uri = uriBuilder.build();
@@ -281,7 +276,7 @@ public class TwitchController {
             } catch (URISyntaxException | IOException e) {
                 e.printStackTrace();
             }
-        }
+        //}
     }
 
     /**

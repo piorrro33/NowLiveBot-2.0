@@ -23,6 +23,8 @@ import langs.LocaleString;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import util.database.calls.Tracker;
 
+import java.util.ArrayList;
+
 import static core.CommandParser.getCommands;
 import static platform.discord.controller.DiscordController.sendToChannel;
 
@@ -30,6 +32,22 @@ import static platform.discord.controller.DiscordController.sendToChannel;
  * @author Veteran Software by Ague Mort
  */
 public class Twitch implements Command {
+
+    private ArrayList<String> commands = new ArrayList<>();
+
+    public Twitch() {
+        addCommands();
+    }
+
+    private void addCommands() {
+        commands.add("channel");
+        commands.add("community");
+        commands.add("filter");
+        commands.add("game");
+        commands.add("team");
+        commands.add("help");
+    }
+
     /**
      * Used to determine if appropriate arguments exist
      *

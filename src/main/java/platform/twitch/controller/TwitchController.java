@@ -159,6 +159,7 @@ public class TwitchController {
     public final synchronized void checkOffline(HashMap<String, Map<String, String>> streams) {
 
         streams.forEach((String messageId, Map<String, String> streamData) -> {
+            System.out.println(messageId);
 
             URIBuilder uriBuilder = setBaseUrl("/streams");
             uriBuilder.setParameter("channel", streamData.get("channelId"));

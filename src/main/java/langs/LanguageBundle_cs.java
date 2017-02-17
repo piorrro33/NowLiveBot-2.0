@@ -34,7 +34,7 @@ public class LanguageBundle_cs extends ListResourceBundle {
             {"addHelp", "```Ruby\nADD:  Používá se k přidání něčeho.\nUSAGE:  "
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
-                    + " přidat <volba> <obsah>"
+                    + " add <volba> <obsah>"
                     + "\n\t<volba>\t<obsah>"
                     + "\n\tfilter - Jméno hry podle které chcete filtrovat streamy"
                     + "\n\tgame - Název hry přesně tak, jak se udává na streamovací platformě"
@@ -71,7 +71,7 @@ public class LanguageBundle_cs extends ListResourceBundle {
             {"cleanupHelp", "```Ruby\nCLEANUP:  Změňte způsob kterým uklízím svoje oznámení.\nUSAGE:"
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
-                    + " úklid <volba>"
+                    + " cleanup <volba>"
                     + "\n<volba>"
                     + "\n\tnone - Nic nebudu měnit na mých oznámeních! (základní)"
                     + "\n\tedit - Upravím svoje oznámení aby říkalo \"OFFLINE\" když je stream offline"
@@ -83,7 +83,7 @@ public class LanguageBundle_cs extends ListResourceBundle {
             {"compactHelp", "```Ruby\nCOMPACT:  Zkrátí moje oznámení.\nUSAGE:  "
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
-                    + " kompakt <volba>"
+                    + " compact <volba>"
                     + "\n<volba>"
                     + "\n\ton - Zapne kompaktní mód"
                     + "\n\toff - Vypne kompaktní mód```"},
@@ -102,8 +102,8 @@ public class LanguageBundle_cs extends ListResourceBundle {
             {"helpPm", "Ahoj %s!\n\n" +
                     "Slyšel jsem že potřebuješ nějakou pomoc?  Dole je list mých příkazů. Aby jsi zjistil co každý " +
                     "z nich dělá, napiš " + Const.COMMAND_PREFIX + Const.COMMAND + "<příkaz> help\n\n" +
-                    "```Ruby\n* přidat\n* beam\n* úklid\n* kompakt\n* pozvánka\n* list\n* přesunout\n* oznámit\n* ping\n* odebrat" +
-                    "\n* Jazyk streamu\n* streamy\n* twitch```\n" +
+                    "```Ruby\n* add\n* beam\n* botlang\n* cleanup\n* compact\n* invite\n* list\n* move\n* notify\n* ping\n* remove" +
+                    "* streamlang\n* streams\n* twitch```\n" +
                     "Jen aby jste věděli, Ague stále těžce pracuje aby dokončil všechny moje nedostatky, takže některé " +
                     "vypsané příkazy ještě nemusí fungovat!  Ale jeho pomoc funguje.  Mějte s ním strpení, " +
                     "těžce pracuje aby vše opravil!\n\n\t~~" + Const.BOT_NAME + "\n\n" +
@@ -179,7 +179,7 @@ public class LanguageBundle_cs extends ListResourceBundle {
             {"removeHelp", "```Ruby\nREMOVE:  Používá se k odebrání něčeho z mojí databáze.\nUSAGE:  "
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
-                    + " odebrat <volba> <obsah>"
+                    + " remove <volba> <obsah>"
                     + "\n\t<volba>\t<obsah>"
                     + "\n\tfilter - Jméno hry podle které chcete filtrovat streamy"
                     + "\n\tgame - Název hry přesně tak, jak se udává na streamovací platformě "

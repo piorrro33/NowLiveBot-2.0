@@ -101,7 +101,7 @@ public class LanguageBundle_de extends ListResourceBundle {
             {"helpPm", "Hallo %s!\n\n" +
                     "Ich hab gehört du suchst Hilfe?  Hier ist eine Liste meiner Befehle. Um herauszufinden was diese Befehle tun, " +
                     "schreibe " + Const.COMMAND_PREFIX + Const.COMMAND + " <command> help\n\n" +
-                    "```Ruby\n* add\n* beam\n* cleanup\n* compact\n* invite\n* list\n* move\n* notify\n* ping\n* remove" +
+                    "```Ruby\n* add\n* beam\n* botlang\n* cleanup\n* compact\n* invite\n* list\n* move\n* notify\n* ping\n* remove" +
                     "\n* streamlang\n* streams\n* twitch```\n" +
                     "Nur damit du's weißt, Ague arbeitet immernoch viel an meiner Programmierung, also funktionieren manche " +
                     "Befehle noch nicht (komplett)!  Die *help* Befehle sind alle bereits da.  Hab bitte Geduld mit ihm, er " +

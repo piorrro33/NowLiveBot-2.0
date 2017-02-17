@@ -138,8 +138,8 @@ public class List implements Command {
 
         switch (option) {
             case "channel":
-                query = "SELECT `name`, `platformId` FROM `channel` WHERE `guildId` = ? " +
-                        "ORDER BY `platformId` ASC, `name` ASC";
+                query = "SELECT `channelName`, `platformId` FROM `channel` WHERE `guildId` = ? " +
+                        "ORDER BY `platformId` ASC, `channelName` ASC";
                 break;
             case "game":
                 query = "SELECT `name`, `platformId` FROM `game` WHERE `guildId` = ? " +

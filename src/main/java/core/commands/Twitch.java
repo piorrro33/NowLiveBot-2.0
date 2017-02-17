@@ -48,7 +48,12 @@ public class Twitch implements Command {
                     return true;
                 }
 
-                String secondaryCommand = args.trim().substring(0, args.indexOf(' '));
+                String secondaryCommand;
+                try {
+                    secondaryCommand = args.trim().substring(0, args.indexOf(' '));
+                } catch (StringIndexOutOfBoundsException ex) {
+                    return false;
+                }
 
                 switch (secondaryCommand) {
                     case "add":

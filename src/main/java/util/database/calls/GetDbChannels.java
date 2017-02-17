@@ -39,7 +39,7 @@ public class GetDbChannels {
         String query;
         switch (start) {
             case -1:
-                query = "SELECT `channelName` FROM `channel` WHERE `channelId` IS NULL ORDER BY `timeAdded` ASC";
+                query = "SELECT `channelName` FROM `channel` WHERE `channelId` IS NULL AND `platformId` = 1 ORDER BY `timeAdded` ASC";
                 break;
             default:
                 query = "SELECT `channelName` FROM `channel` ORDER BY `timeAdded` ASC LIMIT " + start + ",100";

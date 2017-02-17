@@ -159,7 +159,6 @@ public class TwitchController {
     public final synchronized void checkOffline(HashMap<String, Map<String, String>> streams) {
 
         streams.forEach((String messageId, Map<String, String> streamData) -> {
-            System.out.println(messageId);
 
             URIBuilder uriBuilder = setBaseUrl("/streams");
             uriBuilder.setParameter("channel", streamData.get("channelId"));
@@ -177,7 +176,7 @@ public class TwitchController {
                         new InputStreamReader(response.getEntity().getContent()), Streams.class
                 );
 
-                if (stream == null) {
+                if (stream.getTotal().equals(0)) {
                     DiscordController discord = new DiscordController();
                     discord.offlineStream(streamData);
                 }

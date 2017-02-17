@@ -130,6 +130,8 @@ public class TwitchController {
     }
 
     private synchronized List<String> checkFilters(String guildId) {
+        ResultSet result = null;
+
         try {
             String query = "SELECT * FROM `filter` WHERE `guildId` = ?";
 
@@ -138,11 +140,11 @@ public class TwitchController {
             }
             this.pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
-            this.result = pStatement.executeQuery();
+            result = pStatement.executeQuery();
 
             List<String> filters = new CopyOnWriteArrayList<>();
 
-            if (result.isBeforeFirst()) {
+            if (result != null) {
                 while (result.next()) {
                     filters.add(result.getString("name").replaceAll("''", "'"));
                 }

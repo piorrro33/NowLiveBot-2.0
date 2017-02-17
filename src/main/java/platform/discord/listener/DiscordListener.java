@@ -84,7 +84,8 @@ public class DiscordListener extends ListenerAdapter {
 
                 // A check to see if the bot was added to the guild while it was offline and to add it
                 if (!CheckBotInGuild.action(event)) {
-                    AddGuild.action(event);
+                    AddGuild addGuild = new AddGuild();
+                    addGuild.action(event);
                     new DiscordLogger(" :gear: Fixed broken guild.", event);
                     System.out.printf("[SYSTEM] [%s:%s] [%s:%s] Broken guild fixed.%n",
                             event.getGuild().getName(),

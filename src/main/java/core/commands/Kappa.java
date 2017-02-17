@@ -41,7 +41,6 @@ import static util.database.Database.cleanUp;
 public class Kappa implements Command {
 
     private Connection connection;
-    private PreparedStatement pStatement;
     private ResultSet result;
 
     /**
@@ -64,13 +63,14 @@ public class Kappa implements Command {
      */
     @Override
     public void action(String args, GuildMessageReceivedEvent event) {
+        PreparedStatement pStatement = null;
 
         String query = "SELECT `channelId`, `guildId` FROM `guild`";
         try {
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             this.result = pStatement.executeQuery();
 
             MessageBuilder message = new MessageBuilder();

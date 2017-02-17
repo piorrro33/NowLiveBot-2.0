@@ -73,8 +73,9 @@ public class ServerLang {
             pStatement.setString(1, guildId);
             this.result = pStatement.executeQuery();
 
-            while (result.next()) {
-                return result.getString("serverLang");
+            if (result.next()) {
+                String lang = result.getString("serverLang");
+                return lang;
             }
         } catch (SQLException e) {
             e.printStackTrace();

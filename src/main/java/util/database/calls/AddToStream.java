@@ -30,9 +30,9 @@ import static util.database.Database.cleanUp;
 public class AddToStream {
 
     private Connection connection;
-    private PreparedStatement pStatement;
 
     public synchronized void process(String guildId, String textChannelId, Integer platformId, Stream stream) {
+        PreparedStatement pStatement = null;
         try {
             String query = "INSERT INTO `stream` " +
                     "(`guildId`, `textChannelId`, `platformId`, `streamsGame`, `streamsViewers`, " +
@@ -44,7 +44,7 @@ public class AddToStream {
                 this.connection = Database.getInstance().getConnection();
             }
 
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
             pStatement.setString(2, textChannelId);
             pStatement.setInt(3, platformId);

@@ -1,39 +1,15 @@
 
 package platform.twitch.models;
 
-import java.util.HashMap;
-import java.util.Map;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({
-    "mature",
-    "status",
-    "broadcaster_language",
-    "display_name",
-    "game",
-    "language",
-    "name",
-    "created_at",
-    "updated_at",
-    "_id",
-    "logo",
-    "video_banner",
-    "profile_banner",
-    "profile_banner_background_color",
-    "partner",
-    "url",
-    "views",
-    "followers"
-})
 public class User {
 
     @JsonProperty("mature")
@@ -73,7 +49,7 @@ public class User {
     @JsonProperty("followers")
     private Integer followers;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, Object> additionalProperties = new HashMap<>();
 
     /**
      * No args constructor for use in serialization
@@ -330,7 +306,7 @@ public class User {
         if (other == this) {
             return true;
         }
-        if ((other instanceof User) == false) {
+        if (!(other instanceof User)) {
             return false;
         }
         User rhs = ((User) other);

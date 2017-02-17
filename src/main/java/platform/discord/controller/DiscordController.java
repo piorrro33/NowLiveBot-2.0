@@ -56,15 +56,12 @@ public class DiscordController {
     private static final Logger logger = LoggerFactory.getLogger("Discord Controller");
     private static Connection connection;
     private static Connection nlConnection;
-    private static Connection ceConnection;
     private static Connection gciConnection;
     private static Connection ccConnection;
     private static PreparedStatement nlStatement;
-    private static PreparedStatement ceStatement;
     private static PreparedStatement gciStatement;
     private static PreparedStatement pStatement;
     private static String query;
-    private static ResultSet ceResult;
     private static ResultSet gciResult;
     private static ResultSet nlResult;
     private static ResultSet result;
@@ -92,45 +89,48 @@ public class DiscordController {
                         event.getChannel().getName(),
                         event.getChannel().getId(),
                         message);
-            }
-            // Try sending to the channel it was moved to
-            event.getMessage().getChannel().sendMessage(message).queue(
-                    success -> {
-                        new DiscordLogger(message, event);
-                        System.out.printf("[BOT -> GUILD] [%s:%s] [%s:%s] %s%n",
+            } else {
+                // Try sending to the channel it was moved to
+                event.getMessage().getChannel().sendMessage(message).queue(
+                        success -> {
+                            new DiscordLogger(message, event);
+                            System.out.printf("[BOT -> GUILD] [%s:%s] [%s:%s] %s%n",
+                                    event.getGuild().getName(),
+                                    event.getGuild().getId(),
+                                    event.getChannel().getName(),
+                                    event.getChannel().getId(),
+                                    success.getContent());
+                        },
+                        failure -> System.out.printf("[~ERROR~] Unable to send message to %s:%s %s:%s.  Trying public " +
+                                        "channel.%n",
                                 event.getGuild().getName(),
                                 event.getGuild().getId(),
                                 event.getChannel().getName(),
-                                event.getChannel().getId(),
-                                success.getContent());
-                    },
-                    failure -> System.out.printf("[~ERROR~] Unable to send message to %s:%s %s:%s.  Trying public " +
-                                    "channel.%n",
-                            event.getGuild().getName(),
-                            event.getGuild().getId(),
-                            event.getChannel().getName(),
-                            event.getChannel().getId())
+                                event.getChannel().getId())
 
-            );
+                );
+            }
 
         } catch (PermissionException ex) {
             // Try sending to the default channel
-            event.getGuild().getPublicChannel().sendMessage(message).queue(
-                    success -> {
-                        new DiscordLogger(message, event);
-                        System.out.printf("[BOT -> GUILD] [%s:%s] [%s:%s]: %s%n",
+            if (message != null) {
+                event.getGuild().getPublicChannel().sendMessage(message).queue(
+                        success -> {
+                            new DiscordLogger(message, event);
+                            System.out.printf("[BOT -> GUILD] [%s:%s] [%s:%s]: %s%n",
+                                    event.getGuild().getName(),
+                                    event.getGuild().getId(),
+                                    event.getGuild().getPublicChannel().getName(),
+                                    event.getGuild().getPublicChannel().getId(),
+                                    success.getContent());
+                        },
+                        failure -> System.out.printf("[~ERROR~] Unable to send message to %s:%s, Public Channel: %s:%s.%n",
                                 event.getGuild().getName(),
                                 event.getGuild().getId(),
-                                event.getGuild().getPublicChannel().getName(),
-                                event.getGuild().getPublicChannel().getId(),
-                                success.getContent());
-                    },
-                    failure -> System.out.printf("[~ERROR~] Unable to send message to %s:%s, Public Channel: %s:%s.%n",
-                            event.getGuild().getName(),
-                            event.getGuild().getId(),
-                            event.getChannel().getName(),
-                            event.getChannel().getId())
-            );
+                                event.getChannel().getName(),
+                                event.getChannel().getId())
+                );
+            }
         }
     }
 
@@ -191,35 +191,6 @@ public class DiscordController {
             cleanUp(result, pStatement, ccConnection);
         }
         return -1;
-    }
-
-    private static synchronized MessageBuilder checkEmoji(String guildId, MessageBuilder message) {
-        try {
-            query = "SELECT `emoji` FROM `guild` WHERE `guildId` = ?";
-
-            if (ceConnection == null || ceConnection.isClosed()) {
-                ceConnection = Database.getInstance().getConnection();
-            }
-
-            ceStatement = ceConnection.prepareStatement(query);
-            ceStatement.setString(1, guildId);
-            ceResult = ceStatement.executeQuery();
-
-            while (ceResult.next()) {
-                if (ceResult.getString("emoji") != null) {
-                    message.append(" ");
-                    message.append(ceResult.getString("emoji"));
-                    message.append(" ");
-                    message.append(ceResult.getString("emoji"));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(ceResult, ceStatement, ceConnection);
-        }
-        message.append("");
-        return message;
     }
 
     public static synchronized String getChannelId(String guildId) {

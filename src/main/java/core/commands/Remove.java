@@ -49,7 +49,6 @@ public class Remove implements Command {
     private PreparedStatement pStatement;
     private String query;
     private String defaultQuery;
-    private ResultSet result;
     private String[] options = new String[]{"channel", "filter", "game", "manager", "tag", "help"};
 
     @Override
@@ -188,6 +187,7 @@ public class Remove implements Command {
     }
 
     private synchronized boolean managerCount(String guildId) {
+        ResultSet result = null;
         try {
             query = "SELECT COUNT(*) AS `count` FROM `manager` WHERE `guildId` = ?";
 

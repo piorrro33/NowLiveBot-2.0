@@ -1,11 +1,4 @@
 # NetBeans
-nbproject/private/
-nbbuild/
-dist/
-nbdist/
-.nb-gradle/
-.nb-gradle-properties
-
 # Gradle files
 .gradle/
 build/

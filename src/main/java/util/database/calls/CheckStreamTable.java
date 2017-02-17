@@ -30,21 +30,22 @@ import static util.database.Database.cleanUp;
 public class CheckStreamTable {
 
     private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
 
     public synchronized boolean check(String guildId, Integer platformId, String channelName) {
+        PreparedStatement pStatement = null;
+        ResultSet result = null;
+
         try {
             String query = "SELECT COUNT(*) AS `count` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
 
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
             pStatement.setInt(2, platformId);
             pStatement.setString(3, channelName);
-            this.result = pStatement.executeQuery();
+            result = pStatement.executeQuery();
             while (result.next()) {
                 Integer count = result.getInt("count");
                 if (count.equals(0)) {

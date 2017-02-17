@@ -84,7 +84,7 @@ repositories {
     jcenter()
 }
 dependencies {
-    compile group: 'net.dv8tion', name: 'JDA', version: '3.0.BETA2_128'
+    compile group: 'net.dv8tion', name: 'JDA', version: '3.0.BETA2_129'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.22'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.22'
     compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.5'

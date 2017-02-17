@@ -51,6 +51,7 @@ public class List implements Command {
     private String[] options = new String[]{"channel", "filter", "game", "manager", "streamLang", "tag", "team", "help", "setting"};
 
     private Message createNotificationMessage(MessageBuilder message, GuildMessageReceivedEvent event) {
+        MessageBuilder msg = message;
         try {
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
@@ -61,12 +62,12 @@ public class List implements Command {
 
             if (resultSet.isBeforeFirst()) {
                 while (resultSet.next()) {
-                    message.append("\n\t");
+                    msg.append("\n\t");
                     if (!"manager".equals(option)) {
-                        message.append(resultSet.getString(1).replaceAll("''", "'"));
+                        msg.append(resultSet.getString(1).replaceAll("''", "'"));
                         switch (resultSet.getInt(2)) {
                             case 1:
-                                message.append(" on Twitch.tv");
+                                msg.append(" on Twitch.tv");
                                 break;
                             default:
                                 break;
@@ -75,24 +76,24 @@ public class List implements Command {
                         String userId = resultSet.getString("userId");
                         User user = event.getJDA().getUserById(userId);
                         String userName = user.getName();
-                        message.append(userName);
+                        msg.append(userName);
                     }
 
-                    // Large message handler
-                    if (message.length() > 1850) {
-                        sendToPm(event, message.build());
-                        message = new MessageBuilder();
+                    // Large msg handler
+                    if (msg.length() > 1850) {
+                        sendToPm(event, msg.build());
+                        msg = new MessageBuilder();
                     }
                 }
             } else {
-                message.append("\n\tRuh Roh!  I can't seem to find anything here...");
+                msg.append("\n\tRuh Roh!  I can't seem to find anything here...");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(resultSet, pStatement, connection);
         }
-        return message.build();
+        return msg.build();
     }
 
     /**
@@ -106,12 +107,15 @@ public class List implements Command {
     public final boolean called(String args, GuildMessageReceivedEvent event) {
         for (String s : this.options) { // Iterate through the available options for this command
             if (args != null && !args.isEmpty()) {
-                if (args.endsWith("s")) args = args.substring(0, args.length() - 1);
-                if (args.equals(s)) {
+                String arg = args;
+                if (arg.endsWith("s")) {
+                    arg = args.substring(0, args.length() - 1);
+                }
+                if (arg.equals(s)) {
                     // Sets the class scope variables that will be used by action()
-                    option = s;
+                    this.option = s;
                     return true;
-                } else if ("help".equals(args)) {
+                } else if ("help".equals(arg)) {
                     // If the help argument is the only argument that is passed
                     return true;
                 }
@@ -134,7 +138,9 @@ public class List implements Command {
         guildId = dController.getGuildId();
 
         MessageBuilder message = new MessageBuilder();
-        message.append("Heya!  Here's a list of " + option + "s that this Discord server is keeping tabs on:\n");
+        message.append("Heya!  Here's a list of ");
+        message.append(option);
+        message.append("s that this Discord server is keeping tabs on:\n");
 
         switch (option) {
             case "channel":
@@ -220,10 +226,9 @@ public class List implements Command {
                 return "Japanese/日本語";
             case "ko":
                 return "Korean/한국어";
-            case "all":
+            default:
                 return "all";
         }
-        return "";
     }
 
 

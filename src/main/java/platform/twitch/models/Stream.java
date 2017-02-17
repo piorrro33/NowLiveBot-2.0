@@ -48,7 +48,7 @@ public class Stream {
     @JsonProperty("channel")
     private Channel channel;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, Object> additionalProperties = new HashMap<>();
 
     /**
      * No args constructor for use in serialization
@@ -221,7 +221,7 @@ public class Stream {
         if (other == this) {
             return true;
         }
-        if ((other instanceof Stream) == false) {
+        if (!(other instanceof Stream)) {
             return false;
         }
         Stream rhs = ((Stream) other);

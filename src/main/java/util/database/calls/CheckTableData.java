@@ -51,6 +51,8 @@ public class CheckTableData {
             case "tag":
                 query = "SELECT `name` FROM `tag` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
                 break;
+            default:
+                break;
         }
 
         try {

@@ -325,7 +325,6 @@ public class TwitchController {
                         CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
 
                         if (!checkTwitchStreams.check(stream.getId(), guildId)) {
-                            System.out.println(stream.getChannel().getName() + " playing " + stream.getGame());
                             onLiveTwitchStream(stream, guildId, "game");
                         }
                     }));
@@ -371,6 +370,7 @@ public class TwitchController {
                 (lang.equalsIgnoreCase(stream.getChannel().getBroadcasterLanguage()) || "all".equals(lang))) {
             if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
                 if (filterCheck(guildId, stream)) {
+                    System.out.println(stream.getChannel().getName() + " playing " + stream.getGame());
                     new AddTwitchStream(guildId, stream, flag);
                 }
             }

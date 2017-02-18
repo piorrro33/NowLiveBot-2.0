@@ -24,6 +24,7 @@ import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
@@ -48,70 +49,6 @@ public class List implements Command {
     private String query;
     private String guildId;
     private String[] options = new String[]{"channel", "gamefilter", "game", "manager", "titlefilter", "team", "help", "setting"};
-
-    private Message createNotificationMessage(MessageBuilder message, GuildMessageReceivedEvent event) {
-        MessageBuilder msg = message;
-        switch (option) {
-            case "channel":
-                msg.append("__Twitch Channels__\n\t");
-                break;
-            case "gamefilter":
-                msg.append("__Game Filters__\n\t");
-                break;
-            case "game":
-                msg.append("__Twitch Games__\n\t");
-                break;
-            case "manager":
-                msg.append("__Bot Managers__\n\t");
-                break;
-            case "titlefilter":
-                msg.append("__Title Filters__\n\t");
-                break;
-            case "team":
-                msg.append("__Twitch Teams__\n\t");
-                break;
-            case "setting":
-                msg.append("__Bot Settings__\n\t");
-                break;
-        }
-        try {
-            if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
-            }
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            resultSet = pStatement.executeQuery();
-
-            if (resultSet.isBeforeFirst()) {
-                while (resultSet.next()) {
-                    if (!"manager".equals(option)) {
-                        msg.append("> ");
-                        msg.append(resultSet.getString(1).replaceAll("''", "'"));
-                    } else {
-                        String userId = resultSet.getString("userId");
-                        User user = event.getJDA().getUserById(userId);
-                        String userName = user.getName();
-                        msg.append(userName);
-                    }
-                    msg.append("\n\t");
-
-                    // Large msg handler
-                    if (msg.length() > 1850) {
-                        sendToPm(event, msg.build());
-                        msg = new MessageBuilder();
-                        msg.append("***Here's some more!***\n");
-                    }
-                }
-            } else {
-                msg.append("\nRuh Roh!  I can't seem to find anything here...");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(resultSet, pStatement, connection);
-        }
-        return msg.build();
-    }
 
     /**
      * Used to determine if appropriate arguments exist
@@ -154,35 +91,81 @@ public class List implements Command {
         this.guildId = event.getGuild().getId();
 
         MessageBuilder message = new MessageBuilder();
-        message.append("Hey!  Here's the info you wanted:\n\n");
+        message.append("Hey ");
+        message.append(event.getAuthor().getName());
+        message.append("!  Here's the info you asked for:\n\n");
 
         switch (option) {
             case "channel":
-                query = "SELECT `channelName` FROM `twitch` WHERE `guildId` = ? ORDER BY `channelName` ASC";
+                query = "SELECT `channelName` FROM `twitch` WHERE `guildId` = ? AND `channelId` IS NOT NULL ORDER BY `channelName` ASC";
+                message.append("__Twitch Channels__\n\t");
                 break;
             case "game":
-                query = "SELECT `gameName` FROM `twitch` WHERE `guildId` = ? ORDER BY `gameName` ASC";
+                query = "SELECT `gameName` FROM `twitch` WHERE `guildId` = ? AND `gameName` IS NOT NULL ORDER BY `gameName` ASC";
+                message.append("__Twitch Games__\n\t");
                 break;
             case "gamefilter":
-                query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? ORDER BY `gameFilter` ASC";
+                query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? AND `gameFilter` IS NOT NULL ORDER BY `gameFilter` ASC";
+                message.append("__Game Filters__\n\t");
                 break;
             case "manager":
-                query = "SELECT `userId` FROM `manager` WHERE `guildId` = ? ORDER BY `userId` ASC";
+                query = "SELECT `userId` FROM `manager` WHERE `guildId` = ? AND `userId` IS NOT NULL ORDER BY `userId` ASC";
+                message.append("__Bot Managers__\n\t");
                 break;
             case "titlefilter":
-                query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? ORDER BY `titleFilter` ASC";
+                query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` iS NOT NULL ORDER BY `titleFilter` ASC";
+                message.append("__Title Filters__\n\t");
                 break;
             case "team":
-                query = "SELECT `teamName` FROM `twitch` WHERE `guildId` = ? ORDER BY `teamName` ASC";
+                query = "SELECT `teamName` FROM `twitch` WHERE `guildId` = ? AND `teamName` IS NOT NULL ORDER BY `teamName` ASC";
+                message.append("__Twitch Teams__\n\t");
                 break;
             case "setting":
+                message.append("__Bot Settings__\n\t");
                 sendToPm(event, getSettings(message));
                 return;
             default:
                 break;
         }
 
-        sendToPm(event, createNotificationMessage(message, event));
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            resultSet = pStatement.executeQuery();
+
+            if (resultSet.isBeforeFirst()) {
+                while (resultSet.next()) {
+                    if (!"manager".equals(option)) {
+                        message.append("> ");
+                        message.append(resultSet.getString(1).replaceAll("''", "'"));
+                    } else {
+                        String userId = resultSet.getString("userId");
+                        User user = event.getJDA().getUserById(userId);
+                        String userName = user.getName();
+                        message.append(userName);
+                    }
+                    message.append("\n\t");
+
+                    // Large message handler
+                    if (message.length() > 1850) {
+                        sendToPm(event, message.build());
+                        message = new MessageBuilder();
+                        message.append("***Here's some more!***\n");
+                    }
+                }
+            } else {
+                message.append("\nRuh Roh!  I can't seem to find anything here...");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(resultSet, pStatement, connection);
+        }
+
+        sendToPm(event, message.build());
     }
 
     private String getLanguage(String name) {
@@ -273,7 +256,7 @@ public class List implements Command {
                 notify = resultSet.getInt(1);
             }
 
-            message.append(util.Const.LIST_SETTINGS
+            message.append(Const.LIST_SETTINGS
                     .replace("compactSetting", (compact == 0 ? "On" : "Off"))
                     .replace("notificationSetting", (notify == 0 ? "no one" : notify == 2 ? "here" : "everyone"))
                     .replace("cleanupSetting", (cleanup == 0 ? "do nothing" : cleanup == 1 ? "edit" : "delete"))

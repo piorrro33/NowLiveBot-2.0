@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+
 public class User {
 
     @JsonProperty("mature")

@@ -45,15 +45,12 @@ public final class GuildLeave {
     }
 
     public static void leaveGuild(GuildLeaveEvent gEvent) {
-        tableList.add("channel");
-        tableList.add("game");
         tableList.add("guild");
         tableList.add("manager");
         tableList.add("notification");
         tableList.add("permission");
-        tableList.add("stream");
-        tableList.add("tag");
-        tableList.add("team");
+        tableList.add("twitch");
+        tableList.add("twitchstreams");
 
         try {
             for (String s : tableList) {

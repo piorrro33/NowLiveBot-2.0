@@ -24,55 +24,41 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-/**
- * @author Veteran Software by Ague Mort
- */
-public class CheckTableData {
+public class GetGuildsByGame {
 
-    private static Connection connection;
-    private static PreparedStatement pStatement;
-    private static ResultSet result;
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private ResultSet result;
+    private CopyOnWriteArrayList<String> guildIds = new CopyOnWriteArrayList<>();
 
-    public synchronized static Boolean action(String tableName, String guildId, Integer platformId, String name) {
-        String query = "";
-        switch (tableName) {
-            case "channel":
-                query = "SELECT `channelName` FROM `channel` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
-                break;
-            case "filter":
-                query = "SELECT `name` FROM `filter` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
-                break;
-            case "game":
-                query = "SELECT `name` FROM `game` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
-                break;
-            case "tag":
-                query = "SELECT `name` FROM `tag` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
-                break;
-            default:
-                break;
-        }
-
+    public synchronized final CopyOnWriteArrayList<String> fetch(String gameName) {
         try {
+            String query = "SELECT `guildId` FROM `twitch` WHERE `gameName` = ?";
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            pStatement.setInt(2, platformId);
-            pStatement.setString(3, name);
+            this.pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, gameName);
             result = pStatement.executeQuery();
-            if (result.isBeforeFirst()) {
-                return true;
+
+            guildIds.clear();
+
+            while (result.next()) {
+                guildIds.add(result.getString("guildId"));
             }
+
+            return guildIds;
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        return false;
-    }
 
+        return guildIds;
+    }
 }

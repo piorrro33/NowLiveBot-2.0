@@ -28,35 +28,50 @@ import java.sql.SQLException;
 import static util.database.Database.cleanUp;
 
 /**
- * Created by keesh on 1/30/2017.
+ * @author Veteran Software by Ague Mort
  */
-public class ServerLang {
+public class CheckTwitchData {
 
-    private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
+    private static Connection connection;
+    private static PreparedStatement pStatement;
+    private static ResultSet result;
 
-    public synchronized String getLangCode(String guildId) {
+    public synchronized static Boolean action(String tableName, String guildId, Integer platformId, String name) {
+        String query = "";
+        switch (tableName) {
+            case "channel":
+                query = "SELECT `channelName` FROM `twitch` WHERE `guildId` = ? AND `channelName` = ?";
+                break;
+            case "filter":
+                query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? AND `gameFilter` = ?";
+                break;
+            case "game":
+                query = "SELECT `gameName` FROM `twitch` WHERE `guildId` = ? AND `gameName` = ?";
+                break;
+            case "tag":
+                query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` = ?";
+                break;
+            default:
+                break;
+        }
+
         try {
-            String query = "SELECT `serverLang` FROM `guild` WHERE `guildId` = ?";
             if (connection == null || connection.isClosed()) {
-                this.connection = Database.getInstance().getConnection();
+                connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
-            this.result = pStatement.executeQuery();
-
-            String lang = "";
-            if (result.next()) {
-                lang = result.getString("serverLang");
+            pStatement.setString(2, name);
+            result = pStatement.executeQuery();
+            if (result.isBeforeFirst()) {
+                return true;
             }
-            return lang;
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        return null;
+        return false;
     }
 
 }

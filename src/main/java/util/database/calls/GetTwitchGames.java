@@ -24,33 +24,36 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-/**
- * Created by keesh on 1/30/2017.
- */
-public class ServerLang {
+public class GetTwitchGames {
 
     private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
 
-    public synchronized String getLangCode(String guildId) {
+    public synchronized List<String> fetch() {
+        String query = "SELECT DISTINCT `gameName` FROM `twitch` WHERE `gameName` IS NOT NULL ORDER BY `gameName` ASC";
+
         try {
-            String query = "SELECT `serverLang` FROM `guild` WHERE `guildId` = ?";
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
             this.pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
             this.result = pStatement.executeQuery();
 
-            String lang = "";
-            if (result.next()) {
-                lang = result.getString("serverLang");
+            List<String> games = new CopyOnWriteArrayList<>();
+
+            while (result.next()) {
+                if (!games.contains(result.getString("gameName"))) {
+                    games.add(result.getString("gameName"));
+                }
             }
-            return lang;
+            return games;
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {

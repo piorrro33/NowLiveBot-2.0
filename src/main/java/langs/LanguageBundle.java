@@ -101,7 +101,7 @@ public class LanguageBundle extends ListResourceBundle {
                     "channels for all the info!\n\nDon't forget to say hey!"},
             {"helpPm", "Hey there %s!\n\n" +
                     "So I hear you're looking for some help?  Below is a list of my commands. To find out what each one " +
-                    "of them does, type " + Const.COMMAND_PREFIX + Const.COMMAND + "<command> help\n\n" +
+                    "of them does, type " + Const.COMMAND_PREFIX + Const.COMMAND + " *command* help\n\n" +
                     "```Ruby\n* add\n* beam\n* botlang\n* cleanup\n* compact\n* invite\n* list\n* move\n* notify\n* ping\n* remove" +
                     "\n* streamlang\n* streams\n* twitch```\n" +
                     "Just to make it known, Ague is still working hard to finish up all of my polish, so some of the " +
@@ -119,16 +119,19 @@ public class LanguageBundle extends ListResourceBundle {
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
                     + " invite\n\tInvite NowLive bot to your Discord Server.```"},
-            {"listHelp", "```Ruby\nLIST:  Used to list things from my database.\nUSAGE:  "
+            {"listHelp", "```Ruby\nLIST:  This command lists things from the database.\nUSAGE:  "
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
-                    + " list <option>"
-                    + "\n\t<option>"
-                    + "\n\tchannel - I'll list out all of the individual stream channels you want me to watch"
-                    + "\n\tfilter - I'll list all of the game filters that you have set up"
-                    + "\n\tgame - List the games that I'm tracking for you"
-                    + "\n\tmanager - Lists the managers of your channel"
-                    + "\n\tsetting - Lists other settings```"},
+                    + " list *option*"
+                    + "\n\t*option*"
+                    + "\n\tchannel     - I'll list out all of the individual stream channels you want me to watch"
+                    + "\n\tgamefilter  - I'll list all of the game filters that you have set up"
+                    + "\n\tgame        - List the games that I'm tracking for you"
+                    + "\n\tmanager     - Lists the managers of your channel"
+                    + "\n\ttitlefilter - Lists your title filters"
+                    + "\n\tteam        - Lists the Twitch teams you follow"
+                    + "\n\tsetting     - Lists common bot settings"
+                    + "\n\nEXAMPLE:  -nl list channel```"},
             {"moveDoNotOwnChannel", " :no_entry: Hey now, I can't announce to a channel that doesn't exists on your " +
                     "server!"},
             {"moveFail", " :no_entry: I can't seem to send announcements there.  Make sure I have the proper permissions " +

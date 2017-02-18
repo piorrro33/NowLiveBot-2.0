@@ -18,123 +18,85 @@
 
 package platform.generic.listener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import platform.discord.controller.DiscordController;
 import platform.twitch.controller.TwitchController;
 import util.DiscordLogger;
-import util.database.Database;
-import util.database.calls.GetOnlineStreams;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import static util.database.Database.cleanUp;
 
 /**
  * @author Veteran Software by Ague Mort
  */
 public class PlatformListener {
-    private static Logger logger = LoggerFactory.getLogger("Platform Listener");
-    private static Connection clgConnection;
-    private static PreparedStatement clgStatement;
-    private static ResultSet clgResult;
-    private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+    private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
     public PlatformListener() {
 
         try {
-            executor.scheduleWithFixedDelay(this::run, 0, 60, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::run, 0, 180, TimeUnit.SECONDS);
         } catch (Exception e) {
-            logger.info("******************* Caught an exception while keeping the executors active ", e);
-            logger.info("Attempting to restart the executors...");
+            System.out.println("~[ERROR] Caught an exception while keeping the executors active");
         }
     }
 
     private synchronized void run() {
-        checkLiveChannels();
-        checkLiveGames();
-        checkOfflineStreams();
+        checkOffline();
+        editDeleteAnnouncements();
+        checkChannels();
+        checkGames();
+        announceTwitchChannels();
     }
 
     // jda.getUserById("123456789").getJDA().getPresence().getGame().getUrl();
 
-    private synchronized void checkLiveChannels() {
+    private synchronized void checkChannels() {
         LocalDateTime timeNow = LocalDateTime.now();
         new DiscordLogger(" :poop: **Checking for live channels...**", null);
         System.out.println("[SYSTEM] Checking for live channels. " + timeNow);
 
-        Integer platformId = 1;
-        switch (platformId) {
-            case 1:
-                TwitchController twitch = new TwitchController();
-                twitch.checkChannel(platformId);
-                break;
-            case 2:
-                //System.out.println("Found a Beam channel, starting the announcement checking process...");
-                            /*new BeamController().checkChannel(clcResult.getString("name"), clcResult.getString("guildId"),
-                                    clcResult.getInt("platformId"));*/
-                //System.out.println();
-                break;
-            default:
-                break;
-        }
+        TwitchController twitch = new TwitchController();
+        twitch.twitchChannels();
     }
 
-    private synchronized void checkLiveGames() {
+    private synchronized void checkGames() {
         LocalDateTime timeNow = LocalDateTime.now();
         new DiscordLogger(" :poop: **Checking for live games...**", null);
-        System.out.println("[SYSTEM] Checking for live games. " + timeNow);
-        try {
-            String query = "SELECT * FROM `game` ORDER BY `guildId` ASC";
-
-            if (clgConnection == null || clgConnection.isClosed()) {
-                clgConnection = Database.getInstance().getConnection();
-            }
-            clgStatement = clgConnection.prepareStatement(query);
-            clgResult = clgStatement.executeQuery();
-
-            while (clgResult.next()) {
-                switch (clgResult.getInt("platformId")) {
-                    case 1:
-                        // Send info to Twitch Controller
-                        TwitchController twitch = new TwitchController();
-                        twitch.checkGame(clgResult.getString("name").replaceAll("''", "'"),
-                                clgResult.getString("guildId"), clgResult.getInt("platformId"));
-                        break;
-                    case 2:
-                        //BeamController beam = new BeamController();
-                        /*beam.checkGame(clcResult.getString("name"), clcResult.getString("guildId"),
-                                clcResult.getInt("platformId"));*/
-
-                        break;
-                    default:
-                        break;
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(clgResult, clgStatement, clgConnection);
-        }
-    }
-
-    private synchronized void checkOfflineStreams() {
-        LocalDateTime timeNow = LocalDateTime.now();
-        new DiscordLogger(" :poop: **Checking for offline streams...**", null);
-        System.out.println("[SYSTEM] Checking for offline streams. " + timeNow);
-
-        GetOnlineStreams onlineStreams = new GetOnlineStreams();
-        HashMap<String, Map<String, String>> streams = onlineStreams.getOnlineStreams(1);
+        System.out.println("[SYSTEM] Checking for live games... " + timeNow);
 
         TwitchController twitch = new TwitchController();
-        twitch.checkOffline(streams);
+        twitch.twitchGames();
+    }
+
+    private synchronized void checkOffline() {
+        LocalDateTime timeNow = LocalDateTime.now();
+        new DiscordLogger(" :poop: **Checking for offline streams...**", null);
+        System.out.println("[SYSTEM] Checking for offline streams... " + timeNow);
+
+        TwitchController twitch = new TwitchController();
+        twitch.checkOffline();
+    }
+
+    private synchronized void announceTwitchChannels() {
+        LocalDateTime timeNow = LocalDateTime.now();
+        new DiscordLogger(" :poop: **Announcing Twitch streams...**", null);
+        System.out.println("[SYSTEM] Announcing Twitch streams... " + timeNow);
+
+        DiscordController discord = new DiscordController();
+        System.out.println("Announcing tracked channels");
+        discord.announceChannel("twitch", "channel");
+        System.out.println("Announcing tracked games");
+        discord.announceChannel("twitch", "game");
+    }
+
+    private synchronized void editDeleteAnnouncements() {
+        LocalDateTime timeNow = LocalDateTime.now();
+        new DiscordLogger(" :poop: **Editing and Deleting Announcements...**", null);
+        System.out.println("[SYSTEM] Editing and Deleting Announcements... " + timeNow);
+
+        DiscordController discord = new DiscordController();
+        discord.offlineStream();
     }
 }

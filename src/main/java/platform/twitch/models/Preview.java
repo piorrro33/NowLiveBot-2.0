@@ -10,12 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({
-    "small",
-    "medium",
-    "large",
-    "template"
-})
+
 public class Preview {
 
     @JsonProperty("small")

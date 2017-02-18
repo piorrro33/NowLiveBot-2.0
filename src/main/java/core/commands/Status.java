@@ -42,6 +42,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
 import static util.database.Database.cleanUp;
@@ -62,17 +63,23 @@ public class Status implements Command {
 
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
+        sendToChannel(event, "Calculating some things, this might take a few moments...");
         // TODO: Clean this up and make it less bulky and more condensed
-        DecimalFormat numFormat = new DecimalFormat("###,###,###,###");
+        DecimalFormat numFormat = new DecimalFormat("###,###,###,###,###");
         // Total of all guilds the bot is in
         Integer guildCount = Main.getJDA().getGuilds().size();
 
         // Total members across all guilds
-        Integer memberCount = 0;
+        CopyOnWriteArrayList<String> memberList = new CopyOnWriteArrayList<>();
+
         for (Guild guild : Main.getJDA().getGuilds()) {
-            Integer serverMemberCount = guild.getMembers().size();
-            memberCount += serverMemberCount;
+            guild.getMembers().forEach(member -> {
+                if (!memberList.contains(member.getUser().getId())) {
+                    memberList.add(member.getUser().getId());
+                }
+            });
         }
+        Integer memberCount = memberList.size();
 
         EmbedBuilder eBuilder = new EmbedBuilder();
         MessageBuilder mBuilder = new MessageBuilder();

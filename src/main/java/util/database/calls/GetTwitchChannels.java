@@ -24,33 +24,50 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-/**
- * Created by keesh on 1/30/2017.
- */
-public class ServerLang {
+public class GetTwitchChannels {
 
     private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
 
-    public synchronized String getLangCode(String guildId) {
+    public synchronized List<String> fetch(Integer start) {
+        String query;
+        switch (start) {
+            case -1:
+                query = "SELECT `channelName` FROM `twitch` WHERE `channelId` IS NULL ORDER BY `timeAdded` ASC";
+                break;
+            default:
+                query = "SELECT DISTINCT `channelId` FROM `twitch` WHERE `channelId` IS NOT NULL ORDER BY `timeAdded` ASC LIMIT " + start + ",100";
+                break;
+        }
+
         try {
-            String query = "SELECT `serverLang` FROM `guild` WHERE `guildId` = ?";
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
             this.pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
             this.result = pStatement.executeQuery();
 
-            String lang = "";
-            if (result.next()) {
-                lang = result.getString("serverLang");
+            List<String> channels = new CopyOnWriteArrayList<>();
+
+            while (result.next()) {
+                if (start.equals(-1)) {
+                    if (!channels.contains(result.getString("channelName"))) {
+                        channels.add(result.getString("channelName"));
+                    }
+                } else {
+                    if (!channels.contains(result.getString("channelId"))) {
+                        channels.add(result.getString("channelId"));
+                    }
+                }
             }
-            return lang;
+            return channels;
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {

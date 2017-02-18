@@ -22,32 +22,44 @@ import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
 
 /**
- * Created by Ague Mort of Veteran Software on 2/15/2017.
+ * Created by Ague Mort of Veteran Software on 2/17/2017.
  */
-public class UpdateChannelId {
+public class CheckTwitchStreams {
 
     private Connection connection;
-    private PreparedStatement pStatement;
 
-    public synchronized void executeUpdate(String channelId, String channelName) {
+    public synchronized boolean check(String streamId, String guildId) {
+        PreparedStatement pStatement = null;
+        ResultSet result = null;
+
         try {
-            String query = "UPDATE `channel` SET `channelId` = ? WHERE `channelName` = ? AND `platformId` = 1";
+            String query = "SELECT COUNT(*) AS `count` FROM `twitchstreams` WHERE `streamsId` = ? AND `guildid` = ?";
+
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, channelId);
-            pStatement.setString(2, channelName);
-            pStatement.executeUpdate();
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, streamId);
+            pStatement.setString(2, guildId);
+            result = pStatement.executeQuery();
+
+            if (result.next()) {
+                Integer count = result.getInt("count");
+                if (count.equals(0)) {
+                    return false; // Not in the stream table
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(pStatement, connection);
+            cleanUp(result, pStatement, connection);
         }
+        return true; // Found in the stream table
     }
 }

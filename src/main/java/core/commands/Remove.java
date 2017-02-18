@@ -34,7 +34,6 @@ import java.sql.SQLException;
 
 import static core.commands.Add.*;
 import static platform.discord.controller.DiscordController.sendToChannel;
-import static platform.generic.controller.PlatformController.getPlatformId;
 import static util.database.Database.cleanUp;
 
 /**
@@ -82,13 +81,6 @@ public class Remove implements Command {
 
         DiscordController dController = new DiscordController(event);
         String guildId = event.getGuild().getId();
-        Integer platformId;
-
-        if (getPlatformId(args) > 0) {
-            platformId = getPlatformId(args);
-        } else {
-            platformId = 1;
-        }
 
         for (String s : this.options) {
             if (this.option.equals(s) && !this.option.equals("help")) {
@@ -129,16 +121,16 @@ public class Remove implements Command {
                     default:
                         switch (this.option) {
                             case "channel":
-                                defaultQuery = "DELETE FROM `channel` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
+                                defaultQuery = "DELETE FROM `twitch` WHERE `guildId` = ? AND `channelName` = ?";
                                 break;
                             case "filter":
-                                defaultQuery = "DELETE FROM `filter` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                                defaultQuery = "DELETE FROM `twitch` WHERE `guildId` = ? AND `gameFilter` = ?";
                                 break;
                             case "game":
-                                defaultQuery = "DELETE FROM `game` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                                defaultQuery = "DELETE FROM `twitch` WHERE `guildId` = ? AND `gameName` = ?";
                                 break;
                             case "tag":
-                                defaultQuery = "DELETE FROM `tag` WHERE `guildId` = ? AND `platformId` = ? AND `name` = ?";
+                                defaultQuery = "DELETE FROM `twitch` WHERE `guildId` = ? AND `titleFilter` = ?";
                                 break;
                             default:
                                 break;
@@ -151,8 +143,7 @@ public class Remove implements Command {
                             pStatement = connection.prepareStatement(defaultQuery);
 
                             pStatement.setString(1, guildId);
-                            pStatement.setInt(2, platformId);
-                            pStatement.setString(3, argument);
+                            pStatement.setString(2, argument);
                             Integer removeOther = pStatement.executeUpdate();
                             removeResponse(event, removeOther);
                         } catch (SQLException e) {

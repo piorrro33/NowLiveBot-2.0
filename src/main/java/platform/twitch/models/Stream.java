@@ -10,23 +10,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({
-    "_id",
-    "game",
-    "community_id",
-    "viewers",
-    "video_height",
-    "average_fps",
-    "delay",
-    "created_at",
-    "is_playlist",
-    "preview",
-    "channel"
-})
+
 public class Stream {
 
     @JsonProperty("_id")
-    private Long id;
+    private String id;
     @JsonProperty("game")
     private String game;
     @JsonProperty("community_id")
@@ -71,7 +59,7 @@ public class Stream {
      * @param channel
      * @param communityId
      */
-    public Stream(Long id, String game, String communityId, Integer viewers, Integer videoHeight, Float averageFps, Integer delay, String createdAt, Boolean isPlaylist, Preview preview, Channel channel) {
+    public Stream(String id, String game, String communityId, Integer viewers, Integer videoHeight, Float averageFps, Integer delay, String createdAt, Boolean isPlaylist, Preview preview, Channel channel) {
         super();
         this.id = id;
         this.game = game;
@@ -87,12 +75,12 @@ public class Stream {
     }
 
     @JsonProperty("_id")
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
     @JsonProperty("_id")
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

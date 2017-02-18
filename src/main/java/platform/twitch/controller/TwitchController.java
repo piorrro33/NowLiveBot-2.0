@@ -18,25 +18,24 @@
 
 package platform.twitch.controller;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
-import platform.discord.controller.DiscordController;
 import platform.twitch.models.*;
 import util.PropReader;
 import util.database.Database;
-import util.database.calls.CountDbChannels;
-import util.database.calls.GetBroadcasterLang;
-import util.database.calls.GetDbChannels;
-import util.database.calls.GetGuildsByStream;
+import util.database.calls.*;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -46,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static platform.discord.controller.DiscordController.getChannelId;
 import static util.database.Database.cleanUp;
 
 /**
@@ -56,10 +54,10 @@ public class TwitchController {
 
     private Connection connection;
     private PreparedStatement pStatement;
-    private ResultSet result;
     private HttpClient client = HttpClientBuilder.create().build();
     private HttpGet get;
     private HttpResponse response;
+    private List<String> online = new CopyOnWriteArrayList<>();
 
     public TwitchController() {
     }
@@ -99,6 +97,7 @@ public class TwitchController {
     private synchronized List<User> convertNameToId(List<String> names) {
         URIBuilder uriBuilder = setBaseUrl("/users");
         StringBuilder nameList = new StringBuilder();
+
         names.forEach(name -> {
             if (nameList.length() > 0) {
                 nameList.append(",");
@@ -129,11 +128,11 @@ public class TwitchController {
         return null;
     }
 
-    private synchronized List<String> checkFilters(String guildId) {
+    private synchronized List<String> checkGameFilters(String guildId) {
         ResultSet result = null;
 
         try {
-            String query = "SELECT * FROM `filter` WHERE `guildId` = ?";
+            String query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? AND `gameFilter` IS NOT NULL";
 
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
@@ -146,7 +145,7 @@ public class TwitchController {
 
             if (result != null) {
                 while (result.next()) {
-                    filters.add(result.getString("name").replaceAll("''", "'"));
+                    filters.add(result.getString("gameFilter").replaceAll("''", "'"));
                 }
                 return filters;
             }
@@ -158,12 +157,28 @@ public class TwitchController {
         return null;
     }
 
-    public final synchronized void checkOffline(HashMap<String, Map<String, String>> streams) {
+    public final synchronized void checkOffline() {
+        CountTwitchChannels countTwitchChannels = new CountTwitchChannels();
+        Integer amount = countTwitchChannels.streams();
 
-        streams.forEach((String messageId, Map<String, String> streamData) -> {
+        for (Integer c = 0; c <= amount; c += 100) {
+
+            GetTwitchStreams getTwitchStreams = new GetTwitchStreams();
+            HashMap<String, Map<String, String>> offSetStreams = getTwitchStreams.onlineStreams(c);
+
+            StringBuilder channelString = new StringBuilder();
+
+            offSetStreams.values().forEach(channel -> {
+                if (channelString.length() > 0) {
+                    channelString.append(",");
+                }
+                channelString.append(channel.get("channelId"));
+            });
+
 
             URIBuilder uriBuilder = setBaseUrl("/streams");
-            uriBuilder.setParameter("channel", streamData.get("channelId"));
+            uriBuilder.setParameter("channel", channelString.toString());
+            uriBuilder.setParameter("limit", "100");
 
             try {
                 URI uri = uriBuilder.build();
@@ -174,29 +189,41 @@ public class TwitchController {
                 response = client.execute(get);
 
                 ObjectMapper objectMapper = new ObjectMapper();
-                Streams stream = objectMapper.readValue(
+                Streams streams = objectMapper.readValue(
                         new InputStreamReader(response.getEntity().getContent()), Streams.class
                 );
 
-                if (stream.getTotal().equals(0)) {
-                    DiscordController discord = new DiscordController();
-                    discord.offlineStream(streamData);
-                }
+                offSetStreams.values().forEach(dbStream -> streams.getStreams().forEach(stream -> {
+                    if (streams.getTotal().equals(0) || !dbStream.containsValue(stream.getId())) {
+                        online.add(stream.getId());
+                    }
+                    if (dbStream.get("channelId").equals(stream.getChannel().getId()) &&
+                            !dbStream.get("streamsId").equals(stream.getId())) {
+                        online.add(stream.getId());
+                    }
+                }));
+                offSetStreams.values().forEach(dbStream -> {
+                    if (!online.contains(dbStream.get("streamsId"))) {
+                        UpdateOffline offline = new UpdateOffline();
+                        offline.executeUpdate(dbStream.get("streamsId"));
+                    }
+                });
             } catch (URISyntaxException | IOException e) {
                 e.printStackTrace();
             }
-        });
+            //System.out.println("Looping.  Last offset: " + c);
+        }
     }
 
-    public final synchronized void checkChannel(Integer platformId) {
+    public final synchronized void twitchChannels() {
 
-        CountDbChannels countDbChannels = new CountDbChannels();
-        Integer amount = countDbChannels.fetch();
+        CountTwitchChannels countTwitchChannels = new CountTwitchChannels();
+        Integer amount = countTwitchChannels.fetch();
 
         for (Integer c = 0; c <= amount; c += 100) {
 
-            GetDbChannels dbChannels = new GetDbChannels();
-            List<User> channels = convertNameToId(dbChannels.fetch(c));
+            GetTwitchChannels twitchChannels = new GetTwitchChannels();
+            List<String> channels = twitchChannels.fetch(c);
 
             if (channels != null) {
                 StringBuilder channelString = new StringBuilder();
@@ -205,7 +232,7 @@ public class TwitchController {
                     if (channelString.length() > 0) {
                         channelString.append(",");
                     }
-                    channelString.append(channel.getId());
+                    channelString.append(channel);
                 });
 
                 URIBuilder uriBuilder = setBaseUrl("/streams");
@@ -221,37 +248,55 @@ public class TwitchController {
                     response = client.execute(get);
 
                     ObjectMapper objectMapper = new ObjectMapper();
-                    Streams streams = objectMapper.readValue(
-                            new InputStreamReader(response.getEntity().getContent()), Streams.class
-                    );
+                    try {
+                        Streams streams = objectMapper.readValue(
+                                new InputStreamReader(response.getEntity().getContent()), Streams.class
+                        );
 
-                    if (streams.getTotal() > 0) {
-                        DiscordController discord = new DiscordController();
-                        streams.getStreams().forEach(stream -> {
-                            GetGuildsByStream guildsByStream = new GetGuildsByStream();
-                            CopyOnWriteArrayList<String> guildIds = guildsByStream.fetch(stream.getChannel().getName());
+                        if (streams.getTotal() > 0) {
+                            streams.getStreams().forEach(stream -> {
 
-                            guildIds.forEach(guildId -> onLiveStream(stream, guildId, platformId, discord));
-                        });
+                                GetGuildsByStream guildsByStream = new GetGuildsByStream();
+                                CopyOnWriteArrayList<String> guildIds = guildsByStream.fetch(stream.getChannel().getId());
+
+                                guildIds.forEach(guildId -> {
+                                    CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
+
+                                    if (!checkTwitchStreams.check(stream.getId(), guildId)) {
+                                        onLiveTwitchStream(stream, guildId, "channel");
+                                    }
+                                });
+                            });
+                        }
+                    } catch (JsonParseException e) {
+                        System.out.println(uri);
+                        e.printStackTrace();
                     }
                 } catch (URISyntaxException | IOException e) {
                     e.printStackTrace();
                 }
             }
+            //System.out.println("Looping.  Last offset: " + c);
         }
     }
 
-    public final synchronized void checkTeam(String team, String guildId, Integer platformId) {
+    public final synchronized void twitchTeam(String team, String guildId) {
 
     }
 
-    public final synchronized void checkGame(String gameName, String guildId, Integer platformId) {
+    public final synchronized void twitchGames() {
+        // Retrieve a list of game names
+        GetTwitchGames getTwitchGames = new GetTwitchGames();
+        List<String> gameList = getTwitchGames.fetch();
 
-        int[] values = new int[]{0, 0};
-
-        //for (int count = 0; count < values[1]; count += 100) {
+        // Iterate through all the games
+        gameList.forEach(gameName -> {
             URIBuilder uriBuilder = setBaseUrl("/streams");
-            uriBuilder.setParameter("game", gameName);
+            try {
+                uriBuilder.setParameter("game", URLEncoder.encode(gameName.replaceAll("''", "'"), "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
             uriBuilder.setParameter("limit", "100");
             uriBuilder.setParameter("offset", "0");
 
@@ -264,21 +309,31 @@ public class TwitchController {
                 response = client.execute(get);
 
                 ObjectMapper objectMapper = new ObjectMapper();
+                // Live streams for the game
                 StreamsGames games = objectMapper.readValue(
                         new InputStreamReader(response.getEntity().getContent()), StreamsGames.class
                 );
 
                 if (games.getTotal() > 0) {
-                    if (values[1] == 0) {
-                        values[1] = games.getTotal();
-                    }
-                    DiscordController discord = new DiscordController();
-                    games.getStreams().forEach(stream -> onLiveStream(stream, guildId, platformId, discord));
+
+                    // Find all guilds that track this game
+                    GetGuildsByGame guildsByGame = new GetGuildsByGame();
+                    List<String> guilds = guildsByGame.fetch(gameName);
+
+                    // Add the stream to the twitch streams table for each guild
+                    guilds.forEach(guildId -> games.getStreams().forEach(stream -> {
+                        CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
+
+                        if (!checkTwitchStreams.check(stream.getId(), guildId)) {
+                            System.out.println(stream.getChannel().getName() + " playing " + stream.getGame());
+                            onLiveTwitchStream(stream, guildId, "game");
+                        }
+                    }));
                 }
             } catch (URISyntaxException | IOException e) {
                 e.printStackTrace();
             }
-        //}
+        });
     }
 
     /**
@@ -289,10 +344,11 @@ public class TwitchController {
      * @return boolean
      */
     private synchronized boolean filterCheck(String guildId, Stream stream) {
-        List<String> filters = checkFilters(guildId);
-        if (filters == null) {
+        List<String> filters = checkGameFilters(guildId);
+        if (filters == null || filters.isEmpty()) {
             return true;
         }
+
         for (String filter : filters) {
             if (stream.getGame().equalsIgnoreCase(filter)) {
                 return true;
@@ -304,12 +360,10 @@ public class TwitchController {
     /**
      * Method by Hopewell
      *
-     * @param stream     Stream object
-     * @param guildId    Guild Id
-     * @param platformId Platform Id
-     * @param discord    Discord Controller object
+     * @param stream  Stream object
+     * @param guildId Guild Id
      */
-    private synchronized void onLiveStream(Stream stream, String guildId, Integer platformId, DiscordController discord) {
+    private synchronized void onLiveTwitchStream(Stream stream, String guildId, String flag) {
         GetBroadcasterLang getBroadcasterLang = new GetBroadcasterLang();
         String lang = getBroadcasterLang.action(guildId);
 
@@ -317,7 +371,7 @@ public class TwitchController {
                 (lang.equalsIgnoreCase(stream.getChannel().getBroadcasterLanguage()) || "all".equals(lang))) {
             if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
                 if (filterCheck(guildId, stream)) {
-                    discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
+                    new AddTwitchStream(guildId, stream, flag);
                 }
             }
         }

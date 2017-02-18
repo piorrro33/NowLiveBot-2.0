@@ -22,7 +22,6 @@ import core.Command;
 import langs.LocaleString;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import platform.beam.controller.BeamController;
 import platform.twitch.controller.TwitchController;
 import util.database.calls.*;
 
@@ -105,7 +104,7 @@ public class Add implements Command {
                                 String userId = u.getId();
                                 // Check to make sure the user is not a bot
                                 if (!event.getJDA().getUserById(userId).isBot()) {
-                                    if (!CountManagers.action(this.option, guildId, userId)) {
+                                    if (!CountManagers.action(guildId, userId)) {
 
                                         returnStatement(AddManager.action(guildId, userId), event);
                                     } else {
@@ -124,21 +123,11 @@ public class Add implements Command {
                             case 1:
                                 TwitchController twitch = new TwitchController();
                                 String channelId = twitch.convertNameToId(this.argument);
-                                if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
+
+                                if (CheckTwitchData.action(this.option, guildId, platformId, this.argument)) {
                                     sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
                                 } else {
-                                    returnStatement(AddOther.action(this.option, guildId, platformId, this.argument, channelId), event);
-                                }
-                                break;
-                            case 2:
-                                if (BeamController.channelExists(this.argument)) {
-                                    if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
-                                        sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
-                                    } else {
-                                        returnStatement(AddOther.action(this.option, guildId, platformId, this.argument, null), event);
-                                    }
-                                } else {
-                                    sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "beamUserNoExist"));
+                                    returnStatement(AddOther.action(this.option, guildId, this.argument, channelId), event);
                                 }
                                 break;
                             default:
@@ -147,10 +136,10 @@ public class Add implements Command {
                         break;
                     default:
 
-                        if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
+                        if (CheckTwitchData.action(this.option, guildId, platformId, this.argument)) {
                             sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
                         } else {
-                            returnStatement(AddOther.action(this.option, guildId, platformId, this.argument, null), event);
+                            returnStatement(AddOther.action(this.option, guildId, this.argument, null), event);
                         }
                         break;
                 }

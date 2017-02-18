@@ -115,7 +115,7 @@ public class DiscordListener extends ListenerAdapter {
     @Override
     public void onReady(ReadyEvent event) {
         super.onReady(event);
-        updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
+        //updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
     }
 
     @Override

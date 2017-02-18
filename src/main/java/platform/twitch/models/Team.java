@@ -11,18 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({
-    "_id",
-    "name",
-    "info",
-    "display_name",
-    "created_at",
-    "updated_at",
-    "logo",
-    "banner",
-    "background",
-    "users"
-})
+
 public class Team {
 
     @JsonProperty("_id")

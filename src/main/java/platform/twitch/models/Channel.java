@@ -1,4 +1,3 @@
-
 package platform.twitch.models;
 
 import com.fasterxml.jackson.annotation.*;
@@ -10,26 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({
-    "mature",
-    "status",
-    "broadcaster_language",
-    "display_name",
-    "game",
-    "language",
-    "_id",
-    "name",
-    "created_at",
-    "updated_at",
-    "partner",
-    "logo",
-    "video_banner",
-    "profile_banner",
-    "profile_banner_background_color",
-    "url",
-    "views",
-    "followers"
-})
+
 public class Channel {
 
     @JsonProperty("mature")
@@ -45,7 +25,7 @@ public class Channel {
     @JsonProperty("language")
     private String language;
     @JsonProperty("_id")
-    private Integer id;
+    private String id;
     @JsonProperty("name")
     private String name;
     @JsonProperty("created_at")
@@ -73,13 +53,11 @@ public class Channel {
 
     /**
      * No args constructor for use in serialization
-     * 
      */
     public Channel() {
     }
 
     /**
-     * 
      * @param logo
      * @param status
      * @param profileBanner
@@ -99,7 +77,10 @@ public class Channel {
      * @param broadcasterLanguage
      * @param profileBannerBackgroundColor
      */
-    public Channel(Boolean mature, String status, String broadcasterLanguage, String displayName, String game, String language, Integer id, String name, String createdAt, String updatedAt, Boolean partner, String logo, String videoBanner, String profileBanner, Object profileBannerBackgroundColor, String url, Integer views, Integer followers) {
+    public Channel(Boolean mature, String status, String broadcasterLanguage, String displayName, String game,
+                   String language, String id, String name, String createdAt, String updatedAt, Boolean partner,
+                   String logo, String videoBanner, String profileBanner, Object profileBannerBackgroundColor,
+                   String url, Integer views, Integer followers) {
         super();
         this.mature = mature;
         this.status = status;
@@ -182,12 +163,12 @@ public class Channel {
     }
 
     @JsonProperty("_id")
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
     @JsonProperty("_id")
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 

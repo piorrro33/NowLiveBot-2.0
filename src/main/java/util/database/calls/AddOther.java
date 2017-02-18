@@ -35,20 +35,20 @@ public class AddOther {
     private static PreparedStatement pStatement;
     private static String query;
 
-    public synchronized static Boolean action(String tableName, String guildId, int platformId, String name, String id) {
+    public synchronized static Boolean action(String tableName, String guildId, String name, String channelId) {
 
         switch (tableName) {
             case "channel":
-                query = "INSERT INTO `channel` (`id`, `guildId`, `platformId`, `channelName`, `channelId`) VALUES (null,?,?,?,?)";
+                query = "INSERT INTO `twitch` (`id`, `guildId`, `channelName`, `channelId`) VALUES (null,?,?,?)";
                 break;
             case "filter":
-                query = "INSERT INTO `filter` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
+                query = "INSERT INTO `twitch` (`id`, `guildId`, `gameFilter`) VALUES (null,?,?)";
                 break;
             case "game":
-                query = "INSERT INTO `game` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
+                query = "INSERT INTO `twitch` (`id`, `guildId`, `gameName`) VALUES (null,?,?)";
                 break;
             case "tag":
-                query = "INSERT INTO `tag` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
+                query = "INSERT INTO `twitch` (`id`, `guildId`, `titleFilter`) VALUES (null,?,?)";
                 break;
             default:
                 break;
@@ -60,11 +60,10 @@ public class AddOther {
             }
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
-            pStatement.setInt(2, platformId);
             if (tableName.equalsIgnoreCase("channel")) {
-                pStatement.setString(4, id);
+                pStatement.setString(3, channelId);
             }
-            pStatement.setString(3, name);
+            pStatement.setString(2, name);
             if (pStatement.executeUpdate() == 1) {
                 return true;
             }

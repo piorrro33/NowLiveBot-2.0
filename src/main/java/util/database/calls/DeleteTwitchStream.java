@@ -18,7 +18,6 @@
 
 package util.database.calls;
 
-import platform.twitch.models.Stream;
 import util.database.Database;
 
 import java.sql.Connection;
@@ -27,42 +26,26 @@ import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
 
-public class AddToStream {
+public class DeleteTwitchStream {
 
     private Connection connection;
+    private PreparedStatement pStatement;
 
-    public synchronized void process(String guildId, String textChannelId, Integer platformId, Stream stream) {
-        PreparedStatement pStatement = null;
+    public synchronized void process(String guildId, String channelId) {
         try {
-            String query = "INSERT INTO `stream` " +
-                    "(`guildId`, `textChannelId`, `platformId`, `streamsGame`, `streamsViewers`, " +
-                    "`channelStatus`, `channelDisplayName`, `channelLanguage`, `channelId`, `channelName`, `channelLogo`," +
-                    "`channelProfileBanner`, `channelUrl`, `channelViews`, `channelFollowers`) " +
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String query = "DELETE FROM `twitchstreams` WHERE `guildId` = ? AND `channelId` = ?";
 
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-
-            pStatement = connection.prepareStatement(query);
+            this.pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
-            pStatement.setString(2, textChannelId);
-            pStatement.setInt(3, platformId);
-            pStatement.setString(4, stream.getGame());
-            pStatement.setInt(5, stream.getViewers());
-            pStatement.setString(6, stream.getChannel().getStatus());
-            pStatement.setString(7, stream.getChannel().getDisplayName());
-            pStatement.setString(8, stream.getChannel().getLanguage());
-            pStatement.setLong(9, stream.getChannel().getId());
-            pStatement.setString(10, stream.getChannel().getName());
-            pStatement.setString(11, stream.getChannel().getLogo());
-            pStatement.setString(12, stream.getChannel().getProfileBanner());
-            pStatement.setString(13, stream.getChannel().getUrl());
-            pStatement.setLong(14, stream.getChannel().getViews());
-            pStatement.setLong(15, stream.getChannel().getFollowers());
+            pStatement.setString(2, channelId);
+
             pStatement.executeUpdate();
+
         } catch (SQLException e) {
-            System.out.println("[ERROR] I threw an exception here");
+            e.printStackTrace();
         } finally {
             cleanUp(pStatement, connection);
         }

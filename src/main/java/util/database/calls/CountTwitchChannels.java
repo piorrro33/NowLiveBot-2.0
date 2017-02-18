@@ -27,36 +27,57 @@ import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
 
-public class CheckStreamTable {
+public class CountTwitchChannels {
 
     private Connection connection;
+    private PreparedStatement pStatement;
+    private ResultSet result;
 
-    public synchronized boolean check(String guildId, Integer platformId, String channelName) {
-        PreparedStatement pStatement = null;
-        ResultSet result = null;
-
+    public synchronized Integer fetch() {
+        String query = "SELECT COUNT(*) AS `count` FROM `twitch` WHERE `channelId` IS NOT NULL";
         try {
-            String query = "SELECT COUNT(*) AS `count` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
-
             if (connection == null || connection.isClosed()) {
-                this.connection = Database.getInstance().getConnection();
+                connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            pStatement.setInt(2, platformId);
-            pStatement.setString(3, channelName);
             result = pStatement.executeQuery();
+
+            Integer count = -1;
+
             while (result.next()) {
-                Integer count = result.getInt("count");
-                if (count.equals(0)) {
-                    return false; // Not in the stream table
-                }
+                count = result.getInt("count");
             }
+
+            return count;
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        return true; // Found in the stream table
+        return -1;
+    }
+
+    public synchronized Integer streams() {
+        String query = "SELECT COUNT(*) AS `count` FROM `twitchstreams` WHERE `online` = 1";
+        try {
+            Integer count = -1;
+
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
+
+            while (result.next()) {
+                count = result.getInt("count");
+            }
+
+            return count;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
+        }
+        return -1;
     }
 }

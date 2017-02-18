@@ -28,12 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import platform.discord.listener.DiscordListener;
 import platform.generic.listener.PlatformListener;
-import platform.twitch.controller.TwitchController;
 import util.Const;
 import util.PropReader;
 import util.database.Database;
-import util.database.calls.GetDbChannels;
-import util.database.calls.UpdateChannelId;
 
 import javax.security.auth.login.LoginException;
 import java.beans.PropertyVetoException;
@@ -97,7 +94,9 @@ public class Main {
         }
 
         guildCheck();
-        convertChannelsToIds();
+
+        //V5TableMigration migration = new V5TableMigration();
+        //migration.execute();
 
         new PlatformListener();
     }
@@ -139,6 +138,8 @@ public class Main {
                     tableList.add("stream");
                     tableList.add("tag");
                     tableList.add("team");
+                    tableList.add("twitch");
+                    tableList.add("twitchstreams");
 
                     try {
                         for (String table : tableList) {
@@ -166,23 +167,6 @@ public class Main {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
-        }
-    }
-
-    private static void convertChannelsToIds() {
-        GetDbChannels getDbChannels = new GetDbChannels();
-        List<String> channels = getDbChannels.fetch(-1);
-
-        if (channels != null) {
-            channels.forEach(channel -> {
-                TwitchController twitchController = new TwitchController();
-                String channelId = twitchController.convertNameToId(channel);
-
-                System.out.println(channelId);
-
-                UpdateChannelId updateChannelId = new UpdateChannelId();
-                updateChannelId.executeUpdate(channelId, channel);
-            });
         }
     }
 }

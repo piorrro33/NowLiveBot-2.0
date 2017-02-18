@@ -51,9 +51,9 @@ public class AddGuild {
     private synchronized String getQuery(String table) {
         switch (table) {
             case "channel":
-                return "SELECT COUNT(*) AS `count` FROM `channel` WHERE `guildId` = ?";
+                return "SELECT COUNT(channelName) AS `count` FROM `twitch` WHERE `guildId` = ?";
             case "filter":
-                return "SELECT COUNT(*) AS `count` FROM `filter` WHERE `guildId` = ?";
+                return "SELECT COUNT(gameFilter) AS `count` FROM `twitch` WHERE `guildId` = ?";
             case "guild":
                 return "SELECT COUNT(*) AS `count` FROM `guild` WHERE `guildId` = ?";
             case "manager":
@@ -63,11 +63,11 @@ public class AddGuild {
             case "permission":
                 return "SELECT COUNT(*) AS `count` FROM `permission` WHERE `guildId` = ?";
             case "stream":
-                return "SELECT COUNT(*) AS `count` FROM `stream` WHERE `guildId` = ?";
+                return "SELECT COUNT(streamsId) AS `count` FROM `twitchstreams` WHERE `guildId` = ?";
             case "tag":
-                return "SELECT COUNT(*) AS `count` FROM `tag` WHERE `guildId` = ?";
+                return "SELECT COUNT(titleFilter) AS `count` FROM `twitch` WHERE `guildId` = ?";
             case "team":
-                return "SELECT COUNT(*) AS `count` FROM `team` WHERE `guildId` = ?";
+                return "SELECT COUNT(teamName) AS `count` FROM `twitch` WHERE `guildId` = ?";
             default:
                 break;
         }
@@ -77,15 +77,10 @@ public class AddGuild {
     public synchronized void action(GuildMessageReceivedEvent event) {
 
         List<String> tableList = new CopyOnWriteArrayList<>();
-        tableList.add("channel");
-        tableList.add("game");
         tableList.add("guild");
         tableList.add("manager");
         tableList.add("notification");
         tableList.add("permission");
-        tableList.add("stream");
-        tableList.add("tag");
-        tableList.add("team");
 
         for (String table : tableList) {
             try {

@@ -22,44 +22,50 @@ import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
 
-public class GetGuildFromMessage {
+/**
+ * Created by Ague Mort of Veteran Software on 2/17/2017.
+ */
+public class UpdateOffline {
 
     private Connection connection;
     private PreparedStatement pStatement;
-    private ResultSet result;
-    private String guildId;
 
-    public String getGuildId(String messageId) {
-        doStuff(messageId);
-        return guildId;
-    }
-
-    private synchronized void doStuff(String messageId) {
-        String query = "SELECT `guildId` FROM `stream` WHERE `messageId` = ?";
-
+    public synchronized void executeUpdate(String streamId) {
         try {
+            String query = "UPDATE `twitchstreams` SET `online` = ? WHERE `streamsId` = ?";
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, messageId);
-            result = pStatement.executeQuery();
-
-            if (result.isBeforeFirst()) {
-                while (result.next()) {
-                    this.guildId = result.getString("guildId");
-                }
-            }
+            this.pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, "0");
+            pStatement.setString(2, streamId);
+            pStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(result, pStatement, connection);
+            cleanUp(pStatement, connection);
         }
     }
 
+    public synchronized void executeUpdate(String channelId, String guildId) {
+        try {
+            String query = "UPDATE `twitchstreams` SET `online` = ? WHERE `channelId` = ? AND `guildId` = ?";
+            if (connection == null || connection.isClosed()) {
+                this.connection = Database.getInstance().getConnection();
+            }
+            this.pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, "0");
+            pStatement.setString(2, channelId);
+            pStatement.setString(3, guildId);
+            pStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(pStatement, connection);
+        }
+    }
 }

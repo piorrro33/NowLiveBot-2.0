@@ -24,25 +24,33 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-public class GetDbChannels {
-
+/**
+ * Created by Ague Mort of Veteran Software on 2/17/2017.
+ */
+public class GetAnnounceChannel {
     private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
 
-    public synchronized List<String> fetch(Integer start) {
-        String query;
-        switch (start) {
-            case -1:
-                query = "SELECT `channelName` FROM `channel` WHERE `channelId` IS NULL AND `platformId` = 1 ORDER BY `timeAdded` ASC";
-                break;
-            default:
-                query = "SELECT `channelName` FROM `channel` ORDER BY `timeAdded` ASC LIMIT " + start + ",100";
+    public synchronized String action(String guildId, String searchColumn, String platform, String type) {
+        String query = "";
+        String announceChannel = "";
+
+        switch(platform) {
+            case "twitch":
+                switch (type) {
+                    case "channel":
+                        query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `channelId` = ?";
+                        break;
+                    case "game":
+                        query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `gameName` = ?";
+                        break;
+                    default:
+                        break;
+                }
                 break;
         }
 
@@ -51,23 +59,35 @@ public class GetDbChannels {
                 this.connection = Database.getInstance().getConnection();
             }
             this.pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            pStatement.setString(2, searchColumn);
             this.result = pStatement.executeQuery();
 
-            List<String> channels = new CopyOnWriteArrayList<>();
+            if (result.next()) {
+                announceChannel = result.getString("announceChannel");
+                if (announceChannel == null || announceChannel.isEmpty() || "".equals(announceChannel)) {
+                    switch(platform) {
+                        case "twitch":
+                            query = " SELECT `channelId` FROM `guild` WHERE `guildId` = ?";
+                            break;
+                    }
+                    this.pStatement = connection.prepareStatement(query);
+                    pStatement.setString(1, guildId);
+                    this.result = pStatement.executeQuery();
 
-            while (result.next()) {
-                if (!channels.contains(result.getString("channelName"))) {
-                    channels.add(result.getString("channelName"));
+                    if (result.next()) {
+                        announceChannel = result.getString("channelId");
+                    }
                 }
             }
-            return channels;
-
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        return null;
+        if (announceChannel != null && !announceChannel.isEmpty() || !"".equals(announceChannel)) {
+            announceChannel = guildId;
+        }
+        return announceChannel;
     }
-
 }

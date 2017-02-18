@@ -56,7 +56,7 @@ public class Streams implements Command {
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
         try {
-            String query = "SELECT COUNT(*) AS `rowCount` FROM `stream` WHERE `guildId` = ?";
+            String query = "SELECT COUNT(streamsId) AS `rowCount` FROM `twitchstreams` WHERE `guildId` = ?";
 
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();

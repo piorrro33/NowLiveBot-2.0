@@ -36,9 +36,9 @@ public class PlatformListener {
     public PlatformListener() {
 
         try {
-            executor.scheduleWithFixedDelay(this::run, 0, 180, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::run, 0, 90, TimeUnit.SECONDS);
         } catch (Exception e) {
-            System.out.println("~[ERROR] Caught an exception while keeping the executors active");
+            System.out.println("[~ERROR~] Caught an exception while keeping the executors active");
         }
     }
 
@@ -47,7 +47,6 @@ public class PlatformListener {
         editDeleteAnnouncements();
         checkChannels();
         checkGames();
-        announceTwitchChannels();
     }
 
     // jda.getUserById("123456789").getJDA().getPresence().getGame().getUrl();
@@ -59,6 +58,8 @@ public class PlatformListener {
 
         TwitchController twitch = new TwitchController();
         twitch.twitchChannels();
+        DiscordController discord = new DiscordController();
+        discord.announceChannel("twitch", "channel");
     }
 
     private synchronized void checkGames() {
@@ -68,6 +69,8 @@ public class PlatformListener {
 
         TwitchController twitch = new TwitchController();
         twitch.twitchGames();
+        DiscordController discord = new DiscordController();
+        discord.announceChannel("twitch", "game");
     }
 
     private synchronized void checkOffline() {
@@ -77,18 +80,6 @@ public class PlatformListener {
 
         TwitchController twitch = new TwitchController();
         twitch.checkOffline();
-    }
-
-    private synchronized void announceTwitchChannels() {
-        LocalDateTime timeNow = LocalDateTime.now();
-        new DiscordLogger(" :poop: **Announcing Twitch streams...**", null);
-        System.out.println("[SYSTEM] Announcing Twitch streams... " + timeNow);
-
-        DiscordController discord = new DiscordController();
-        System.out.println("Announcing tracked channels");
-        discord.announceChannel("twitch", "channel");
-        System.out.println("Announcing tracked games");
-        discord.announceChannel("twitch", "game");
     }
 
     private synchronized void editDeleteAnnouncements() {

@@ -76,7 +76,7 @@ public class AddTwitchStream {
             pStatement.setInt(21, stream.getChannel().getFollowers());
             pStatement.executeUpdate();
         } catch (SQLException e) {
-            System.out.println("[ERROR] I threw an exception here");
+            System.out.println("[~ERROR~] I threw an exception here");
             e.printStackTrace();
         } finally {
             cleanUp(pStatement, connection);

@@ -210,7 +210,7 @@ public class DiscordListener extends ListenerAdapter {
                 HttpResponse response = client.execute(post);
 
                 if (response.getStatusLine().getStatusCode() != 200) {
-                    System.out.println("~[ERROR] Failed updating server count on bots.discord.pw");
+                    System.out.println("[~ERROR~] Failed updating server count on bots.discord.pw");
                 } else {
                     System.out.println("[SYSTEM] Successfully updated server count on bots.discord.pw");
                 }

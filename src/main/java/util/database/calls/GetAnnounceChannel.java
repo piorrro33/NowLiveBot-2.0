@@ -35,24 +35,9 @@ public class GetAnnounceChannel {
     private PreparedStatement pStatement;
     private ResultSet result;
 
-    public synchronized String action(String guildId, String searchColumn, String platform, String type) {
-        String query = "";
+    public synchronized String action(String guildId) {
         String announceChannel = "";
-
-        switch(platform) {
-            case "twitch":
-                switch (type) {
-                    case "channel":
-                        query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `channelId` = ?";
-                        break;
-                    case "game":
-                        query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `gameName` = ?";
-                        break;
-                    default:
-                        break;
-                }
-                break;
-        }
+        String query = "SELECT `channelId` FROM `guild` WHERE `guildId` = ?";
 
         try {
             if (connection == null || connection.isClosed()) {
@@ -60,33 +45,15 @@ public class GetAnnounceChannel {
             }
             this.pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
-            pStatement.setString(2, searchColumn);
             this.result = pStatement.executeQuery();
 
             if (result.next()) {
-                announceChannel = result.getString("announceChannel");
-                if (announceChannel == null || announceChannel.isEmpty() || "".equals(announceChannel)) {
-                    switch(platform) {
-                        case "twitch":
-                            query = " SELECT `channelId` FROM `guild` WHERE `guildId` = ?";
-                            break;
-                    }
-                    this.pStatement = connection.prepareStatement(query);
-                    pStatement.setString(1, guildId);
-                    this.result = pStatement.executeQuery();
-
-                    if (result.next()) {
-                        announceChannel = result.getString("channelId");
-                    }
-                }
+                announceChannel = result.getString("channelId");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
-        }
-        if (announceChannel != null && !announceChannel.isEmpty() || !"".equals(announceChannel)) {
-            announceChannel = guildId;
         }
         return announceChannel;
     }

@@ -53,25 +53,25 @@ public class List implements Command {
         MessageBuilder msg = message;
         switch (option) {
             case "channel":
-                msg.append("Twitch Channels\n\t");
+                msg.append("__Twitch Channels__\n\t");
                 break;
             case "gamefilter":
-                msg.append("Game Filters\n\t");
+                msg.append("__Game Filters__\n\t");
                 break;
             case "game":
-                msg.append("Twitch Games\n\t");
+                msg.append("__Twitch Games__\n\t");
                 break;
             case "manager":
-                msg.append("Bot Managers\n\t");
+                msg.append("__Bot Managers__\n\t");
                 break;
             case "titlefilter":
-                msg.append("Title Filters\n\t");
+                msg.append("__Title Filters__\n\t");
                 break;
             case "team":
-                msg.append("Twitch Teams\n\t");
+                msg.append("__Twitch Teams__\n\t");
                 break;
             case "setting":
-                msg.append("Bot Settings\n\n\t");
+                msg.append("__Bot Settings__\n\t");
                 break;
         }
         try {
@@ -85,6 +85,7 @@ public class List implements Command {
             if (resultSet.isBeforeFirst()) {
                 while (resultSet.next()) {
                     if (!"manager".equals(option)) {
+                        msg.append("> ");
                         msg.append(resultSet.getString(1).replaceAll("''", "'"));
                     } else {
                         String userId = resultSet.getString("userId");
@@ -98,7 +99,7 @@ public class List implements Command {
                     if (msg.length() > 1850) {
                         sendToPm(event, msg.build());
                         msg = new MessageBuilder();
-                        msg.append("Here's some more!\n");
+                        msg.append("***Here's some more!***\n");
                     }
                 }
             } else {

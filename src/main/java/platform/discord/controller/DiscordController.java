@@ -423,38 +423,6 @@ public class DiscordController {
         });
     }
 
-    private synchronized Boolean checkChannelExists(String textChannelId, String guildId) {
-        // If the channel doesn't exist, reset it to the default public channel which is the guildId
-        if (Main.getJDA().getTextChannelById(textChannelId) == null) {
-            try {
-                if (Main.getJDA().getTextChannelById(guildId) != null) {
-                    try {
-                        query = "UPDATE `guild` SET `channelId` = ? WHERE `guildId` = ?";
-
-                        if (connection == null || connection.isClosed()) {
-                            connection = Database.getInstance().getConnection();
-                        }
-                        pStatement = connection.prepareStatement(query);
-                        pStatement.setString(1, guildId);
-                        pStatement.setString(2, guildId);
-                        pStatement.executeUpdate();
-                    } catch (SQLException e) {
-                        System.out.println("~[ERROR] There was an SQL Exception");
-                    } finally {
-                        cleanUp(pStatement, connection);
-                    }
-                    return true;
-                } else {
-                    System.out.println("~[ERROR] Unable to find a suitable channel to announce in");
-                    return false;
-                }
-            } catch (NullPointerException npe) {
-                System.out.println("~[ERROR] There was a NPE in DiscordController#checkChannelExists");
-            }
-        }
-        return true;
-    }
-
     public synchronized void announceChannel(String platform, String flag) {
         GetTwitchStreams twitchStreams = new GetTwitchStreams();
         HashMap<String, Map<String, String>> newStreams = twitchStreams.onlineStreams(flag);
@@ -464,73 +432,57 @@ public class DiscordController {
 
                 Message message = buildEmbed(streamData, platform, "new");
 
-                String searchColumn = "";
-                switch (flag) {
-                    case "channel":
-                        searchColumn = streamData.get("channelId");
-                        break;
-                    case "game":
-                        searchColumn = streamData.get("streamsGame");
-                        break;
-                    default:
-                        break;
-                }
-
                 GetAnnounceChannel getAnnounceChannel = new GetAnnounceChannel();
-                String announceChannel = getAnnounceChannel.action(streamData.get("guildId"), searchColumn, "twitch", flag);
-                System.out.println("Announce Channel: " + announceChannel);
+                String announceChannel = getAnnounceChannel.action(streamData.get("guildId"));
 
                 if (announceChannel != null && !announceChannel.isEmpty() || !"".equals(announceChannel)) {
-                    if (checkChannelExists(announceChannel, streamData.get("guildId"))) {
-                        try {
-                            CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
-                            if (!checkTwitchStreams.check(streamData.get("channelId"), streamData.get("guildId"))) {
+                    try {
+                        CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
+                        if (!checkTwitchStreams.check(streamData.get("channelId"), streamData.get("guildId"))) {
 
-                                Main.getJDA().getTextChannelById(announceChannel).sendMessage(message).queue(
-                                        sentMessage -> {
-                                            UpdateMessageId updateMessageId = new UpdateMessageId();
-                                            updateMessageId.executeUpdate(streamData.get("guildId"), streamData.get("channelId"), sentMessage.getId());
+                            Main.getJDA().getTextChannelById(announceChannel).sendMessage(message).queue(
+                                    sentMessage -> {
+                                        UpdateMessageId updateMessageId = new UpdateMessageId();
+                                        updateMessageId.executeUpdate(streamData.get("guildId"), streamData.get("channelId"), sentMessage.getId());
 
-                                            MessageBuilder discord = new MessageBuilder();
+                                        MessageBuilder discord = new MessageBuilder();
 
-                                            discord.append(" :tada: ");
-                                            discord.append("[G:");
-                                            discord.append(Main.getJDA().getGuildById(streamData.get("guildId")).getName());
-                                            discord.append("][C:");
-                                            discord.append(Main.getJDA().getTextChannelById(announceChannel).getName());
-                                            discord.append("]");
-                                            discord.append(streamData.get("channelName"));
-                                            discord.append(" is streaming ");
-                                            discord.append(streamData.get("streamsGame"));
+                                        discord.append(" :tada: ");
+                                        discord.append("[G:");
+                                        discord.append(Main.getJDA().getGuildById(streamData.get("guildId")).getName());
+                                        discord.append("][C:");
+                                        discord.append(Main.getJDA().getTextChannelById(announceChannel).getName());
+                                        discord.append("]");
+                                        discord.append(streamData.get("channelName"));
+                                        discord.append(" is streaming ");
+                                        discord.append(streamData.get("streamsGame"));
 
-                                            Message dMessage = discord.build();
+                                        Message dMessage = discord.build();
 
-                                            new DiscordLogger(dMessage.getRawContent(), null);
-                                            System.out.printf("[STREAM ANNOUNCE] [%s:%s] [%s:%s] [%s]: %s%n",
-                                                    Main.getJDA().getGuildById(streamData.get("guildId")).getName(),
-                                                    Main.getJDA().getGuildById(streamData.get("guildId")).getId(),
-                                                    Main.getJDA().getTextChannelById(getChannelId(streamData.get("guildId"))).getName(),
-                                                    Main.getJDA().getTextChannelById(getChannelId(streamData.get("guildId"))).getId(),
-                                                    sentMessage.getId(),
-                                                    streamData.get("channelName") + " is streaming " + streamData.get("streamsGame"));
+                                        new DiscordLogger(dMessage.getRawContent(), null);
+                                        System.out.printf("[STREAM ANNOUNCE] [%s:%s] [%s:%s] [%s]: %s%n",
+                                                Main.getJDA().getGuildById(streamData.get("guildId")).getName(),
+                                                Main.getJDA().getGuildById(streamData.get("guildId")).getId(),
+                                                Main.getJDA().getTextChannelById(getChannelId(streamData.get("guildId"))).getName(),
+                                                Main.getJDA().getTextChannelById(getChannelId(streamData.get("guildId"))).getId(),
+                                                sentMessage.getId(),
+                                                streamData.get("channelName") + " is streaming " + streamData.get("streamsGame"));
 
-                                            new Tracker("Streams Announced");
-                                        }
-                                );
-                            } else {
-                                UpdateOffline updateOffline = new UpdateOffline();
-                                updateOffline.executeUpdate(streamData.get("streamsId"));
-                            }
-                        } catch (PermissionException pe) {
-                            new DiscordLogger(" :no_entry: Permission error sending in G:" + Main.getJDA
-                                    ().getGuildById(streamData.get("guildId")).getName() + ":" + streamData.get("guildId"), null);
-                            System.out.printf("[~ERROR~] Permission Exception! G:%s:%s C:%s:%s%n",
-                                    Main.getJDA().getGuildById(streamData.get("guildId")).getName(),
-                                    streamData.get("guildId"),
-                                    Main.getJDA().getTextChannelById(announceChannel).getName(),
-                                    announceChannel);
+                                        new Tracker("Streams Announced");
+                                    }
+                            );
+                        } else {
+                            UpdateOffline updateOffline = new UpdateOffline();
+                            updateOffline.executeUpdate(streamData.get("streamsId"));
                         }
-                    } else {
+                    } catch (PermissionException pe) {
+                        new DiscordLogger(" :no_entry: Permission error sending in G:" + Main.getJDA
+                                ().getGuildById(streamData.get("guildId")).getName() + ":" + streamData.get("guildId"), null);
+                        System.out.printf("[~ERROR~] Permission Exception! G:%s:%s C:%s:%s%n",
+                                Main.getJDA().getGuildById(streamData.get("guildId")).getName(),
+                                streamData.get("guildId"),
+                                Main.getJDA().getTextChannelById(announceChannel).getName(),
+                                announceChannel);
                         DeleteTwitchStream deleteStream = new DeleteTwitchStream();
                         deleteStream.process(streamData.get("guildId"), streamData.get("channelId"));
                     }
@@ -541,7 +493,6 @@ public class DiscordController {
             });
         }
     }
-
 
     private void mentionedUsersID(GuildMessageReceivedEvent event) {
         for (User u : event.getMessage().getMentionedUsers()) {

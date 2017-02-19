@@ -478,11 +478,14 @@ public class DiscordController {
                     } catch (PermissionException pe) {
                         new DiscordLogger(" :no_entry: Permission error sending in G:" + Main.getJDA
                                 ().getGuildById(streamData.get("guildId")).getName() + ":" + streamData.get("guildId"), null);
-                        System.out.printf("[~ERROR~] Permission Exception! G:%s:%s C:%s:%s%n",
+                        System.out.printf("[~ERROR~] Permission Exception! G:%s:%s C:%s:%s GO:%s#%s:%s%n",
                                 Main.getJDA().getGuildById(streamData.get("guildId")).getName(),
                                 streamData.get("guildId"),
                                 Main.getJDA().getTextChannelById(announceChannel).getName(),
-                                announceChannel);
+                                announceChannel,
+                                Main.getJDA().getGuildById(streamData.get("guildId")).getOwner().getUser().getName(),
+                                Main.getJDA().getGuildById(streamData.get("guildId")).getOwner().getUser().getDiscriminator(),
+                                Main.getJDA().getGuildById(streamData.get("guildId")).getOwner().getUser().getId());
                         DeleteTwitchStream deleteStream = new DeleteTwitchStream();
                         deleteStream.process(streamData.get("guildId"), streamData.get("channelId"));
                     }

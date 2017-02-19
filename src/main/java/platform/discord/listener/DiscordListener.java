@@ -95,12 +95,13 @@ public class DiscordListener extends ListenerAdapter {
                 }
                 try {
                     new DiscordLogger(" :arrow_left: " + event.getMessage().getContent(), event);
-                    System.out.printf("[COMMAND] [%s:%s] [%s:%s] [%s:%s] %s%n",
+                    System.out.printf("[COMMAND] [%s:%s] [%s:%s] [%s#%s:%s] %s%n",
                             event.getGuild().getName(),
                             event.getGuild().getId(),
                             event.getChannel().getName(),
                             event.getChannel().getId(),
                             event.getAuthor().getName(),
+                            event.getAuthor().getDiscriminator(),
                             event.getAuthor().getId(),
                             event.getMessage().getContent());
                     commandFilter(cntMsg, event);

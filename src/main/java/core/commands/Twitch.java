@@ -34,6 +34,7 @@ import static platform.discord.controller.DiscordController.sendToChannel;
 public class Twitch implements Command {
 
     private ArrayList<String> commands = new ArrayList<>();
+    private Boolean valid = false;
 
     public Twitch() {
         addCommands();
@@ -58,6 +59,15 @@ public class Twitch implements Command {
     @Override
     public boolean called(String args, GuildMessageReceivedEvent event) {
         if (args != null && !"".equals(args)) {
+            /*commands.forEach(command -> {
+                if (args.startsWith(command)) {
+                    valid = true;
+                }
+            });
+
+            if (valid) {
+                return true;
+            }*/
 
             String calledArgs = args.trim().substring(args.lastIndexOf(' ') + 1);
 

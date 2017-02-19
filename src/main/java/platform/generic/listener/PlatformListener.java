@@ -36,7 +36,7 @@ public class PlatformListener {
     public PlatformListener() {
 
         try {
-            executor.scheduleWithFixedDelay(this::run, 0, 90, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::run, 0, 60, TimeUnit.SECONDS);
         } catch (Exception e) {
             System.out.println("[~ERROR~] Caught an exception while keeping the executors active");
         }

@@ -174,7 +174,7 @@ public class Remove implements Command {
 
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Remove");
+        new Tracker("Command");
     }
 
     private synchronized boolean managerCount(String guildId) {

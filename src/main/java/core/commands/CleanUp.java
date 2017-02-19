@@ -96,6 +96,6 @@ public class CleanUp implements Command {
      */
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Cleanup");
+        new Tracker("Command");
     }
 }

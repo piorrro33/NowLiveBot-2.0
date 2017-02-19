@@ -164,7 +164,7 @@ public class Add implements Command {
 
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Add");
+        new Tracker("Command");
 
     }
 

@@ -82,7 +82,7 @@ public class Streams implements Command {
         } else {
             try {
                 // Grab the actual results to iterate through
-                String query = "SELECT `channelDisplayName`, `streamsGame`, `channelUrl` " +
+                String query = "SELECT `channelName`, `streamsGame`, `channelUrl` " +
                         "FROM `twitchstreams` " +
                         "WHERE `guildId` = ? " +
                         "AND `messageId` IS NOT NULL " +
@@ -137,6 +137,6 @@ public class Streams implements Command {
 
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Streams");
+        new Tracker("Command");
     }
 }

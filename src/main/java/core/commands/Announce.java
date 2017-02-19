@@ -81,6 +81,6 @@ public class Announce implements Command {
 
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Announce");
+        new Tracker("Command");
     }
 }

@@ -264,6 +264,6 @@ public class BotLanguage implements Command {
      */
     @Override
     public void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("botlang");
+        new Tracker("Command");
     }
 }

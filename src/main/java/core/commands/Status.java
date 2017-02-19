@@ -42,7 +42,6 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
 import static util.database.Database.cleanUp;
@@ -63,29 +62,25 @@ public class Status implements Command {
 
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
-        sendToChannel(event, "Calculating some things, this might take a few moments...");
         // TODO: Clean this up and make it less bulky and more condensed
         DecimalFormat numFormat = new DecimalFormat("###,###,###,###,###");
         // Total of all guilds the bot is in
         Integer guildCount = Main.getJDA().getGuilds().size();
 
         // Total members across all guilds
-        CopyOnWriteArrayList<String> memberList = new CopyOnWriteArrayList<>();
-
+        Integer memberCount = 0;
         for (Guild guild : Main.getJDA().getGuilds()) {
-            guild.getMembers().forEach(member -> {
-                if (!memberList.contains(member.getUser().getId())) {
-                    memberList.add(member.getUser().getId());
-                }
-            });
+            Integer serverMemberCount = guild.getMembers().size();
+            memberCount += serverMemberCount;
         }
-        Integer memberCount = memberList.size();
 
         EmbedBuilder eBuilder = new EmbedBuilder();
         MessageBuilder mBuilder = new MessageBuilder();
         DateFormat dateTimeFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
-        eBuilder.setColor(Color.RED);
+        float[] rgb = Color.RGBtoHSB(208, 34, 56, null);
+        eBuilder.setColor(Color.getHSBColor(rgb[0], rgb[1], rgb[2]));
+
         eBuilder.setAuthor(Const.BOT_NAME + " Statistics", null, Const.BOT_LOGO);
 
         eBuilder.addField("# Servers", numFormat.format(guildCount), false);
@@ -101,15 +96,15 @@ public class Status implements Command {
 
             pStatement = connection.prepareStatement(query);
             result = pStatement.executeQuery();
-            String heard;
+            String plural;
             while (result.next()) {
-                if (result.getString("commandName").equals("Messages")) {
-                    heard = " Heard";
+                if (result.getString("commandName").equals("Command")) {
+                    plural = "s";
                 } else {
-                    heard = "";
+                    plural = "";
                 }
 
-                eBuilder.addField(result.getString("commandName") + heard, numFormat.format(result.getInt("commandCount")), true);
+                eBuilder.addField(result.getString("commandName") + plural, numFormat.format(result.getInt("commandCount")), true);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -160,6 +155,6 @@ public class Status implements Command {
 
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Status");
+        new Tracker("Command");
     }
 }

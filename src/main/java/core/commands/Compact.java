@@ -91,7 +91,7 @@ public class Compact implements Command {
 
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Compact");
+        new Tracker("Command");
     }
 
     private boolean optionCheck(String args, String option) {

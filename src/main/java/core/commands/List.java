@@ -289,6 +289,6 @@ public class List implements Command {
      */
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("List");
+        new Tracker("Command");
     }
 }

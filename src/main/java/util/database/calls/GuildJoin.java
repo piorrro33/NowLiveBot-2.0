@@ -129,17 +129,16 @@ public final class GuildJoin {
                     );
                 } catch (PermissionException pe2) {
                     if (gEvent.getGuild().getOwner().getUser().hasPrivateChannel()) {
-                        gEvent.getGuild().getOwner().getUser().openPrivateChannel().queue(success -> {
-                            gEvent.getGuild().getOwner().getUser().getPrivateChannel().sendMessage(
-                                    "Hi there, it seems as though I can't send the welcome message due to lack of " +
-                                            "permissions to send messages in your server.\n\n" +
-                                            "If you need help setting me up, just use `-nl help` for more info.").queue(
-                                    sentPM -> System.out.printf("[BOT -> PM] [%s:%s]: %s%n",
-                                            gEvent.getGuild().getOwner().getUser().getName(),
-                                            gEvent.getGuild().getOwner().getUser().getId(),
-                                            sentPM.getContent())
-                            );
-                        });
+                        gEvent.getGuild().getOwner().getUser().openPrivateChannel().queue(
+                                success -> gEvent.getGuild().getOwner().getUser().getPrivateChannel().sendMessage(
+                                        "Hi there, it seems as though I can't send the welcome message due to lack of " +
+                                                "permissions to send messages in your server.\n\n" +
+                                                "If you need help setting me up, just use `-nl help` for more info.").queue(
+                                        sentPM -> System.out.printf("[BOT -> PM] [%s:%s]: %s%n",
+                                                gEvent.getGuild().getOwner().getUser().getName(),
+                                                gEvent.getGuild().getOwner().getUser().getId(),
+                                                sentPM.getContent())
+                                ));
                     }
                 }
             }

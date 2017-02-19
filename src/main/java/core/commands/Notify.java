@@ -125,7 +125,7 @@ public class Notify implements Command {
      */
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Notify");
+        new Tracker("Command");
     }
 
     private boolean update(GuildMessageReceivedEvent event, Integer level) {

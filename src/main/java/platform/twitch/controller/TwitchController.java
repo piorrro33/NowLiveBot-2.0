@@ -193,15 +193,18 @@ public class TwitchController {
                         new InputStreamReader(response.getEntity().getContent()), Streams.class
                 );
 
-                offSetStreams.values().forEach(dbStream -> streams.getStreams().forEach(stream -> {
-                    if (streams.getTotal().equals(0) || !dbStream.containsValue(stream.getId())) {
-                        online.add(stream.getId());
-                    }
-                    if (dbStream.get("channelId").equals(stream.getChannel().getId()) &&
-                            !dbStream.get("streamsId").equals(stream.getId())) {
-                        online.add(stream.getId());
-                    }
-                }));
+                offSetStreams.values().forEach(
+                        dbStream -> {
+                            for (Stream stream : streams.getStreams()) {
+                                if (streams.getTotal().equals(0) || !dbStream.containsValue(stream.getId())) {
+                                    online.add(stream.getId());
+                                }
+                                if (dbStream.get("channelId").equals(stream.getChannel().getId()) &&
+                                        !dbStream.get("streamsId").equals(stream.getId())) {
+                                    online.add(stream.getId());
+                                }
+                            }
+                        });
                 offSetStreams.values().forEach(dbStream -> {
                     if (!online.contains(dbStream.get("streamsId"))) {
                         UpdateOffline offline = new UpdateOffline();
@@ -255,17 +258,15 @@ public class TwitchController {
 
                         if (streams.getTotal() > 0) {
                             streams.getStreams().forEach(stream -> {
-
                                 GetGuildsByStream guildsByStream = new GetGuildsByStream();
                                 CopyOnWriteArrayList<String> guildIds = guildsByStream.fetch(stream.getChannel().getId());
 
-                                guildIds.forEach(guildId -> {
+                                for (String guildId : guildIds) {
                                     CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
-
                                     if (!checkTwitchStreams.check(stream.getId(), guildId)) {
                                         onLiveTwitchStream(stream, guildId, "channel");
                                     }
-                                });
+                                }
                             });
                         }
                     } catch (JsonParseException e) {
@@ -290,49 +291,56 @@ public class TwitchController {
         List<String> gameList = getTwitchGames.fetch();
 
         // Iterate through all the games
-        gameList.forEach(gameName -> {
-            URIBuilder uriBuilder = setBaseUrl("/streams");
-            try {
-                uriBuilder.setParameter("game", URLEncoder.encode(gameName.replaceAll("''", "'"), "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            uriBuilder.setParameter("limit", "100");
-            uriBuilder.setParameter("offset", "0");
+        if (gameList != null) {
+            gameList.forEach(gameName -> {
 
-            try {
-                URI uri = uriBuilder.build();
-                get = new HttpGet(uri);
-                get.addHeader("Cache-Control", "no-cache");
-                get.addHeader("Accept", "application/vnd.twitchtv.v5+json");
-                get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
-                response = client.execute(get);
-
-                ObjectMapper objectMapper = new ObjectMapper();
-                // Live streams for the game
-                StreamsGames games = objectMapper.readValue(
-                        new InputStreamReader(response.getEntity().getContent()), StreamsGames.class
-                );
-
-                if (games.getTotal() > 0) {
-
-                    // Find all guilds that track this game
-                    GetGuildsByGame guildsByGame = new GetGuildsByGame();
-                    List<String> guilds = guildsByGame.fetch(gameName);
-
-                    // Add the stream to the twitch streams table for each guild
-                    guilds.forEach(guildId -> games.getStreams().forEach(stream -> {
-                        CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
-
-                        if (!checkTwitchStreams.check(stream.getId(), guildId)) {
-                            onLiveTwitchStream(stream, guildId, "game");
-                        }
-                    }));
+                URIBuilder uriBuilder = setBaseUrl("/streams");
+                try {
+                    uriBuilder.setParameter("game", URLEncoder.encode(gameName.replaceAll("''", "'"), "UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
                 }
-            } catch (URISyntaxException | IOException e) {
-                e.printStackTrace();
-            }
-        });
+                uriBuilder.setParameter("limit", "100");
+                uriBuilder.setParameter("offset", "0");
+
+                try {
+                    URI uri = uriBuilder.build();
+                    get = new HttpGet(uri);
+                    get.addHeader("Cache-Control", "no-cache");
+                    get.addHeader("Accept", "application/vnd.twitchtv.v5+json");
+                    get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+                    response = client.execute(get);
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    // Live streams for the game
+                    StreamsGames games = objectMapper.readValue(
+                            new InputStreamReader(response.getEntity().getContent()), StreamsGames.class
+                    );
+
+                    if (games != null && games.getTotal() > 0) {
+
+                        // Find all guilds that track this game
+                        GetGuildsByGame guildsByGame = new GetGuildsByGame();
+                        CopyOnWriteArrayList<String> guilds = guildsByGame.fetch(gameName);
+
+                        // Add the stream to the twitch streams table for each guild
+                        guilds.forEach(
+                                guildId -> {
+                                    games.getStreams().forEach(
+                                            stream -> {
+                                                CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
+
+                                                if (!checkTwitchStreams.check(stream.getId(), guildId)) {
+                                                    onLiveTwitchStream(stream, guildId, "game");
+                                                }
+                                            });
+                                });
+                    }
+                } catch (URISyntaxException | IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
     }
 
     /**

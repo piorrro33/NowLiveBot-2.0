@@ -59,3 +59,4 @@ restart.sh
 start.sh
 *.json
 *.jar
+*.gc

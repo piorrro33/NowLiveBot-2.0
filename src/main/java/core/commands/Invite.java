@@ -54,6 +54,6 @@ public class Invite implements Command {
 
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Invite");
+        new Tracker("Command");
     }
 }

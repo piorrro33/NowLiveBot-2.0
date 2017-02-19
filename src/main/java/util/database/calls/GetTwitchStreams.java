@@ -39,7 +39,7 @@ public class GetTwitchStreams {
 
     public synchronized HashMap<String, Map<String, String>> onlineStreams(String flag) {
         try {
-            String query = "SELECT * FROM `twitchstreams` WHERE `messageId` IS NULL AND typeFlag = ? ORDER BY `channelId` DESC";
+            String query = "SELECT * FROM `twitchstreams` WHERE `messageId` IS NULL AND typeFlag = ? ORDER BY `streamsId` DESC";
 
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();

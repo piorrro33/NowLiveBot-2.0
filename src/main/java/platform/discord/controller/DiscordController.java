@@ -50,7 +50,6 @@ import static util.database.Database.cleanUp;
  */
 public class DiscordController {
 
-    private static Connection connection;
     private static Connection nlConnection;
     private static Connection gciConnection;
     private static Connection ccConnection;
@@ -354,7 +353,8 @@ public class DiscordController {
         GetTwitchStreams getTwitchStreams = new GetTwitchStreams();
         HashMap<String, Map<String, String>> offlineStreams = getTwitchStreams.offline();
 
-        offlineStreams.forEach((String channelId, Map<String, String> offline) -> {
+        offlineStreams.forEach((String channelId, Map<String, String> offline) ->
+        {
             GetCleanUp clean = new GetCleanUp();
             Integer cleanup = clean.doStuff(offline.get("guildId"));
             if (offline.get("messageId") != null) {
@@ -365,7 +365,8 @@ public class DiscordController {
 
                             Main.getJDA().getTextChannelById(getChannelId(offline.get("guildId")))
                                     .editMessageById(offline.get("messageId"), buildEmbed(offline, "twitch", "edit"))
-                                    .queue(success -> {
+                                    .queue(
+                                            success -> {
                                                 new DiscordLogger(" :pencil2: " +
                                                         offline.get("channelName") +
                                                         " has gone offline. Message edited in G:" +
@@ -389,7 +390,8 @@ public class DiscordController {
                         if (offline.get("messageId") != null) {
                             try {
                                 Main.getJDA().getTextChannelById(getChannelId(offline.get("guildId"))).deleteMessageById(offline.get("messageId"))
-                                        .queue(success -> {
+                                        .queue(
+                                                success -> {
                                                     new DiscordLogger(" :x: " + offline.get("channelName") + " has gone " +
                                                             "offline. Message deleted in G:" + Main.getJDA
                                                             ().getGuildById(offline.get("guildId")).getName(), null);
@@ -428,72 +430,77 @@ public class DiscordController {
         HashMap<String, Map<String, String>> newStreams = twitchStreams.onlineStreams(flag);
 
         if (newStreams != null) {
-            newStreams.values().forEach(streamData -> {
+            newStreams.values().forEach(
+                    streamData -> {
 
-                Message message = buildEmbed(streamData, platform, "new");
+                        Message message = buildEmbed(streamData, platform, "new");
 
-                GetAnnounceChannel getAnnounceChannel = new GetAnnounceChannel();
-                String announceChannel = getAnnounceChannel.action(streamData.get("guildId"));
+                        GetAnnounceChannel getAnnounceChannel = new GetAnnounceChannel();
+                        String announceChannel = getAnnounceChannel.action(streamData.get("guildId"));
 
-                if (announceChannel != null && !announceChannel.isEmpty() || !"".equals(announceChannel)) {
-                    try {
-                        CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
-                        if (!checkTwitchStreams.check(streamData.get("channelId"), streamData.get("guildId"))) {
+                        if (announceChannel != null && !announceChannel.isEmpty() || !"".equals(announceChannel)) {
+                            try {
+                                CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
+                                if (!checkTwitchStreams.check(streamData.get("channelId"), streamData.get("guildId"))) {
 
-                            Main.getJDA().getTextChannelById(announceChannel).sendMessage(message).queue(
-                                    sentMessage -> {
-                                        UpdateMessageId updateMessageId = new UpdateMessageId();
-                                        updateMessageId.executeUpdate(streamData.get("guildId"), streamData.get("channelId"), sentMessage.getId());
+                                    Main.getJDA().getTextChannelById(announceChannel).sendMessage(message).queue(
+                                            sentMessage -> {
+                                                UpdateMessageId updateMessageId = new UpdateMessageId();
+                                                updateMessageId.executeUpdate(streamData.get("guildId"), streamData.get("channelId"), sentMessage.getId());
 
-                                        MessageBuilder discord = new MessageBuilder();
+                                                MessageBuilder discord = new MessageBuilder();
 
-                                        discord.append(" :tada: ");
-                                        discord.append("[G:");
-                                        discord.append(Main.getJDA().getGuildById(streamData.get("guildId")).getName());
-                                        discord.append("][C:");
-                                        discord.append(Main.getJDA().getTextChannelById(announceChannel).getName());
-                                        discord.append("]");
-                                        discord.append(streamData.get("channelName"));
-                                        discord.append(" is streaming ");
-                                        discord.append(streamData.get("streamsGame"));
+                                                discord.append(" :tada: ");
+                                                discord.append("[G:");
+                                                discord.append(Main.getJDA().getGuildById(streamData.get("guildId")).getName());
+                                                discord.append("][C:");
+                                                discord.append(Main.getJDA().getTextChannelById(announceChannel).getName());
+                                                discord.append("]");
+                                                discord.append(streamData.get("channelName"));
+                                                discord.append(" is streaming ");
+                                                discord.append(streamData.get("streamsGame"));
 
-                                        Message dMessage = discord.build();
+                                                Message dMessage = discord.build();
 
-                                        new DiscordLogger(dMessage.getRawContent(), null);
-                                        System.out.printf("[STREAM ANNOUNCE] [%s:%s] [%s:%s] [%s]: %s%n",
-                                                Main.getJDA().getGuildById(streamData.get("guildId")).getName(),
-                                                Main.getJDA().getGuildById(streamData.get("guildId")).getId(),
-                                                Main.getJDA().getTextChannelById(getChannelId(streamData.get("guildId"))).getName(),
-                                                Main.getJDA().getTextChannelById(getChannelId(streamData.get("guildId"))).getId(),
-                                                sentMessage.getId(),
-                                                streamData.get("channelName") + " is streaming " + streamData.get("streamsGame"));
+                                                new DiscordLogger(dMessage.getRawContent(), null);
+                                                System.out.printf("[STREAM ANNOUNCE] [%s:%s] [%s:%s] [%s]: %s%n",
+                                                        Main.getJDA().getGuildById(streamData.get("guildId")).getName(),
+                                                        Main.getJDA().getGuildById(streamData.get("guildId")).getId(),
+                                                        Main.getJDA().getTextChannelById(getChannelId(streamData.get("guildId"))).getName(),
+                                                        Main.getJDA().getTextChannelById(getChannelId(streamData.get("guildId"))).getId(),
+                                                        sentMessage.getId(),
+                                                        streamData.get("channelName") + " is streaming " + streamData.get("streamsGame"));
 
-                                        new Tracker("Streams Announced");
-                                    }
-                            );
+                                                switch (platform) {
+                                                    case "twitch":
+                                                        new Tracker("Twitch Streams");
+                                                        break;
+                                                }
+                                            }
+                                    );
+                                } else {
+                                    UpdateOffline updateOffline = new UpdateOffline();
+                                    updateOffline.executeUpdate(streamData.get("streamsId"));
+                                }
+                            } catch (PermissionException pe) {
+                                new DiscordLogger(" :no_entry: Permission error sending in G:" + Main.getJDA
+                                        ().getGuildById(streamData.get("guildId")).getName() + ":" + streamData.get("guildId"), null);
+                                System.out.printf("[~ERROR~] Permission Exception! G:%s:%s C:%s:%s GO:%s#%s:%s%n",
+                                        Main.getJDA().getGuildById(streamData.get("guildId")).getName(),
+                                        streamData.get("guildId"),
+                                        Main.getJDA().getTextChannelById(announceChannel).getName(),
+                                        announceChannel,
+                                        Main.getJDA().getGuildById(streamData.get("guildId")).getOwner().getUser().getName(),
+                                        Main.getJDA().getGuildById(streamData.get("guildId")).getOwner().getUser().getDiscriminator(),
+                                        Main.getJDA().getGuildById(streamData.get("guildId")).getOwner().getUser().getId());
+                                DeleteTwitchStream deleteStream = new DeleteTwitchStream();
+                                deleteStream.process(streamData.get("guildId"), streamData.get("channelId"));
+                            }
                         } else {
-                            UpdateOffline updateOffline = new UpdateOffline();
-                            updateOffline.executeUpdate(streamData.get("streamsId"));
+                            DeleteTwitchStream deleteStream = new DeleteTwitchStream();
+                            deleteStream.process(streamData.get("guildId"), streamData.get("channelId"));
                         }
-                    } catch (PermissionException pe) {
-                        new DiscordLogger(" :no_entry: Permission error sending in G:" + Main.getJDA
-                                ().getGuildById(streamData.get("guildId")).getName() + ":" + streamData.get("guildId"), null);
-                        System.out.printf("[~ERROR~] Permission Exception! G:%s:%s C:%s:%s GO:%s#%s:%s%n",
-                                Main.getJDA().getGuildById(streamData.get("guildId")).getName(),
-                                streamData.get("guildId"),
-                                Main.getJDA().getTextChannelById(announceChannel).getName(),
-                                announceChannel,
-                                Main.getJDA().getGuildById(streamData.get("guildId")).getOwner().getUser().getName(),
-                                Main.getJDA().getGuildById(streamData.get("guildId")).getOwner().getUser().getDiscriminator(),
-                                Main.getJDA().getGuildById(streamData.get("guildId")).getOwner().getUser().getId());
-                        DeleteTwitchStream deleteStream = new DeleteTwitchStream();
-                        deleteStream.process(streamData.get("guildId"), streamData.get("channelId"));
-                    }
-                } else {
-                    DeleteTwitchStream deleteStream = new DeleteTwitchStream();
-                    deleteStream.process(streamData.get("guildId"), streamData.get("channelId"));
-                }
-            });
+                    });
         }
     }
 

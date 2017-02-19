@@ -26,18 +26,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static util.database.Database.cleanUp;
 
 public class GetTwitchStreams {
 
 
-    private HashMap<String, Map<String, String>> onlineStreams = new HashMap<>();
+    private ConcurrentHashMap<String, Map<String, String>> onlineStreams = new ConcurrentHashMap<>();
     private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
 
-    public synchronized HashMap<String, Map<String, String>> onlineStreams(String flag) {
+    public synchronized ConcurrentHashMap<String, Map<String, String>> onlineStreams(String flag) {
         try {
             String query = "SELECT * FROM `twitchstreams` WHERE `messageId` IS NULL AND typeFlag = ? ORDER BY `streamsId` DESC";
 
@@ -61,7 +62,7 @@ public class GetTwitchStreams {
         return null;
     }
 
-    public synchronized HashMap<String, Map<String, String>> onlineStreams() {
+    public synchronized ConcurrentHashMap<String, Map<String, String>> onlineStreams() {
         try {
             String query = "SELECT * FROM `twitchstreams` ORDER BY `streamsId` DESC";
 
@@ -85,7 +86,7 @@ public class GetTwitchStreams {
         return null;
     }
 
-    public synchronized HashMap<String, Map<String, String>> onlineStreams(Integer offset) {
+    public synchronized ConcurrentHashMap<String, Map<String, String>> onlineStreams(Integer offset) {
         try {
             String query = "SELECT * FROM `twitchstreams` ORDER BY `streamsId` DESC LIMIT " + offset + ",100";
 
@@ -109,7 +110,7 @@ public class GetTwitchStreams {
         return null;
     }
 
-    public synchronized HashMap<String, Map<String, String>> offline() {
+    public synchronized ConcurrentHashMap<String, Map<String, String>> offline() {
         try {
             String query = "SELECT * FROM `twitchstreams` WHERE `online` = 0 ORDER BY `streamsId` DESC";
 
@@ -119,7 +120,7 @@ public class GetTwitchStreams {
             pStatement = connection.prepareStatement(query);
             result = pStatement.executeQuery();
 
-            HashMap<String, Map<String, String>> offlineStreams = new HashMap<>();
+            ConcurrentHashMap<String, Map<String, String>> offlineStreams = new ConcurrentHashMap<>();
 
             while (result.next()) {
 

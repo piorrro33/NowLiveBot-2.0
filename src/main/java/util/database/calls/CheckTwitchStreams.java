@@ -34,7 +34,7 @@ public class CheckTwitchStreams {
 
     private Connection connection;
 
-    public synchronized boolean check(String streamId, String guildId) {
+    public synchronized Boolean check(String streamId, String guildId) {
         PreparedStatement pStatement = null;
         ResultSet result = null;
 

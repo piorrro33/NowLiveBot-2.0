@@ -76,6 +76,7 @@ public class Twitch implements Command {
                 return true;
             }*/
 
+
             String calledArgs = args.trim().substring(args.lastIndexOf(' ') + 1);
 
             if (calledArgs.matches("^[a-zA-Z0-9_]{4,25}$")) {

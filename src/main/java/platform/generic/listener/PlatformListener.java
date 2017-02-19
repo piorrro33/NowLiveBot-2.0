@@ -25,6 +25,7 @@ import util.DiscordLogger;
 import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Veteran Software by Ague Mort
@@ -33,15 +34,14 @@ public class PlatformListener {
     private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
 
     public PlatformListener() {
-/*
         try {
-            executor.scheduleWithFixedDelay(this::run, 0, 45, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::run, 0, 60, TimeUnit.SECONDS);
         } catch (Exception e) {
             System.out.println("[~ERROR~] Caught an exception while keeping the executors active");
-        }*/
-        while (true) {
-            run();
         }
+        /*while (true) {
+            run();
+        }*/
     }
 
     private synchronized void run() {

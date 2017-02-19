@@ -59,6 +59,6 @@ public class GetGuildsByStream {
             cleanUp(result, pStatement, connection);
         }
 
-        return guildIds;
+        return null;
     }
 }

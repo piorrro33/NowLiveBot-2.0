@@ -32,17 +32,15 @@ import util.database.calls.*;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
@@ -118,7 +116,7 @@ public class TwitchController {
             IdConversion idConversion = objectMapper.readValue(
                     new InputStreamReader(response.getEntity().getContent()), IdConversion.class);
 
-            if (idConversion.getTotal() > 0) {
+            if (idConversion.getTotal() != null && idConversion.getTotal() > 0) {
                 return idConversion.getUsers();
             }
 
@@ -164,7 +162,7 @@ public class TwitchController {
         for (Integer c = 0; c <= amount; c += 100) {
 
             GetTwitchStreams getTwitchStreams = new GetTwitchStreams();
-            HashMap<String, Map<String, String>> offSetStreams = getTwitchStreams.onlineStreams(c);
+            ConcurrentHashMap<String, Map<String, String>> offSetStreams = getTwitchStreams.onlineStreams(c);
 
             StringBuilder channelString = new StringBuilder();
 
@@ -193,18 +191,20 @@ public class TwitchController {
                         new InputStreamReader(response.getEntity().getContent()), Streams.class
                 );
 
-                offSetStreams.values().forEach(
-                        dbStream -> {
-                            for (Stream stream : streams.getStreams()) {
-                                if (streams.getTotal().equals(0) || !dbStream.containsValue(stream.getId())) {
-                                    online.add(stream.getId());
+                if (streams.getTotal() != null) {
+                    offSetStreams.values().forEach(
+                            dbStream -> {
+                                for (Stream stream : streams.getStreams()) {
+                                    if (streams.getTotal().equals(0) || !dbStream.containsValue(stream.getId())) {
+                                        online.add(stream.getId());
+                                    }
+                                    if (dbStream.get("channelId").equals(stream.getChannel().getId()) &&
+                                            !dbStream.get("streamsId").equals(stream.getId())) {
+                                        online.add(stream.getId());
+                                    }
                                 }
-                                if (dbStream.get("channelId").equals(stream.getChannel().getId()) &&
-                                        !dbStream.get("streamsId").equals(stream.getId())) {
-                                    online.add(stream.getId());
-                                }
-                            }
-                        });
+                            });
+                }
                 offSetStreams.values().forEach(dbStream -> {
                     if (!online.contains(dbStream.get("streamsId"))) {
                         UpdateOffline offline = new UpdateOffline();
@@ -226,7 +226,7 @@ public class TwitchController {
         for (Integer c = 0; c <= amount; c += 100) {
 
             GetTwitchChannels twitchChannels = new GetTwitchChannels();
-            List<String> channels = twitchChannels.fetch(c);
+            CopyOnWriteArrayList<String> channels = twitchChannels.fetch(c);
 
             if (channels != null) {
                 StringBuilder channelString = new StringBuilder();
@@ -256,15 +256,17 @@ public class TwitchController {
                                 new InputStreamReader(response.getEntity().getContent()), Streams.class
                         );
 
-                        if (streams.getTotal() > 0) {
+                        if (streams.getTotal() != null && streams.getTotal() > 0) {
                             streams.getStreams().forEach(stream -> {
                                 GetGuildsByStream guildsByStream = new GetGuildsByStream();
                                 CopyOnWriteArrayList<String> guildIds = guildsByStream.fetch(stream.getChannel().getId());
 
-                                for (String guildId : guildIds) {
-                                    CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
-                                    if (!checkTwitchStreams.check(stream.getId(), guildId)) {
-                                        onLiveTwitchStream(stream, guildId, "channel");
+                                if (guildIds != null) {
+                                    for (String guildId : guildIds) {
+                                        CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
+                                        if (!checkTwitchStreams.check(stream.getId(), guildId)) {
+                                            onLiveTwitchStream(stream, guildId, "channel");
+                                        }
                                     }
                                 }
                             });
@@ -295,11 +297,7 @@ public class TwitchController {
             gameList.forEach(gameName -> {
 
                 URIBuilder uriBuilder = setBaseUrl("/streams");
-                try {
-                    uriBuilder.setParameter("game", URLEncoder.encode(gameName.replaceAll("''", "'"), "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
+                uriBuilder.setParameter("game", gameName.replaceAll("''", "'"));
                 uriBuilder.setParameter("limit", "100");
                 uriBuilder.setParameter("offset", "0");
 
@@ -317,24 +315,26 @@ public class TwitchController {
                             new InputStreamReader(response.getEntity().getContent()), StreamsGames.class
                     );
 
-                    if (games != null && games.getTotal() > 0) {
+                    if (games.getTotal() != null && games.getTotal() > 0) {
 
                         // Find all guilds that track this game
                         GetGuildsByGame guildsByGame = new GetGuildsByGame();
-                        CopyOnWriteArrayList<String> guilds = guildsByGame.fetch(gameName);
+                        List<String> guilds = guildsByGame.fetch(gameName);
 
                         // Add the stream to the twitch streams table for each guild
-                        guilds.forEach(
-                                guildId -> {
-                                    games.getStreams().forEach(
-                                            stream -> {
-                                                CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
+                        if (guilds != null) {
+                            guilds.forEach(
+                                    guildId -> {
+                                        games.getStreams().forEach(
+                                                stream -> {
+                                                    CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
 
-                                                if (!checkTwitchStreams.check(stream.getId(), guildId)) {
-                                                    onLiveTwitchStream(stream, guildId, "game");
-                                                }
-                                            });
-                                });
+                                                    if (!checkTwitchStreams.check(stream.getId(), guildId)) {
+                                                        onLiveTwitchStream(stream, guildId, "game");
+                                                    }
+                                                });
+                                    });
+                        }
                     }
                 } catch (URISyntaxException | IOException e) {
                     e.printStackTrace();

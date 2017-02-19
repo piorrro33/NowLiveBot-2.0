@@ -59,6 +59,6 @@ public class GetGuildsByGame {
             cleanUp(result, pStatement, connection);
         }
 
-        return guildIds;
+        return null;
     }
 }

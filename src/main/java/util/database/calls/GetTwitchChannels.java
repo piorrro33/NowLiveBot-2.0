@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
@@ -35,7 +34,7 @@ public class GetTwitchChannels {
     private PreparedStatement pStatement;
     private ResultSet result;
 
-    public synchronized List<String> fetch(Integer start) {
+    public synchronized CopyOnWriteArrayList<String> fetch(Integer start) {
         String query;
         switch (start) {
             case -1:
@@ -53,7 +52,7 @@ public class GetTwitchChannels {
             this.pStatement = connection.prepareStatement(query);
             this.result = pStatement.executeQuery();
 
-            List<String> channels = new CopyOnWriteArrayList<>();
+            CopyOnWriteArrayList<String> channels = new CopyOnWriteArrayList<>();
 
             while (result.next()) {
                 if (start.equals(-1)) {

@@ -83,12 +83,7 @@ public class Kappa implements Command {
                 if (!selfMember.hasPermission(channel, Permission.ADMINISTRATOR) ||
                         (!selfMember.hasPermission(channel, Permission.MESSAGE_READ) &&
                                 !selfMember.hasPermission(channel, Permission.MESSAGE_WRITE) &&
-                                !selfMember.hasPermission(channel, Permission.MESSAGE_MANAGE) &&
-                                !selfMember.hasPermission(channel, Permission.MESSAGE_HISTORY) &&
-                                !selfMember.hasPermission(channel, Permission.MESSAGE_READ) &&
-                                !selfMember.hasPermission(channel, Permission.MESSAGE_EMBED_LINKS) &&
-                                !selfMember.hasPermission(channel, Permission.MESSAGE_MENTION_EVERYONE))
-                        ) {
+                                !selfMember.hasPermission(channel, Permission.MESSAGE_EMBED_LINKS))) {
                     message.append("\tG:" + guildName + ":" + result.getString("guildId") + "\n");
                 }
                 if (message.length() >= 1800) {

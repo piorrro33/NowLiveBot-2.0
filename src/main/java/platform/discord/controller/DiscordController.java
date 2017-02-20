@@ -333,36 +333,37 @@ public class DiscordController {
         Guild guild = Main.getJDA().getGuildById(guildId);
         Member selfMember = guild.getSelfMember();
 
-        if (selfMember.hasPermission(channel, Permission.ADMINISTRATOR)) {
-            return true;
-        } else if (selfMember.hasPermission(channel, Permission.MESSAGE_READ)
-                && selfMember.hasPermission(channel, Permission.MESSAGE_WRITE)
-                && selfMember.hasPermission(channel, Permission.MESSAGE_MANAGE)
-                && selfMember.hasPermission(channel, Permission.MESSAGE_EMBED_LINKS)
-                && selfMember.hasPermission(channel, Permission.MESSAGE_HISTORY)
-                && selfMember.hasPermission(channel, Permission.MESSAGE_MENTION_EVERYONE)) {
-            return true;
+        if (channel != null) {
+            if (selfMember.hasPermission(channel, Permission.ADMINISTRATOR)) {
+                return true;
+            } else if (selfMember.hasPermission(channel, Permission.MESSAGE_READ)
+                    && selfMember.hasPermission(channel, Permission.MESSAGE_WRITE)
+                    && selfMember.hasPermission(channel, Permission.MESSAGE_EMBED_LINKS)) {
+                return true;
+            }
         }
         return false;
     }
 
     private synchronized void badPermsHandler(String textChannel, Map<String, String> data) {
-        String guildId = data.get("guildId");
+        if (textChannel != null && Main.getJDA().getTextChannelById(textChannel) != null) {
+            String guildId = data.get("guildId");
 
-        new DiscordLogger(" :no_entry: Permission error in G:"
-                + Main.getJDA().getGuildById(guildId).getName() + ":" + guildId, null);
+            new DiscordLogger(" :no_entry: Permission error in G:"
+                    + Main.getJDA().getGuildById(guildId).getName() + ":" + guildId, null);
 
-        System.out.printf("[~ERROR~] Permission Exception! G:%s:%s C:%s:%s GO:%s#%s:%s%n",
-                Main.getJDA().getGuildById(guildId).getName(),
-                guildId,
-                Main.getJDA().getTextChannelById(textChannel).getName(),
-                textChannel,
-                Main.getJDA().getGuildById(guildId).getOwner().getUser().getName(),
-                Main.getJDA().getGuildById(guildId).getOwner().getUser().getDiscriminator(),
-                Main.getJDA().getGuildById(guildId).getOwner().getUser().getId());
+            System.out.printf("[~ERROR~] Permission Exception! G:%s:%s C:%s:%s GO:%s#%s:%s%n",
+                    Main.getJDA().getGuildById(guildId).getName(),
+                    guildId,
+                    Main.getJDA().getTextChannelById(textChannel).getName(),
+                    textChannel,
+                    Main.getJDA().getGuildById(guildId).getOwner().getUser().getName(),
+                    Main.getJDA().getGuildById(guildId).getOwner().getUser().getDiscriminator(),
+                    Main.getJDA().getGuildById(guildId).getOwner().getUser().getId());
 
-        DeleteTwitchStream deleteStream = new DeleteTwitchStream();
-        deleteStream.process(guildId, data.get("channelId"));
+            DeleteTwitchStream deleteStream = new DeleteTwitchStream();
+            deleteStream.process(guildId, data.get("channelId"));
+        }
     }
 
     public synchronized void offlineStream() {

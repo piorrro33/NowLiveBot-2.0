@@ -68,7 +68,9 @@ public class DiscordListener extends ListenerAdapter {
     @Override
     public synchronized final void onGuildMessageReceived(GuildMessageReceivedEvent event) {
 
-        new Tracker("Messages Heard");
+        if (!event.getAuthor().isBot()) {//Don't log other bot messages
+            new Tracker("Messages Heard");
+        }
         if (!event.getMessage().getContent().equals(this.buffer)) {
 
             this.buffer = event.getMessage().getContent();

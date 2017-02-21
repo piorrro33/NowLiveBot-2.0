@@ -29,7 +29,6 @@ public interface En {
 
     // Don't forget to add the String reference in Const.java
 
-    String SHRUG = "¯\\_(ツ)_/¯";
     String LIST_SETTINGS = "```Ruby\nCompact mode is compactSetting." +
             "\nNotification is set to notificationSetting."+
             "\nCleanup is set to cleanupSetting."+

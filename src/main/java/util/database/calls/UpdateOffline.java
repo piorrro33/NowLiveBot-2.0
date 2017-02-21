@@ -26,23 +26,20 @@ import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
 
-/**
- * Created by Ague Mort of Veteran Software on 2/17/2017.
- */
 public class UpdateOffline {
 
     private Connection connection;
     private PreparedStatement pStatement;
 
-    public synchronized void executeUpdate(String streamId) {
+    public synchronized void executeUpdate(String channelId) {
         try {
-            String query = "UPDATE `twitchstreams` SET `online` = ? WHERE `streamsId` = ?";
+            String query = "UPDATE `twitchstreams` SET `online` = ? WHERE `channelId` = ?";
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
             this.pStatement = connection.prepareStatement(query);
             pStatement.setString(1, "0");
-            pStatement.setString(2, streamId);
+            pStatement.setString(2, channelId);
             pStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

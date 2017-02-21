@@ -84,7 +84,8 @@ public class Kappa implements Command {
                         (!selfMember.hasPermission(channel, Permission.MESSAGE_READ) &&
                                 !selfMember.hasPermission(channel, Permission.MESSAGE_WRITE) &&
                                 !selfMember.hasPermission(channel, Permission.MESSAGE_EMBED_LINKS))) {
-                    message.append("\tG:" + guildName + ":" + result.getString("guildId") + "\n");
+                    String appended = String.format("\tG:%s:%s\n", guildName, result.getString("guildId"));
+                    message.append(appended);
                 }
                 if (message.length() >= 1800) {
                     DiscordController.sendToChannel(event, message.build().getRawContent());

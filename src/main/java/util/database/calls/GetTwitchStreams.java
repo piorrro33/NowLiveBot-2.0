@@ -27,6 +27,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
@@ -53,6 +54,34 @@ public class GetTwitchStreams {
                 this.onlineStreams.put(result.getString("channelId"), populateMap(result));
             }
             return onlineStreams;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
+        }
+        return null;
+    }
+
+    public synchronized CopyOnWriteArrayList<String> gameStreams(String game) {
+        try {
+            String query = "SELECT `channelId` FROM `twitchstreams` WHERE `streamsGame` = ? ORDER BY `channelId` DESC";
+
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, game);
+            result = pStatement.executeQuery();
+
+            CopyOnWriteArrayList<String> channelIds = new CopyOnWriteArrayList<>();
+
+            while (result.next()) {
+                channelIds.add(result.getString("channelId"));
+            }
+            if (channelIds.size() > 0) {
+                return channelIds;
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -123,11 +152,11 @@ public class GetTwitchStreams {
             ConcurrentHashMap<String, Map<String, String>> offlineStreams = new ConcurrentHashMap<>();
 
             while (result.next()) {
-
                 offlineStreams.put(result.getString("channelId"), populateMap(result));
             }
-            return offlineStreams;
-
+            if (offlineStreams.size() > 0) {
+                return offlineStreams;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {

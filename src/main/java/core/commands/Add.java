@@ -124,7 +124,7 @@ public class Add implements Command {
                                 TwitchController twitch = new TwitchController();
                                 String channelId = twitch.convertNameToId(this.argument);
 
-                                if (CheckTwitchData.action(this.option, guildId, platformId, this.argument)) {
+                                if (CheckTwitchData.action(this.option, guildId, this.argument)) {
                                     sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
                                 } else {
                                     returnStatement(AddOther.action(this.option, guildId, this.argument, channelId), event);
@@ -136,7 +136,7 @@ public class Add implements Command {
                         break;
                     default:
 
-                        if (CheckTwitchData.action(this.option, guildId, platformId, this.argument)) {
+                        if (CheckTwitchData.action(this.option, guildId, this.argument)) {
                             sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
                         } else {
                             returnStatement(AddOther.action(this.option, guildId, this.argument, null), event);

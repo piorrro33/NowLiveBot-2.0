@@ -35,53 +35,26 @@ public class PlatformListener {
 
     public PlatformListener() {
         try {
-            executor.scheduleWithFixedDelay(this::run, 0, 30, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::run, 0, 2, TimeUnit.MINUTES);
         } catch (Exception e) {
             System.out.println("[~ERROR~] Caught an exception while keeping the executors active");
         }
-        /*while (true) {
-            run();
-        }*/
     }
 
     private synchronized void run() {
-        checkOffline();
+        checkStreams();
         editDeleteAnnouncements();
-        checkChannels();
-        checkGames();
+        announceStreams();
+        System.out.println("[SYSTEM] Cycle Complete. Waiting...");
     }
 
-    // jda.getUserById("123456789").getJDA().getPresence().getGame().getUrl();
-
-    private synchronized void checkChannels() {
+    private synchronized void checkStreams() {
         LocalDateTime timeNow = LocalDateTime.now();
-        new DiscordLogger(" :poop: **Checking for live channels...**", null);
-        System.out.println("[SYSTEM] Checking for live channels. " + timeNow);
+        new DiscordLogger(" :poop: **Checking streams...**", null);
+        System.out.println("[SYSTEM] Checking streams... " + timeNow);
 
         TwitchController twitch = new TwitchController();
-        twitch.twitchChannels();
-        DiscordController discord = new DiscordController();
-        discord.announceChannel("twitch", "channel");
-    }
-
-    private synchronized void checkGames() {
-        LocalDateTime timeNow = LocalDateTime.now();
-        new DiscordLogger(" :poop: **Checking for live games...**", null);
-        System.out.println("[SYSTEM] Checking for live games... " + timeNow);
-
-        TwitchController twitch = new TwitchController();
-        twitch.twitchGames();
-        DiscordController discord = new DiscordController();
-        discord.announceChannel("twitch", "game");
-    }
-
-    private synchronized void checkOffline() {
-        LocalDateTime timeNow = LocalDateTime.now();
-        new DiscordLogger(" :poop: **Checking for offline streams...**", null);
-        System.out.println("[SYSTEM] Checking for offline streams... " + timeNow);
-
-        TwitchController twitch = new TwitchController();
-        twitch.checkOffline();
+        twitch.checkLiveStreams();
     }
 
     private synchronized void editDeleteAnnouncements() {
@@ -91,5 +64,15 @@ public class PlatformListener {
 
         DiscordController discord = new DiscordController();
         discord.offlineStream();
+    }
+
+    private synchronized void announceStreams() {
+        LocalDateTime timeNow = LocalDateTime.now();
+        new DiscordLogger(" :poop: **Announcing New Streams...**", null);
+        System.out.println("[SYSTEM] Announcing New Streams... " + timeNow);
+
+        DiscordController discord = new DiscordController();
+        discord.announceChannel("twitch", "channel");
+        discord.announceChannel("twitch", "game");
     }
 }

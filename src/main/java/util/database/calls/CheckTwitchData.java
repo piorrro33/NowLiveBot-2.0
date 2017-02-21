@@ -36,7 +36,7 @@ public class CheckTwitchData {
     private static PreparedStatement pStatement;
     private static ResultSet result;
 
-    public synchronized static Boolean action(String tableName, String guildId, Integer platformId, String name) {
+    public synchronized static Boolean action(String tableName, String guildId, String name) {
         String query = "";
         switch (tableName) {
             case "channel":

@@ -27,9 +27,6 @@ import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
 
-/**
- * Created by Ague Mort of Veteran Software on 2/17/2017.
- */
 public class CheckTwitchStreams {
 
     private Connection connection;
@@ -39,7 +36,7 @@ public class CheckTwitchStreams {
         ResultSet result = null;
 
         try {
-            String query = "SELECT COUNT(*) AS `count` FROM `twitchstreams` WHERE `streamsId` = ? AND `guildid` = ?";
+            String query = "SELECT COUNT(*) AS `count` FROM `twitchstreams` WHERE `streamsId` = ? AND `guildId` = ?";
 
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();

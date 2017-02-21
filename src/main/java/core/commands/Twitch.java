@@ -24,6 +24,10 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import util.database.calls.Tracker;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 import static core.CommandParser.getCommands;
 import static platform.discord.controller.DiscordController.sendToChannel;
@@ -36,9 +40,10 @@ public class Twitch implements Command {
     private ArrayList<String> commands = new ArrayList<>();
     private Boolean valid = false;
     private Boolean goodCommand = true;
-    private String channel = null;
-    private String gameFilter = null;
+    private List<String> channel = new CopyOnWriteArrayList<>();
     private String discordChannelId = null;
+    private List<String> gameFilter = new CopyOnWriteArrayList<>();
+    private List<String> titleFilter = new CopyOnWriteArrayList<>();
     private StringBuilder message = new StringBuilder();
 
     public Twitch() {
@@ -75,7 +80,6 @@ public class Twitch implements Command {
             if (valid) {
                 return true;
             }*/
-
 
             String calledArgs = args.trim().substring(args.lastIndexOf(' ') + 1);
 
@@ -120,7 +124,7 @@ public class Twitch implements Command {
                                 System.out.println(args);// Print all args
                                 channelHandler(event, args.replaceFirst("channel ", ""));
                                 if (channel != null) {
-                                    String channelString = String.format("Found channel(s): %s. ", channel.replaceAll(",", ", "));
+                                    String channelString = String.format("Found channel(s): %s. ", channel.toString());
                                     message.append(channelString);
                                 }
                                 if (discordChannelId != null) {
@@ -130,8 +134,13 @@ public class Twitch implements Command {
                                 }
                                 if (gameFilter != null) {
                                     String gameFilterString = String.format("They will only be announced when they are playing: %s.",
-                                            gameFilter);
+                                            gameFilter.toString());
                                     message.append(gameFilterString);
+                                }
+                                if (titleFilter != null) {
+                                    String titleFilterString = String.format("They will only be announced when these words are in the title: %s.",
+                                            titleFilter.toString());
+                                    message.append(titleFilterString);
                                 }
                                 break;
                             case "community":
@@ -190,19 +199,31 @@ public class Twitch implements Command {
     }
 
     private void channelHandler(GuildMessageReceivedEvent event, String args) {
+        findTwitchChannels(args);
+        findDiscordChannel(args, event);
+        findGameFilters(args);
+        findTitleFilters(args);
+    }
+
+    private synchronized void findTwitchChannels(String args) {
         // Extract the channel name from the args
         if (args.indexOf(' ') > 0 && args.indexOf("|") > 0) {// Check for adding multiple channels at once with other options
-            this.channel = args.substring(0, args.indexOf(' '));
-            this.channel = channel.replaceAll("\\|", ",");
+            this.channel = Arrays
+                    .stream(args.substring(0, args.indexOf(' ')).split("\\|"))
+                    .collect(Collectors.toList());
         } else if (args.indexOf("|") > 0) {
-            this.channel = args.replaceAll("\\|", ",");
+            this.channel = Arrays
+                    .stream(args.split("\\|"))
+                    .collect(Collectors.toList());
         } else if (args.indexOf(' ') > 0) {
-            this.channel = args.substring(0, args.indexOf(' '));
+            this.channel.add(args.substring(0, args.indexOf(' ')));
         } else {
-            this.channel = args;
+            this.channel.add(args);
         }
         System.out.println(channel);//Print just the channel name
+    }
 
+    private synchronized void findDiscordChannel(String args, GuildMessageReceivedEvent event) {
         // Check for specific channel to announce in
         String discordChannels;
         if (args.indexOf("#") > 0) {
@@ -221,16 +242,36 @@ public class Twitch implements Command {
             this.discordChannelId = null;
         }
         System.out.println(discordChannelId);
+    }
 
-        // Check for specific channel filter
-        if (args.indexOf("{") > 0) {
-            if (args.indexOf("}", args.indexOf("{")) > 0) {// Check if there are more things after the filter
-                gameFilter = args.substring(args.indexOf("{") + 1, args.indexOf("}", args.indexOf("{")));
+    private synchronized void findGameFilters(String args) {
+        // Check for specific channel filter(s)
+        if (args.indexOf("{") > 0 && args.indexOf("}") > args.indexOf("{")) {
+            String gameFilters = args.substring(args.indexOf("{") + 1, args.indexOf("}", args.indexOf("{")));
+            if (gameFilters.indexOf("|") > 0) {
+                this.gameFilter = Arrays.stream(gameFilters.split("\\|")).collect(Collectors.toList());
+            } else {
+                this.gameFilter.add(gameFilters);
             }
         } else {
-            gameFilter = null;
+            this.gameFilter = null;
         }
         System.out.println(gameFilter);
+    }
+
+    private synchronized void findTitleFilters(String args) {
+        // Check for specific title filters
+        if (args.indexOf("[") > 0 && args.indexOf("]") > args.indexOf("[")) {
+            String titleFilters = args.substring(args.indexOf("[") + 1, args.indexOf("]", args.indexOf("[")));
+            if (titleFilters.indexOf("|") > 0) {
+                this.titleFilter = Arrays.stream(titleFilters.split("\\|")).collect(Collectors.toList());
+            } else {
+                this.titleFilter.add(titleFilters);
+            }
+        } else {
+            this.titleFilter = null;
+        }
+        System.out.println(titleFilter);
     }
 
     private Boolean checkValidDiscordChannel(GuildMessageReceivedEvent event, String channelName) {

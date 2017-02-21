@@ -21,15 +21,16 @@ package core.commands;
 import core.Command;
 import langs.LocaleString;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import platform.twitch.controller.TwitchController;
 import util.database.calls.Tracker;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
-import static core.CommandParser.getCommands;
 import static platform.discord.controller.DiscordController.sendToChannel;
 
 /**
@@ -40,7 +41,8 @@ public class Twitch implements Command {
     private ArrayList<String> commands = new ArrayList<>();
     private Boolean valid = false;
     private Boolean goodCommand = true;
-    private List<String> channel = new CopyOnWriteArrayList<>();
+    private ConcurrentHashMap<String, String> channel = new ConcurrentHashMap<>();
+    private List<String> notFoundChannel = new CopyOnWriteArrayList<>();
     private String discordChannelId = null;
     private List<String> gameFilter = new CopyOnWriteArrayList<>();
     private List<String> titleFilter = new CopyOnWriteArrayList<>();
@@ -70,7 +72,7 @@ public class Twitch implements Command {
     @Override
     public boolean called(String args, GuildMessageReceivedEvent event) {
         if (args != null && !"".equals(args)) {
-            /*commands.forEach(
+            commands.forEach(
                     command -> {
                         if (args.toLowerCase().startsWith(command)) {
                             valid = true;
@@ -79,9 +81,8 @@ public class Twitch implements Command {
 
             if (valid) {
                 return true;
-            }*/
-
-            String calledArgs = args.trim().substring(args.lastIndexOf(' ') + 1);
+            }
+            /*String calledArgs = args.trim().substring(args.lastIndexOf(' ') + 1);
 
             if (calledArgs.matches("^[a-zA-Z0-9_]{4,25}$")) {
                 if ("help".equals(args)) {
@@ -102,7 +103,7 @@ public class Twitch implements Command {
                     default:
                         return false;
                 }
-            }
+            }*/
         }
         return false;
     }
@@ -115,33 +116,16 @@ public class Twitch implements Command {
      */
     @Override
     public void action(String args, GuildMessageReceivedEvent event) {
+        StringBuilder columnValues = new StringBuilder();
+        StringBuilder columnNames = new StringBuilder();
 
-        /*commands.forEach(
+        commands.forEach(
                 command -> {
                     if (args.toLowerCase().startsWith(command)) {
                         switch (command) {
                             case "channel":
                                 System.out.println(args);// Print all args
                                 channelHandler(event, args.replaceFirst("channel ", ""));
-                                if (channel != null) {
-                                    String channelString = String.format("Found channel(s): %s. ", channel.toString());
-                                    message.append(channelString);
-                                }
-                                if (discordChannelId != null) {
-                                    String discordChannelString = String.format("They will announce on : #%s. ",
-                                            event.getGuild().getTextChannelById(discordChannelId).getName());
-                                    message.append(discordChannelString);
-                                }
-                                if (gameFilter != null) {
-                                    String gameFilterString = String.format("They will only be announced when they are playing: %s.",
-                                            gameFilter.toString());
-                                    message.append(gameFilterString);
-                                }
-                                if (titleFilter != null) {
-                                    String titleFilterString = String.format("They will only be announced when these words are in the title: %s.",
-                                            titleFilter.toString());
-                                    message.append(titleFilterString);
-                                }
                                 break;
                             case "community":
 
@@ -162,14 +146,89 @@ public class Twitch implements Command {
                                 help(event);
                                 break;
                         }
+
+                        if (channel != null && channel.size() > 0) {
+                            String flattened = channel.values().toString();
+                            String stripped = flattened.replaceAll("[\\[\\]]", "");
+                            String channelString = String.format("\n# Found channel(s): %s. ", stripped);
+                            message.append(channelString);
+                        }
+
+                        if (notFoundChannel != null && notFoundChannel.size() > 0) {
+                            String flattened = notFoundChannel.toString();
+                            String stripped = flattened.replaceAll("[\\[\\]]", "");
+                            String channelString = String.format("\n# Channel(s) not found: %s. ", stripped);
+                            message.append(channelString);
+                        }
+
+                        if (discordChannelId != null && event.getGuild().getTextChannelById(discordChannelId) != null) {
+                            String discordChannelString = String.format("\n# They will announce on : #%s. ",
+                                    event.getGuild().getTextChannelById(discordChannelId).getName());
+                            if (columnValues.length() > 0) {
+                                columnNames.append(",");
+                                columnValues.append(",");
+                            }
+                            columnNames.append("`announceChannel`");
+                            columnValues.append("'");
+                            columnValues.append(discordChannelId);
+                            columnValues.append("'");
+                            message.append(discordChannelString);
+                        }
+
+                        if (gameFilter != null && gameFilter.size() > 0) {
+                            String flattened = gameFilter.toString();
+                            String stripped = flattened.replaceAll("[\\[\\]]", "");
+                            String gameFilterString = String.format("\n# They will only be announced when they are playing: %s.",
+                                    stripped);
+
+                            if (columnValues.length() > 0) {
+                                columnValues.append(",");
+                                columnNames.append(",");
+                            }
+                            columnNames.append("`gameFilter`");
+                            columnValues.append("'");
+                            columnValues.append(stripped);
+                            columnValues.append("'");
+                            message.append(gameFilterString);
+                        }
+
+                        if (titleFilter != null && titleFilter.size() > 0) {
+                            String flattened = titleFilter.toString();
+                            String stripped = flattened.replaceAll("[\\[\\]]", "");
+                            String titleFilterString = String.format("\n# They will only be announced when these words are in the title: %s.",
+                                    stripped);
+                            if (columnValues.length() > 0) {
+                                columnValues.append(",");
+                                columnNames.append(",");
+                            }
+                            columnNames.append("`titleFilter`");
+                            columnValues.append("'");
+                            columnValues.append(stripped);
+                            columnValues.append("'");
+                            message.append(titleFilterString);
+                        }
+                        if (channel != null && channel.size() > 0) {
+                            channel.forEach((chanId, chan) -> {
+                                String query = null;
+
+                                if (chanId != null && columnNames.length() > 0) {
+                                    query = String.format("INSERT INTO `twitch` (`channelName`, `channelId`,%s) VALUES ('%s','%s',%s)",
+                                            columnNames, chan, chanId, columnValues);
+                                } else if (chanId != null) {
+                                    query = String.format("INSERT INTO `twitch` (`channelName`, `channelId`) VALUES ('%s','%s')",
+                                            chan, chanId);
+                                }
+                                System.out.println(query);
+                            });
+                        }
                     }
                 });
         if (message.length() > 0 && goodCommand) {
-            sendToChannel(event, message.toString());
+            sendToChannel(event, "```Markdown" + message.toString() + "```");
         } else if (!goodCommand) {
             sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "incorrectArgs"));
-        }*/
-
+        }
+/*
         // Grab the secondary command (add and remove)
         String secondaryCommand = args.trim().substring(0, args.indexOf(' '));
         // the args to be passed to the secondaryCommand#called()
@@ -195,7 +254,7 @@ public class Twitch implements Command {
             default:
                 // This should never be used
                 break;
-        }
+        }*/
     }
 
     private void channelHandler(GuildMessageReceivedEvent event, String args) {
@@ -207,18 +266,42 @@ public class Twitch implements Command {
 
     private synchronized void findTwitchChannels(String args) {
         // Extract the channel name from the args
+        TwitchController twitch = new TwitchController();
+
         if (args.indexOf(' ') > 0 && args.indexOf("|") > 0) {// Check for adding multiple channels at once with other options
-            this.channel = Arrays
-                    .stream(args.substring(0, args.indexOf(' ')).split("\\|"))
-                    .collect(Collectors.toList());
+            List<String> channelList = Arrays.stream(args.substring(0, args.indexOf(' ')).split("\\|")).collect(Collectors.toList());
+            channelList.forEach(chan -> {
+                String chanId = twitch.convertNameToId(chan);
+                if (chanId != null) {
+                    channel.put(chanId, chan);
+                } else {
+                    notFoundChannel.add(chan);
+                }
+            });
         } else if (args.indexOf("|") > 0) {
-            this.channel = Arrays
-                    .stream(args.split("\\|"))
-                    .collect(Collectors.toList());
+            List<String> channelList = Arrays.stream(args.split("\\|")).collect(Collectors.toList());
+            channelList.forEach(chann -> {
+                String chanId = twitch.convertNameToId(chann);
+                if (chanId == null) {
+                    notFoundChannel.add(chann);
+                } else {
+                    channel.put(chanId, chann);
+                }
+            });
         } else if (args.indexOf(' ') > 0) {
-            this.channel.add(args.substring(0, args.indexOf(' ')));
+            String chanId = twitch.convertNameToId(args.substring(0, args.indexOf(' ')));
+            if (chanId != null) {
+                channel.put(chanId, args.substring(0, args.indexOf(' ')));
+            } else {
+                notFoundChannel.add(args.substring(0, args.indexOf(' ')));
+            }
         } else {
-            this.channel.add(args);
+            String chanId = twitch.convertNameToId(args);
+            if (chanId != null) {
+                channel.put(chanId, args);
+            } else {
+                notFoundChannel.add(args);
+            }
         }
         System.out.println(channel);//Print just the channel name
     }

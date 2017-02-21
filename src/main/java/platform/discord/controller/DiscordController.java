@@ -56,12 +56,9 @@ public class DiscordController {
     private static String query;
     private static ResultSet nlResult;
     private static ResultSet result;
-    private String guildIdMessageEvent;
     private String mentionedUsersId;
 
     public DiscordController(GuildMessageReceivedEvent event) {
-
-        this.guildIdMessageEvent = event.getGuild().getId();
         mentionedUsersID(event);
     }
 

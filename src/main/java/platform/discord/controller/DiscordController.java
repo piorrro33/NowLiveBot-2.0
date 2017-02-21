@@ -441,7 +441,6 @@ public class DiscordController {
                                         }
                                         break;
                                     default:
-                                        System.out.println("[INFO] Server doesn't want announcements changed.. Deleting stream from the database.");
                                         DeleteTwitchStream deleteStream = new DeleteTwitchStream();
                                         deleteStream.process(offline.get("guildId"), channelId);
                                         break;

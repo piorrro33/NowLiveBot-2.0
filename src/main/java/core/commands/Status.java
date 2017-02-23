@@ -22,6 +22,7 @@ import core.Command;
 import core.Main;
 import langs.LocaleString;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.JDAInfo;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
@@ -34,6 +35,8 @@ import util.database.Database;
 import util.database.calls.Tracker;
 
 import java.awt.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -83,8 +86,8 @@ public class Status implements Command {
 
         eBuilder.setAuthor(Const.BOT_NAME + " Statistics", null, Const.BOT_LOGO);
 
-        eBuilder.addField("# Servers", numFormat.format(guildCount), false);
-        eBuilder.addField("Num. Unique Members", numFormat.format(memberCount), false);
+        eBuilder.addField("Servers", numFormat.format(guildCount), true);
+        eBuilder.addField("Num. Unique Members", numFormat.format(memberCount), true);
 
         // Number of times commands have been used
         try {
@@ -106,12 +109,45 @@ public class Status implements Command {
 
                 eBuilder.addField(result.getString("commandName") + plural, numFormat.format(result.getInt("commandCount")), true);
             }
+
+            query = "SELECT DISTINCT COUNT(`channelId`) AS `count` FROM `twitch`";
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
+
+            while (result.next()) {
+                eBuilder.addField("Unique Channels (Twitch)", numFormat.format(result.getInt("count")), true);
+            }
+
+            query = "SELECT DISTINCT COUNT(`gameName`) AS `count` FROM `twitch`";
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
+
+            while (result.next()) {
+                eBuilder.addField("Unique Games (Twitch)", numFormat.format(result.getInt("count")), true);
+            }
+
+            query = "SELECT DISTINCT COUNT(`gameFilter`) AS `count` FROM `twitch`";
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
+
+            while (result.next()) {
+                eBuilder.addField("Game Filters (Twitch)", numFormat.format(result.getInt("count")), true);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
 
+        eBuilder.addField("Bot Author", "Ague Mort", true);
+        eBuilder.addField("JDA Version", JDAInfo.VERSION, true);
+        eBuilder.addField("Active Threads", String.valueOf(Thread.activeCount()), true);
+
+        RuntimeMXBean rb = ManagementFactory.getRuntimeMXBean();
+        Date date = new Date(rb.getUptime());
+        DateFormat formatter = new SimpleDateFormat("DDD:HH:mm:ss:SSS");
+
+        eBuilder.addField("Uptime", formatter.format(date), true);
         eBuilder.setFooter("\nGenerated on: " + dateTimeFormat.format(new Date()), null);
 
         MessageEmbed mEmbed = eBuilder.build();

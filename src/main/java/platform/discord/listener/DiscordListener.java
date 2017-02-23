@@ -118,7 +118,7 @@ public class DiscordListener extends ListenerAdapter {
     @Override
     public void onReady(ReadyEvent event) {
         super.onReady(event);
-        //updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
+        updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
     }
 
     @Override
@@ -218,6 +218,64 @@ public class DiscordListener extends ListenerAdapter {
                     System.out.println("[SYSTEM] Successfully updated server count on bots.discord.pw");
                 }
 
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        // Carbonitex
+        uriBuilder = new URIBuilder();
+        uriBuilder.setScheme("https").setHost("www.carbonitex.net").setPath("/discord/data/botdata.php");
+        post = null;
+
+        try {
+            post = new HttpPost(uriBuilder.build());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        if (post != null) {
+            post.addHeader("Content-Type", "application/json");
+            String json = "{ \"servercount\": \"" + count + "\", \"key\": \"" + PropReader.getInstance().getProp().getProperty("carbonitex.auth") + "\" }";
+            try {
+                StringEntity entity = new StringEntity(json);
+                post.setEntity(entity);
+
+                HttpResponse response = client.execute(post);
+
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    System.out.println("[~ERROR~] Failed updating server count on Carbonitex");
+                } else {
+                    System.out.println("[SYSTEM] Successfully updated server count on Carbonitex");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        // Carbonitex
+        uriBuilder = new URIBuilder();
+        uriBuilder.setScheme("https").setHost("bots.discordlist.net").setPath("/api");
+        post = null;
+
+        try {
+            post = new HttpPost(uriBuilder.build());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        if (post != null) {
+            post.addHeader("Content-Type", "application/json");
+            String json = "{ \"servers\": \"" + count + "\", \"key\": \"" + PropReader.getInstance().getProp().getProperty("discordlist.auth") + "\" }";
+            try {
+                StringEntity entity = new StringEntity(json);
+                post.setEntity(entity);
+
+                HttpResponse response = client.execute(post);
+
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    System.out.println("[~ERROR~] Failed updating server count on bots.discordlist.net");
+                } else {
+                    System.out.println("[SYSTEM] Successfully updated server count on bots.discordlist.net");
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

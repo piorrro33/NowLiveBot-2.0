@@ -41,7 +41,7 @@ public class GetTwitchStreams {
 
     public synchronized ConcurrentHashMap<String, Map<String, String>> onlineStreams(String flag) {
         try {
-            String query = "SELECT * FROM `twitchstreams` WHERE `messageId` IS NULL AND typeFlag = ? ORDER BY `streamsId` DESC";
+            String query = "SELECT * FROM `twitchstreams` WHERE `messageId` IS NULL AND typeFlag = ? AND `online` = 1 ORDER BY `streamsId` DESC";
 
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
@@ -51,7 +51,7 @@ public class GetTwitchStreams {
             result = pStatement.executeQuery();
 
             while (result.next()) {
-                this.onlineStreams.put(result.getString("channelId"), populateMap(result));
+                this.onlineStreams.put(result.getString("id"), populateMap(result));
             }
             return onlineStreams;
 
@@ -152,7 +152,7 @@ public class GetTwitchStreams {
             ConcurrentHashMap<String, Map<String, String>> offlineStreams = new ConcurrentHashMap<>();
 
             while (result.next()) {
-                offlineStreams.put(result.getString("channelId"), populateMap(result));
+                offlineStreams.put(result.getString("id"), populateMap(result));
             }
             if (offlineStreams.size() > 0) {
                 return offlineStreams;

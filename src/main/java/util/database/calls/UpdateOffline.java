@@ -23,6 +23,7 @@ import util.database.Database;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 import static util.database.Database.cleanUp;
 
@@ -31,21 +32,33 @@ public class UpdateOffline {
     private Connection connection;
     private PreparedStatement pStatement;
 
-    public synchronized void executeUpdate(String channelId) {
-        try {
+    public synchronized void executeUpdate(List<String> channelIds) {
+
+        if (channelIds.size() > 0) {
             String query = "UPDATE `twitchstreams` SET `online` = ? WHERE `channelId` = ?";
-            if (connection == null || connection.isClosed()) {
-                this.connection = Database.getInstance().getConnection();
+            try {
+                if (connection == null || connection.isClosed()) {
+                    this.connection = Database.getInstance().getConnection();
+                }
+                this.pStatement = connection.prepareStatement(query);
+
+                channelIds.forEach(channelId -> {
+                    try {
+                        pStatement.setString(1, "0");
+                        pStatement.setString(2, channelId);
+                        pStatement.addBatch();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                });
+                pStatement.executeBatch();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                cleanUp(pStatement, connection);
             }
-            this.pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, "0");
-            pStatement.setString(2, channelId);
-            pStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(pStatement, connection);
         }
+
     }
 
     public synchronized void executeUpdate(String channelId, String guildId) {

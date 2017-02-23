@@ -95,9 +95,6 @@ public class Main {
 
         guildCheck();
 
-        //V5TableMigration migration = new V5TableMigration();
-        //migration.execute();
-
         new PlatformListener();
     }
 

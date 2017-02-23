@@ -80,7 +80,7 @@ public class Kappa implements Command {
                 String guildName = Main.getJDA().getGuildById(result.getString("guildId")).getName();
                 Channel channel = Main.getJDA().getTextChannelById(result.getString("channelId"));
                 Member selfMember = Main.getJDA().getGuildById(result.getString("guildId")).getSelfMember();
-                if (!selfMember.hasPermission(channel, Permission.ADMINISTRATOR) ||
+                if (channel != null && !selfMember.hasPermission(channel, Permission.ADMINISTRATOR) ||
                         (!selfMember.hasPermission(channel, Permission.MESSAGE_READ) &&
                                 !selfMember.hasPermission(channel, Permission.MESSAGE_WRITE) &&
                                 !selfMember.hasPermission(channel, Permission.MESSAGE_EMBED_LINKS))) {

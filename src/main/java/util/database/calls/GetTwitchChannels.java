@@ -34,14 +34,14 @@ public class GetTwitchChannels {
     private PreparedStatement pStatement;
     private ResultSet result;
 
-    public synchronized CopyOnWriteArrayList<String> fetch(Integer start) {
+    public synchronized CopyOnWriteArrayList<String> fetch(Integer flag) {
         String query;
-        switch (start) {
+        switch (flag) {
             case -1:
                 query = "SELECT `channelName` FROM `twitch` WHERE `channelId` IS NULL ORDER BY `timeAdded` ASC";
                 break;
             default:
-                query = "SELECT DISTINCT `channelId` FROM `twitch` WHERE `channelId` IS NOT NULL ORDER BY `timeAdded` ASC LIMIT " + start + ",100";
+                query = "SELECT DISTINCT `channelId` FROM `twitch` WHERE `channelId` IS NOT NULL ORDER BY `channelId` ASC";
                 break;
         }
 
@@ -55,7 +55,7 @@ public class GetTwitchChannels {
             CopyOnWriteArrayList<String> channels = new CopyOnWriteArrayList<>();
 
             while (result.next()) {
-                if (start.equals(-1)) {
+                if (flag.equals(-1)) {
                     if (!channels.contains(result.getString("channelName"))) {
                         channels.add(result.getString("channelName"));
                     }

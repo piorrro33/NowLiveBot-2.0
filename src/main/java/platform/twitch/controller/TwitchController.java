@@ -39,6 +39,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
@@ -53,7 +54,7 @@ public class TwitchController {
     private HttpClient client = HttpClientBuilder.create().build();
     private HttpGet get;
     private HttpResponse response;
-    private List<String> online = new CopyOnWriteArrayList<>();
+    private ConcurrentHashMap<String, Stream> online = new ConcurrentHashMap<>();
 
     public TwitchController() {
     }
@@ -155,28 +156,29 @@ public class TwitchController {
 
     private synchronized void channels() {
         CountTwitchChannels countTwitchChannels = new CountTwitchChannels();
-        Integer amount = countTwitchChannels.streams();
+        Integer amount = countTwitchChannels.fetch();
 
+
+        System.out.println(amount);
         CopyOnWriteArrayList<String> streamChannelIds = new CopyOnWriteArrayList<>();
         CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
         GetTwitchChannels twitchChannels = new GetTwitchChannels();
         GetGuildsByStream guildsByStream = new GetGuildsByStream();
         StringBuilder channelString = new StringBuilder();
-        Streams streams = null;
 
-        for (Integer c = 0; c <= amount; c += 100) {
-            CopyOnWriteArrayList<String> channels = twitchChannels.fetch(c);
+        CopyOnWriteArrayList<String> channels = twitchChannels.fetch(1);
 
-            if (channels != null) {
-                channels.forEach(channel -> {
-                    if (channelString.length() > 0) {
-                        channelString.append(",");
-                    }
-                    channelString.append(channel);
-                    streamChannelIds.add(channel);
-                });
+        if (channels != null && channels.size() > 0) {
 
+            channels.forEach(channel -> {
                 if (channelString.length() > 0) {
+                    channelString.append(",");
+                }
+                channelString.append(channel);
+                streamChannelIds.add(channel);
+
+                if (streamChannelIds.size() == 100) {
+
                     URIBuilder uriBuilder = setBaseUrl("/streams");
                     uriBuilder.setParameter("channel", channelString.toString());
                     uriBuilder.setParameter("limit", "100");
@@ -188,6 +190,13 @@ public class TwitchController {
                         uri = uriBuilder.build();
                     } catch (URISyntaxException e) {
                         System.out.println("[~ERROR~] Malformed URI found.");
+                        e.printStackTrace();
+                    }
+
+                    // A little snooze to make sure to be in compliance with Twitch's Rate limiting policy
+                    try {
+                        Thread.sleep(750);
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
 
@@ -205,6 +214,7 @@ public class TwitchController {
 
                     ObjectMapper objectMapper = new ObjectMapper();
 
+                    Streams streams = null;
                     try {
                         streams = objectMapper.readValue(new InputStreamReader(response.getEntity().getContent()), Streams.class);
                     } catch (JsonParseException jpe) {
@@ -218,6 +228,7 @@ public class TwitchController {
 
                     // Checks to make sure that some streams are returned
                     if (streams != null && streams.getTotal() != null && streams.getTotal() > 0) {// Make sure the returned object is not null
+
                         List<Stream> onlineStreams = streams.getStreams();
 
                         onlineStreams.forEach(stream -> {
@@ -228,25 +239,28 @@ public class TwitchController {
                             CopyOnWriteArrayList<String> guildIds = guildsByStream.fetch(stream.getChannel().getId());
 
                             if (guildIds != null && guildIds.size() > 0) {
-                                for (String guildId : guildIds) {
+                                guildIds.forEach(guildId -> {
                                     if (!checkTwitchStreams.check(stream.getId(), guildId)) {
-                                        onLiveTwitchStream(stream, guildId, "channel");
+                                        onLiveTwitchStream(stream, guildId);
                                     }
-                                }
+                                });
                             }
                         });
 
                         // Set streams offline
                         if (streamChannelIds.size() > 0) {
-                            streamChannelIds.forEach(offlineStreams -> {
-                                UpdateOffline offline = new UpdateOffline();
-                                offline.executeUpdate(offlineStreams);
-                            });
+                            UpdateOffline offline = new UpdateOffline();
+                            offline.executeUpdate(streamChannelIds);
+                        }
+                        if (online.size() > 0) {
+                            new AddTwitchStream(online, "channel");
+                            online.clear();
                         }
                     }
+                    streamChannelIds.clear();
+                    channelString.setLength(0);
                 }
-            }
-            streamChannelIds.clear();
+            });
         }
     }
 
@@ -315,17 +329,19 @@ public class TwitchController {
                             }
 
                             if (!checkTwitchStreams.check(stream.getId(), guildId)) {
-                                onLiveTwitchStream(stream, guildId, "game");
+                                onLiveTwitchStream(stream, guildId);
                             }
                         }));
                     }
                     // Set streams offline
                     if (gameChannelIds != null && gameChannelIds.size() > 0) {
-                        gameChannelIds.forEach(offlineStreams -> {
-                            UpdateOffline offline = new UpdateOffline();
-                            offline.executeUpdate(offlineStreams);
-                        });
+                        UpdateOffline offline = new UpdateOffline();
+                        offline.executeUpdate(gameChannelIds);
                     }
+                }
+                if (online.size() > 0) {
+                    new AddTwitchStream(online, "game");
+                    online.clear();
                 }
             });
         }
@@ -334,6 +350,7 @@ public class TwitchController {
     public final synchronized void checkLiveStreams() {
         channels();
         games();
+
     }
 
     public final synchronized void twitchTeam(String team, String guildId) {
@@ -367,7 +384,7 @@ public class TwitchController {
      * @param stream  Stream object
      * @param guildId Guild Id
      */
-    private synchronized void onLiveTwitchStream(Stream stream, String guildId, String flag) {
+    private synchronized void onLiveTwitchStream(Stream stream, String guildId) {
         GetBroadcasterLang getBroadcasterLang = new GetBroadcasterLang();
         String lang = getBroadcasterLang.action(guildId);
 
@@ -375,7 +392,7 @@ public class TwitchController {
                 (lang.equalsIgnoreCase(stream.getChannel().getBroadcasterLanguage()) || "all".equals(lang))) {
             if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
                 if (filterCheck(guildId, stream)) {
-                    new AddTwitchStream(guildId, stream, flag);
+                    online.put(guildId, stream);
                 }
             }
         }

@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+import static core.CommandParser.getCommands;
 import static platform.discord.controller.DiscordController.sendToChannel;
 
 /**
@@ -72,7 +73,7 @@ public class Twitch implements Command {
     @Override
     public boolean called(String args, GuildMessageReceivedEvent event) {
         if (args != null && !"".equals(args)) {
-            commands.forEach(
+            /*commands.forEach(
                     command -> {
                         if (args.toLowerCase().startsWith(command)) {
                             valid = true;
@@ -81,8 +82,8 @@ public class Twitch implements Command {
 
             if (valid) {
                 return true;
-            }
-            /*String calledArgs = args.trim().substring(args.lastIndexOf(' ') + 1);
+            }*/
+            String calledArgs = args.trim().substring(args.lastIndexOf(' ') + 1);
 
             if (calledArgs.matches("^[a-zA-Z0-9_]{4,25}$")) {
                 if ("help".equals(args)) {
@@ -103,7 +104,7 @@ public class Twitch implements Command {
                     default:
                         return false;
                 }
-            }*/
+            }
         }
         return false;
     }
@@ -116,7 +117,7 @@ public class Twitch implements Command {
      */
     @Override
     public void action(String args, GuildMessageReceivedEvent event) {
-        StringBuilder columnValues = new StringBuilder();
+        /*StringBuilder columnValues = new StringBuilder();
         StringBuilder columnNames = new StringBuilder();
 
         commands.forEach(
@@ -227,8 +228,8 @@ public class Twitch implements Command {
             sendToChannel(event, "```Markdown" + message.toString() + "```");
         } else if (!goodCommand) {
             sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "incorrectArgs"));
-        }
-/*
+        }*/
+
         // Grab the secondary command (add and remove)
         String secondaryCommand = args.trim().substring(0, args.indexOf(' '));
         // the args to be passed to the secondaryCommand#called()
@@ -254,7 +255,7 @@ public class Twitch implements Command {
             default:
                 // This should never be used
                 break;
-        }*/
+        }
     }
 
     private void channelHandler(GuildMessageReceivedEvent event, String args) {

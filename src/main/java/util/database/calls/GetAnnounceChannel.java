@@ -27,9 +27,6 @@ import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
 
-/**
- * Created by Ague Mort of Veteran Software on 2/17/2017.
- */
 public class GetAnnounceChannel {
     private Connection connection;
     private PreparedStatement pStatement;
@@ -50,11 +47,12 @@ public class GetAnnounceChannel {
             if (result.next()) {
                 announceChannel = result.getString("channelId");
             }
+            return announceChannel;
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        return announceChannel;
+        return null;
     }
 }

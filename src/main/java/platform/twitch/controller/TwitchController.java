@@ -240,7 +240,7 @@ public class TwitchController {
 
                             if (guildIds != null && guildIds.size() > 0) {
                                 guildIds.forEach(guildId -> {
-                                    if (!checkTwitchStreams.check(stream.getId(), guildId)) {
+                                    if (!checkTwitchStreams.check(stream.getChannel().getId(), guildId)) {
                                         onLiveTwitchStream(stream, guildId);
                                     }
                                 });
@@ -328,7 +328,7 @@ public class TwitchController {
                                 gameChannelIds.remove(stream.getChannel().getId());//Leftover is offline streams
                             }
 
-                            if (!checkTwitchStreams.check(stream.getId(), guildId)) {
+                            if (!checkTwitchStreams.check(stream.getChannel().getId(), guildId)) {
                                 onLiveTwitchStream(stream, guildId);
                             }
                         }));

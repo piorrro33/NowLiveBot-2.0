@@ -33,8 +33,6 @@ import static util.database.Database.cleanUp;
 
 public class GetTwitchStreams {
 
-
-    private ConcurrentHashMap<String, Map<String, String>> onlineStreams = new ConcurrentHashMap<>();
     private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
@@ -50,8 +48,10 @@ public class GetTwitchStreams {
             pStatement.setString(1, flag);
             result = pStatement.executeQuery();
 
+            ConcurrentHashMap<String, Map<String, String>> onlineStreams = new ConcurrentHashMap<>();
+
             while (result.next()) {
-                this.onlineStreams.put(result.getString("id"), populateMap(result));
+                onlineStreams.putIfAbsent(result.getString("id"), populateMap(result));
             }
             return onlineStreams;
 
@@ -77,59 +77,11 @@ public class GetTwitchStreams {
             CopyOnWriteArrayList<String> channelIds = new CopyOnWriteArrayList<>();
 
             while (result.next()) {
-                channelIds.add(result.getString("channelId"));
+                channelIds.addIfAbsent(result.getString("channelId"));
             }
             if (channelIds.size() > 0) {
                 return channelIds;
             }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(result, pStatement, connection);
-        }
-        return null;
-    }
-
-    public synchronized ConcurrentHashMap<String, Map<String, String>> onlineStreams() {
-        try {
-            String query = "SELECT * FROM `twitchstreams` ORDER BY `streamsId` DESC";
-
-            if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
-            }
-            pStatement = connection.prepareStatement(query);
-            result = pStatement.executeQuery();
-
-            while (result.next()) {
-
-                this.onlineStreams.put(result.getString("channelId"), populateMap(result));
-            }
-            return onlineStreams;
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(result, pStatement, connection);
-        }
-        return null;
-    }
-
-    public synchronized ConcurrentHashMap<String, Map<String, String>> onlineStreams(Integer offset) {
-        try {
-            String query = "SELECT * FROM `twitchstreams` ORDER BY `streamsId` DESC LIMIT " + offset + ",100";
-
-            if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
-            }
-            pStatement = connection.prepareStatement(query);
-            result = pStatement.executeQuery();
-
-            while (result.next()) {
-
-                this.onlineStreams.put(result.getString("channelId"), populateMap(result));
-            }
-            return onlineStreams;
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -152,7 +104,7 @@ public class GetTwitchStreams {
             ConcurrentHashMap<String, Map<String, String>> offlineStreams = new ConcurrentHashMap<>();
 
             while (result.next()) {
-                offlineStreams.put(result.getString("id"), populateMap(result));
+                offlineStreams.putIfAbsent(result.getString("id"), populateMap(result));
             }
             if (offlineStreams.size() > 0) {
                 return offlineStreams;

@@ -40,8 +40,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -350,9 +348,8 @@ public class DiscordController {
         ConcurrentHashMap<String, Map<String, String>> offlineStreams = getTwitchStreams.offline();
 
         if (offlineStreams != null && offlineStreams.size() > 0) {
-            System.out.println(offlineStreams.size());
 
-            offlineStreams.values().forEach(offline -> {
+            offlineStreams.forEach((String id, Map<String, String> offline) -> {
 
                 String guildId = offline.get("guildId");
                 Member member = jda.getGuildById(guildId).getSelfMember();
@@ -481,57 +478,46 @@ public class DiscordController {
 
                     if (announceChannel != null && !announceChannel.isEmpty() && !"".equals(announceChannel)) {
 
-                        CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
-                        if (!checkTwitchStreams.check(streamData.get("channelId"), streamData.get("guildId"))) {
+                        // Check to ensure the bot is connected to the websocket
+                        if (jda.getStatus() == JDA.Status.CONNECTED) {
+                            if (jda.getTextChannelById(announceChannel) != null && message != null) {
 
-                            // Check to ensure the bot is connected to the websocket
-                            if (jda.getStatus() == JDA.Status.CONNECTED) {
-                                if (jda.getTextChannelById(announceChannel) != null && message != null) {
+                                // Send the message with blocking to ensure completion before moving on
+                                String messageId = jda.getTextChannelById(announceChannel).sendMessage(message).complete().getId();
 
-                                    // Send the message with blocking to ensure completion before moving on
-                                    String messageId = jda.getTextChannelById(announceChannel).sendMessage(message).complete().getId();
+                                if (messageId != null) {
 
-                                    if (messageId != null) {
-                                        System.out.println(messageId);
+                                    UpdateMessageId updateMessageId = new UpdateMessageId();
+                                    updateMessageId.executeUpdate(streamData.get("guildId"), streamData.get("channelId"), messageId);
 
-                                        UpdateMessageId updateMessageId = new UpdateMessageId();
-                                        updateMessageId.executeUpdate(streamData.get("guildId"), streamData.get("channelId"), messageId);
+                                    String loggerMessage = String.format(
+                                            " :tada: [G:%s][TC:%s] %s is streaming %s.",
+                                            jda.getGuildById(streamData.get("guildId")).getName(),
+                                            jda.getTextChannelById(announceChannel).getName(),
+                                            streamData.get("channelName"),
+                                            streamData.get("streamsGame")
+                                    );
+                                    new DiscordLogger(loggerMessage, null);
 
-                                        String loggerMessage = String.format(
-                                                " :tada: [G:%s][TC:%s] %s is streaming %s.",
-                                                jda.getGuildById(streamData.get("guildId")).getName(),
-                                                jda.getTextChannelById(announceChannel).getName(),
-                                                streamData.get("channelName"),
-                                                streamData.get("streamsGame")
-                                        );
-                                        new DiscordLogger(loggerMessage, null);
+                                    System.out.printf("[STREAM ANNOUNCE] [%s:%s] [%s:%s] [%s]: %s%n",
+                                            jda.getGuildById(streamData.get("guildId")).getName(),
+                                            jda.getGuildById(streamData.get("guildId")).getId(),
+                                            jda.getTextChannelById(announceChannel).getName(),
+                                            jda.getTextChannelById(announceChannel).getId(),
+                                            messageId,
+                                            streamData.get("channelName") + " is streaming " + streamData.get("streamsGame"));
 
-                                        System.out.printf("[STREAM ANNOUNCE] [%s:%s] [%s:%s] [%s]: %s%n",
-                                                jda.getGuildById(streamData.get("guildId")).getName(),
-                                                jda.getGuildById(streamData.get("guildId")).getId(),
-                                                jda.getTextChannelById(announceChannel).getName(),
-                                                jda.getTextChannelById(announceChannel).getId(),
-                                                messageId,
-                                                streamData.get("channelName") + " is streaming " + streamData.get("streamsGame"));
-
-                                        switch (platform) {
-                                            case "twitch":
-                                                new Tracker("Twitch Streams");
-                                                break;
-                                        }
+                                    switch (platform) {
+                                        case "twitch":
+                                            new Tracker("Twitch Streams");
+                                            break;
                                     }
                                 }
-                            } else {
-                                System.out.println("JDA is not connected.  Deleting stream and will try later.");
-                                DeleteTwitchStream deleteStream = new DeleteTwitchStream();
-                                deleteStream.process(streamData.get("guildId"), streamData.get("channelId"));
                             }
                         } else {
-                            List<String> channelId = new ArrayList<>();
-                            channelId.add(streamData.get("channelId"));
-
-                            UpdateOffline updateOffline = new UpdateOffline();
-                            updateOffline.executeUpdate(channelId);
+                            System.out.println("JDA is not connected.  Deleting stream and will try later.");
+                            DeleteTwitchStream deleteStream = new DeleteTwitchStream();
+                            deleteStream.process(streamData.get("guildId"), streamData.get("channelId"));
                         }
                     } else {
                         DeleteTwitchStream deleteStream = new DeleteTwitchStream();

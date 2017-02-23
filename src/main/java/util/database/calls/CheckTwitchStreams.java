@@ -31,18 +31,18 @@ public class CheckTwitchStreams {
 
     private Connection connection;
 
-    public synchronized Boolean check(String streamId, String guildId) {
+    public synchronized Boolean check(String channelId, String guildId) {
         PreparedStatement pStatement = null;
         ResultSet result = null;
 
         try {
-            String query = "SELECT COUNT(*) AS `count` FROM `twitchstreams` WHERE `streamsId` = ? AND `guildId` = ?";
+            String query = "SELECT COUNT(*) AS `count` FROM `twitchstreams` WHERE `channelId` = ? AND `guildId` = ?";
 
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, streamId);
+            pStatement.setString(1, channelId);
             pStatement.setString(2, guildId);
             result = pStatement.executeQuery();
 

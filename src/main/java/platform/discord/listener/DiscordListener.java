@@ -118,7 +118,7 @@ public class DiscordListener extends ListenerAdapter {
     @Override
     public void onReady(ReadyEvent event) {
         super.onReady(event);
-        updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
+        //updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
     }
 
     @Override
@@ -147,15 +147,15 @@ public class DiscordListener extends ListenerAdapter {
     }
 
     @Override
-    public final void onGuildMemberJoin(GuildMemberJoinEvent event) {
-        new DiscordLogger(null, event);
-    }
-
-    @Override
     public final void onResume(ResumedEvent event) {
         new DiscordLogger(" :heart: Discord's connection has been resumed!", event);
         logger.info("The JDA instance has been resumed.");
         new PlatformListener();
+    }
+
+    @Override
+    public final void onGuildMemberJoin(GuildMemberJoinEvent event) {
+        new DiscordLogger(null, event);
     }
 
     @Override
@@ -165,7 +165,7 @@ public class DiscordListener extends ListenerAdapter {
         System.out.printf("[GUILD JOIN] Now Live has joined G:%s:%s%n",
                 event.getGuild().getName(),
                 event.getGuild().getId());
-        updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
+        //updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
     }
 
     @Override
@@ -175,7 +175,7 @@ public class DiscordListener extends ListenerAdapter {
         System.out.printf("[GUILD LEAVE] Now Live has been dismissed/left from G:%s:%s%n",
                 event.getGuild().getName(),
                 event.getGuild().getId());
-        updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
+        //updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
     }
 
     private void commandFilter(String cntMsg, GuildMessageReceivedEvent event)

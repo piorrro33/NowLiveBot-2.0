@@ -32,11 +32,11 @@ public class AddTwitchStream {
     private Connection connection;
     private PreparedStatement pStatement;
 
-    public AddTwitchStream(ConcurrentHashMap<String, Stream> streams, String flag) {
+    public AddTwitchStream(ConcurrentHashMap<Integer, Stream> streams, String flag) {
         process(streams, flag);
     }
 
-    private synchronized void process(ConcurrentHashMap<String, Stream> streams, String flag) {
+    private synchronized void process(ConcurrentHashMap<Integer, Stream> streams, String flag) {
         if (streams.size() > 0) {
             try {
                 String query = "INSERT INTO `twitchstreams` " +
@@ -50,7 +50,9 @@ public class AddTwitchStream {
                     this.connection = Database.getInstance().getConnection();
                 }
 
-                streams.forEach((guildId, stream) -> {
+                streams.values().forEach(stream -> {
+                    String guildId = stream.getAdditionalProperties().get("guildId").toString();
+
                     Integer partner = 0;
                     if (stream.getChannel().getPartner()) {
                         partner = 1;

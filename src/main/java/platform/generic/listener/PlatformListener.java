@@ -32,10 +32,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class PlatformListener {
     private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
+    private DiscordController discord = new DiscordController();
 
     public PlatformListener() {
         try {
-            executor.scheduleWithFixedDelay(this::run, 0, 90, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::run, 0, 45, TimeUnit.SECONDS);
         } catch (Exception e) {
             System.out.println("[~ERROR~] Caught an exception while keeping the executors active");
         }
@@ -45,6 +46,50 @@ public class PlatformListener {
         checkStreams();
         announceStreams();
         editDeleteAnnouncements();
+
+        String loggerBuilder;
+        if (discord.getAnnounced().length() > 0) {
+            loggerBuilder = "```Markdown\n# Streams Announced\n " + discord.getAnnounced().toString() + "```";
+            new DiscordLogger(loggerBuilder, null);
+            discord.setAnnounced(new StringBuilder());
+        }
+
+        if (discord.getEdited().length() > 0) {
+            loggerBuilder = "```Markdown\n# Announcements Edited\n" + discord.getEdited().toString() + "```";
+            new DiscordLogger(loggerBuilder, null);
+            discord.setEdited(new StringBuilder());
+        }
+
+        if (discord.getDeleted().length() > 0) {
+            loggerBuilder = "```Markdown\n# Announcements Deleted\n" + discord.getDeleted().toString() + "```";
+            new DiscordLogger(loggerBuilder, null);
+            discord.setDeleted(new StringBuilder());
+        }
+
+        if (discord.getPermsRead().length() > 0) {
+            loggerBuilder = "```Markdown\n# Permissions Error (Read)\n" + discord.getPermsRead().toString() + "```";
+            new DiscordLogger(loggerBuilder, null);
+            discord.setPermsRead(new StringBuilder());
+        }
+
+        if (discord.getPermsWrite().length() > 0) {
+            loggerBuilder = "```Markdown\n# Permissions Error (Write)\n" + discord.getPermsWrite().toString() + "```";
+            new DiscordLogger(loggerBuilder, null);
+            discord.setPermsWrite(new StringBuilder());
+        }
+
+        if (discord.getPermsEmbeds().length() > 0) {
+            loggerBuilder = "```Markdown\n# Permissions Error (Embed Links)\n" + discord.getPermsEmbeds().toString() + "```";
+            new DiscordLogger(loggerBuilder, null);
+            discord.setPermsEmbeds(new StringBuilder());
+        }
+
+        if (discord.getPermsManageMessages().length() > 0) {
+            loggerBuilder = "```Markdown\n# Permissions Error (Manage Messages)\n" + discord.getPermsManageMessages().toString() + "```";
+            new DiscordLogger(loggerBuilder, null);
+            discord.setPermsManageMessages(new StringBuilder());
+        }
+
         System.out.println("[SYSTEM] Cycle Complete. Waiting...");
     }
 
@@ -62,7 +107,6 @@ public class PlatformListener {
         new DiscordLogger(" :poop: **Editing and Deleting Announcements...**", null);
         System.out.println("[SYSTEM] Editing and Deleting Announcements... " + timeNow);
 
-        DiscordController discord = new DiscordController();
         discord.offlineStream();
     }
 
@@ -71,8 +115,7 @@ public class PlatformListener {
         new DiscordLogger(" :poop: **Announcing New Streams...**", null);
         System.out.println("[SYSTEM] Announcing New Streams... " + timeNow);
 
-        DiscordController discord = new DiscordController();
-        discord.announceChannel("twitch", "channel");
-        discord.announceChannel("twitch", "game");
+        discord.announceChannel("twitch");
+
     }
 }

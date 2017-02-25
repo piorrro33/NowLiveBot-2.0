@@ -37,15 +37,14 @@ public class GetTwitchStreams {
     private PreparedStatement pStatement;
     private ResultSet result;
 
-    public synchronized ConcurrentHashMap<String, Map<String, String>> onlineStreams(String flag) {
+    public synchronized ConcurrentHashMap<String, Map<String, String>> onlineStreams() {
         try {
-            String query = "SELECT * FROM `twitchstreams` WHERE `messageId` IS NULL AND typeFlag = ? AND `online` = 1 ORDER BY `streamsId` DESC";
+            String query = "SELECT * FROM `twitchstreams` WHERE `messageId` IS NULL AND `online` = 1 ORDER BY `streamsId` ASC";
 
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, flag);
             result = pStatement.executeQuery();
 
             ConcurrentHashMap<String, Map<String, String>> onlineStreams = new ConcurrentHashMap<>();
@@ -125,22 +124,23 @@ public class GetTwitchStreams {
             streamData.put("streamsId", result.getString("streamsId"));
             streamData.put("streamsGame", result.getString("streamsGame"));
             streamData.put("streamsCommunityId", result.getString("streamsCommunityId"));
-            streamData.put("streamsViewers", result.getString("streamsViewers"));
+            streamData.put("streamsViewers", String.valueOf(result.getInt("streamsViewers")));
             streamData.put("streamsCreatedAt", result.getString("streamsCreatedAt"));
             streamData.put("channelStatus", result.getString("channelStatus"));
             streamData.put("channelBroadcasterLanguage", result.getString("channelBroadcasterLanguage"));
             streamData.put("channelDisplayName", result.getString("channelDisplayName"));
             streamData.put("channelGame", result.getString("channelGame"));
             streamData.put("channelLanguage", result.getString("channelLanguage"));
-            streamData.put("channelId", result.getString("channelId"));
+            streamData.put("channelId", String.valueOf(result.getInt("channelId")));
             streamData.put("channelName", result.getString("channelName"));
             streamData.put("channelPartner", result.getString("channelPartner"));
             streamData.put("channelLogo", result.getString("channelLogo"));
             streamData.put("channelVideoBanner", result.getString("channelVideoBanner"));
             streamData.put("channelProfileBanner", result.getString("channelProfileBanner"));
             streamData.put("channelUrl", result.getString("channelUrl"));
-            streamData.put("channelViews", result.getString("channelViews"));
-            streamData.put("channelFollowers", result.getString("channelFollowers"));
+            streamData.put("channelViews", String.valueOf(result.getInt("channelViews")));
+            streamData.put("channelFollowers", String.valueOf(result.getInt("channelFollowers")));
+            streamData.put("online", String.valueOf(result.getInt("online")));
         } catch (SQLException e) {
             e.printStackTrace();
         }

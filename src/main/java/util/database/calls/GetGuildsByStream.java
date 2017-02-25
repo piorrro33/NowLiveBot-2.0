@@ -48,7 +48,7 @@ public class GetGuildsByStream {
             guildIds.clear();
 
             while (result.next()) {
-                guildIds.add(result.getString("guildId"));
+                guildIds.addIfAbsent(result.getString("guildId"));
             }
 
             return guildIds;

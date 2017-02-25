@@ -54,7 +54,8 @@ public class TwitchController {
     private HttpClient client = HttpClientBuilder.create().build();
     private HttpGet get;
     private HttpResponse response;
-    private ConcurrentHashMap<String, Stream> online = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Integer, Stream> online = new ConcurrentHashMap<>();
+    protected Integer count = 0;
 
     public TwitchController() {
     }
@@ -140,7 +141,7 @@ public class TwitchController {
 
             List<String> filters = new CopyOnWriteArrayList<>();
 
-            if (result != null) {
+            if (result.isBeforeFirst()) {
                 while (result.next()) {
                     filters.add(result.getString("gameFilter").replaceAll("''", "'"));
                 }
@@ -241,7 +242,10 @@ public class TwitchController {
                             if (guildIds != null && guildIds.size() > 0) {
                                 guildIds.forEach(guildId -> {
                                     if (!checkTwitchStreams.check(stream.getChannel().getId(), guildId)) {
-                                        onLiveTwitchStream(stream, guildId);
+                                        Stream updatedStream = stream;
+                                        updatedStream.setAdditionalProperty("guildId", guildId);
+
+                                        onLiveTwitchStream(updatedStream);
                                     }
                                 });
                             }
@@ -329,7 +333,8 @@ public class TwitchController {
                             }
 
                             if (!checkTwitchStreams.check(stream.getChannel().getId(), guildId)) {
-                                onLiveTwitchStream(stream, guildId);
+                                stream.setAdditionalProperty("guildId", guildId);
+                                onLiveTwitchStream(stream);
                             }
                         }));
                     }
@@ -338,10 +343,10 @@ public class TwitchController {
                         UpdateOffline offline = new UpdateOffline();
                         offline.executeUpdate(gameChannelIds);
                     }
-                }
-                if (online.size() > 0) {
-                    new AddTwitchStream(online, "game");
-                    online.clear();
+                    if (online.size() > 0) {
+                        new AddTwitchStream(online, "game");
+                        online.clear();
+                    }
                 }
             });
         }
@@ -360,13 +365,14 @@ public class TwitchController {
     /**
      * Method by Hopewell
      *
-     * @param guildId Guild Id
      * @param stream  Stream object
      * @return boolean
      */
-    private synchronized boolean filterCheck(String guildId, Stream stream) {
+    private synchronized boolean filterCheck(Stream stream) {
+        String guildId = stream.getAdditionalProperties().get("guildId").toString();
+
         List<String> filters = checkGameFilters(guildId);
-        if (filters == null || filters.isEmpty()) {
+        if (filters == null) {
             return true;
         }
 
@@ -382,17 +388,19 @@ public class TwitchController {
      * Method by Hopewell
      *
      * @param stream  Stream object
-     * @param guildId Guild Id
      */
-    private synchronized void onLiveTwitchStream(Stream stream, String guildId) {
+    private synchronized void onLiveTwitchStream(Stream stream) {
+        String guildId = stream.getAdditionalProperties().get("guildId").toString();
+
         GetBroadcasterLang getBroadcasterLang = new GetBroadcasterLang();
         String lang = getBroadcasterLang.action(guildId);
 
         if (lang != null &&
                 (lang.equalsIgnoreCase(stream.getChannel().getBroadcasterLanguage()) || "all".equals(lang))) {
             if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
-                if (filterCheck(guildId, stream)) {
-                    online.put(guildId, stream);
+                if (filterCheck(stream)) {
+                    online.put(count, stream);
+                    count++;
                 }
             }
         }

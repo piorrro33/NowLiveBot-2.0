@@ -92,6 +92,7 @@ public class CommandParser {
                     break;
                 case "add":
                 case "beam":
+                case "botlang":
                 case "cleanup":
                 case "lang":
                 case "move":

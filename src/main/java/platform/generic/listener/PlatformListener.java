@@ -36,7 +36,7 @@ public class PlatformListener {
 
     public PlatformListener() {
         try {
-            executor.scheduleWithFixedDelay(this::run, 0, 45, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::run, 0, 30, TimeUnit.SECONDS);
         } catch (Exception e) {
             System.out.println("[~ERROR~] Caught an exception while keeping the executors active");
         }
@@ -88,6 +88,12 @@ public class PlatformListener {
             loggerBuilder = "```Markdown\n# Permissions Error (Manage Messages)\n" + discord.getPermsManageMessages().toString() + "```";
             new DiscordLogger(loggerBuilder, null);
             discord.setPermsManageMessages(new StringBuilder());
+        }
+
+        if (discord.getPermsEveryone().length() > 0) {
+            loggerBuilder = "```Markdown\n# Permissions Error (Mention Everyone)\n" + discord.getPermsEveryone().toString() + "```";
+            new DiscordLogger(loggerBuilder, null);
+            discord.setPermsEveryone(new StringBuilder());
         }
 
         System.out.println("[SYSTEM] Cycle Complete. Waiting...");

@@ -22,57 +22,35 @@ import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
 
-/**
- * @author Veteran Software by Ague Mort
- */
-public class AddOther {
+public class GetGlobalAnnounceChannel {
 
-    private static Connection connection;
-    private static PreparedStatement pStatement;
-    private static String query;
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private ResultSet result;
 
-    public synchronized static Boolean action(String tableName, String guildId, String name, String channelId) {
-
-        switch (tableName) {
-            case "channel":
-                query = "INSERT INTO `twitch` (`id`, `guildId`, `channelName`, `channelId`) VALUES (null,?,?,?)";
-                break;
-            case "filter":
-                query = "INSERT INTO `twitch` (`id`, `guildId`, `gameFilter`) VALUES (null,?,?)";
-                break;
-            case "game":
-                query = "INSERT INTO `twitch` (`id`, `guildId`, `gameName`) VALUES (null,?,?)";
-                break;
-            case "tag":
-                query = "INSERT INTO `twitch` (`id`, `guildId`, `titleFilter`) VALUES (null,?,?)";
-                break;
-            default:
-                break;
-        }
-
+    public synchronized String fetch(String guildId) {
+        String query = "SELECT `channelId` FROM `guild` WHERE `guildId` = ?";
         try {
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
-            if (tableName.equalsIgnoreCase("channel")) {
-                pStatement.setString(3, channelId);
-            }
-            pStatement.setString(2, name);
-            if (pStatement.executeUpdate() == 1) {
-                return true;
+            result = pStatement.executeQuery();
+
+            if (result.next()) {
+                return result.getString("channelId");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(pStatement, connection);
+            cleanUp(result, pStatement, connection);
         }
-        return false;
+        return null;
     }
-
 }

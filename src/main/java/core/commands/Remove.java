@@ -47,8 +47,7 @@ public class Remove implements Command {
     private Connection connection;
     private PreparedStatement pStatement;
     private String query;
-    private String defaultQuery;
-    private String[] options = new String[]{"channel", "filter", "game", "manager", "tag", "help"};
+    private String[] options = new String[]{"manager","help"};
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
@@ -87,71 +86,31 @@ public class Remove implements Command {
 
                 this.argument = this.argument.replace("'", "''");
 
-                // Check to see if the entry already exists in the db for that guild
-                switch (this.option) {
-                    case "manager":
-                        if (!event.getGuild().getOwner().getUser().getId().equals(String.valueOf(dController
-                                .getMentionedUsersId()))) {
-                            if (managerCount(guildId)) { // Make sure there is going to be enough managers
-                                try {
-                                    query = "DELETE FROM `manager` WHERE `guildId` = ? AND `userId` = ?";
-
-                                    if (connection == null || connection.isClosed()) {
-                                        this.connection = Database.getInstance().getConnection();
-                                    }
-                                    this.pStatement = connection.prepareStatement(query);
-
-                                    pStatement.setString(1, guildId);
-                                    pStatement.setString(2, dController.getMentionedUsersId());
-                                    Integer removeManager = pStatement.executeUpdate();
-                                    removeResponse(event, removeManager);
-                                } catch (SQLException e) {
-                                    logger.error("Error when deleting info from the " + this.option + " table: ", e);
-                                } finally {
-                                    cleanUp(pStatement, connection);
-                                }
-                            } else {
-                                sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "needOneManager"));
-                            }
-                        } else {
-                            sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "canNotRemoveOwner"));
-                        }
-                        break;
-
-                    default:
-                        switch (this.option) {
-                            case "channel":
-                                defaultQuery = "DELETE FROM `twitch` WHERE `guildId` = ? AND `channelName` = ?";
-                                break;
-                            case "filter":
-                                defaultQuery = "DELETE FROM `twitch` WHERE `guildId` = ? AND `gameFilter` = ?";
-                                break;
-                            case "game":
-                                defaultQuery = "DELETE FROM `twitch` WHERE `guildId` = ? AND `gameName` = ?";
-                                break;
-                            case "tag":
-                                defaultQuery = "DELETE FROM `twitch` WHERE `guildId` = ? AND `titleFilter` = ?";
-                                break;
-                            default:
-                                break;
-                        }
-
+                if (!event.getGuild().getOwner().getUser().getId().equals(String.valueOf(dController
+                        .getMentionedUsersId()))) {
+                    if (managerCount(guildId)) { // Make sure there is going to be enough managers
                         try {
+                            query = "DELETE FROM `manager` WHERE `guildId` = ? AND `userId` = ?";
+
                             if (connection == null || connection.isClosed()) {
-                                connection = Database.getInstance().getConnection();
+                                this.connection = Database.getInstance().getConnection();
                             }
-                            pStatement = connection.prepareStatement(defaultQuery);
+                            this.pStatement = connection.prepareStatement(query);
 
                             pStatement.setString(1, guildId);
-                            pStatement.setString(2, argument);
-                            Integer removeOther = pStatement.executeUpdate();
-                            removeResponse(event, removeOther);
+                            pStatement.setString(2, dController.getMentionedUsersId());
+                            Integer removeManager = pStatement.executeUpdate();
+                            removeResponse(event, removeManager);
                         } catch (SQLException e) {
                             logger.error("Error when deleting info from the " + this.option + " table: ", e);
                         } finally {
                             cleanUp(pStatement, connection);
                         }
-                        break;
+                    } else {
+                        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "needOneManager"));
+                    }
+                } else {
+                    sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "canNotRemoveOwner"));
                 }
             }
         }

@@ -129,8 +129,6 @@ public class CommandParser {
             } else {
                 getCommands().get(cmd.invoke).action(cmd.args, cmd.event);
             }
-        } else {
-            sendToChannel(cmd.event, LocaleString.getString(cmd.event.getMessage().getGuild().getId(), "incorrectArgs"));
         }
         getCommands().get(cmd.invoke).executed(safe, cmd.event);
     }

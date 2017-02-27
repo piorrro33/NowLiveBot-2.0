@@ -22,21 +22,15 @@ import core.Command;
 import langs.LocaleString;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import platform.twitch.controller.TwitchController;
-import util.database.calls.*;
+import util.database.calls.AddManager;
+import util.database.calls.CountManagers;
+import util.database.calls.Tracker;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
-import static platform.generic.controller.PlatformController.getPlatformId;
 
-/**
- * Add Command.
- * TODO: Move SQL calls to separate class.
- *
- * @author keesh
- */
 public class Add implements Command {
 
-    private final String[] options = new String[]{"channel", "filter", "game", "manager", "tag", "help"};
+    private final String[] options = new String[]{"manager", "help"};
     private String option;
     private String argument;
 
@@ -84,13 +78,6 @@ public class Add implements Command {
     public final void action(String args, GuildMessageReceivedEvent event) {
 
         String guildId = event.getGuild().getId();
-        Integer platformId;
-
-        if (getPlatformId(args) > 0) {
-            platformId = getPlatformId(args);
-        } else {
-            platformId = 1;
-        }
 
         for (String s : this.options) {
             if (this.option.equals(s) && !this.option.equals("help")) {
@@ -118,29 +105,7 @@ public class Add implements Command {
                             sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "discordUserNoExist"));
                         }
                         break;
-                    case "channel":
-                        switch (platformId) {
-                            case 1:
-                                TwitchController twitch = new TwitchController();
-                                String channelId = twitch.convertNameToId(this.argument);
-
-                                if (CheckTwitchData.action(this.option, guildId, this.argument)) {
-                                    sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
-                                } else {
-                                    returnStatement(AddOther.action(this.option, guildId, this.argument, channelId), event);
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
                     default:
-
-                        if (CheckTwitchData.action(this.option, guildId, this.argument)) {
-                            sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
-                        } else {
-                            returnStatement(AddOther.action(this.option, guildId, this.argument, null), event);
-                        }
                         break;
                 }
             }

@@ -165,7 +165,7 @@ public class DiscordListener extends ListenerAdapter {
         System.out.printf("[GUILD JOIN] Now Live has joined G:%s:%s%n",
                 event.getGuild().getName(),
                 event.getGuild().getId());
-        //updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
+        updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
     }
 
     @Override
@@ -175,7 +175,7 @@ public class DiscordListener extends ListenerAdapter {
         System.out.printf("[GUILD LEAVE] Now Live has been dismissed/left from G:%s:%s%n",
                 event.getGuild().getName(),
                 event.getGuild().getId());
-        //updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
+        updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
     }
 
     private void commandFilter(String cntMsg, GuildMessageReceivedEvent event)

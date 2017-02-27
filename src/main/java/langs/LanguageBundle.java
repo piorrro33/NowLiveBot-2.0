@@ -91,7 +91,7 @@ public class LanguageBundle extends ListResourceBundle {
             {"compactOff", " :compression: Compact mode has been turned off."},
             {"compactOn", " :compression: Compact mode has been turned on."},
             {"devMessage", "*Message from the " + Const.BOT_NAME + " developers:*\n\n\t"},
-            {"discordChannelNoExist", " :thinking: That text channel doesn't exist on this server."},
+            {"discordChannelNoExist", "That text channel doesn't exist on your server."},
             {"discordUserNoExist", "That person isn't a Discord user!  Try again!"},
             {"doesNotExist", "That was never added to my database."},
             {"emptyArgs", "I think you forgot some of the command.  Check the help command for more info."},

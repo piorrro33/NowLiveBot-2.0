@@ -31,10 +31,26 @@ public class GetAnnounceChannel {
     private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
+    private String query;
 
-    public synchronized String action(String guildId) {
-        String announceChannel = "";
-        String query = "SELECT `channelId` FROM `guild` WHERE `guildId` = ?";
+    public synchronized String action(String guildId, String column, String value) {
+
+        switch (column) {
+            case "channel":
+                query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `channelId` = ?";
+                break;
+            case "community":
+                query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `communityName` = ?";
+                break;
+            case "game":
+                query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `gameName` = ?";
+                break;
+            case "team":
+                query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `teamName` = ?";
+                break;
+            default:
+                break;
+        }
 
         try {
             if (connection == null || connection.isClosed()) {
@@ -42,12 +58,22 @@ public class GetAnnounceChannel {
             }
             this.pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
+            pStatement.setString(2, value);
             this.result = pStatement.executeQuery();
 
+            String announceChannel = null;
             if (result.next()) {
-                announceChannel = result.getString("channelId");
+                announceChannel = result.getString("announceChannel");
             }
-            return announceChannel;
+            if (announceChannel != null) {
+                return announceChannel;
+            } else {
+                GetGlobalAnnounceChannel globalAnnounceChannel = new GetGlobalAnnounceChannel();
+                String global = globalAnnounceChannel.fetch(guildId);
+                if (global != null) {
+                    return global;
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {

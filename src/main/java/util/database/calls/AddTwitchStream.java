@@ -40,50 +40,56 @@ public class AddTwitchStream {
         if (streams.size() > 0) {
             try {
                 String query = "INSERT INTO `twitchstreams` " +
-                        "(`guildId`, `typeFlag`, `streamsId`, `streamsGame`, `streamsCommunityId`, `streamsViewers`, `streamsCreatedAt`," +
+                        "(`guildId`, `typeFlag`, `textChannelId`, `streamsId`, `streamsGame`, `streamsCommunityId`, `streamsViewers`, `streamsCreatedAt`," +
                         "`channelStatus`, `channelBroadcasterLanguage`, `channelDisplayName`, " +
                         "`channelGame`, `channelLanguage`,`channelId`, `channelName`,`channelPartner`, `channelLogo`," +
                         "`channelVideoBanner`, `channelProfileBanner`, `channelUrl`,`channelViews`, `channelFollowers`) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
                 if (connection == null || connection.isClosed()) {
                     this.connection = Database.getInstance().getConnection();
                 }
 
+                this.pStatement = connection.prepareStatement(query);
+
                 streams.values().forEach(stream -> {
                     String guildId = stream.getAdditionalProperties().get("guildId").toString();
 
-                    Integer partner = 0;
-                    if (stream.getChannel().getPartner()) {
-                        partner = 1;
-                    }
+                    CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
+                    if (!checkTwitchStreams.check(stream.getChannel().getId(), guildId)) {
 
-                    try {
-                        this.pStatement = connection.prepareStatement(query);
-                        pStatement.setString(1, guildId);
-                        pStatement.setString(2, flag);
-                        pStatement.setString(3, stream.getId());//streamsId
-                        pStatement.setString(4, stream.getGame());//streamsGame
-                        pStatement.setString(5, stream.getCommunityId());//streamsCommunityId
-                        pStatement.setInt(6, stream.getViewers());//streamsViewers
-                        pStatement.setString(7, stream.getCreatedAt());//streamsCreatedAt
-                        pStatement.setString(8, stream.getChannel().getStatus());//channelStatus
-                        pStatement.setString(9, stream.getChannel().getBroadcasterLanguage());//channelBroadcasterLang
-                        pStatement.setString(10, stream.getChannel().getDisplayName());//channelDisplayName
-                        pStatement.setString(11, stream.getChannel().getGame());//channelGame
-                        pStatement.setString(12, stream.getChannel().getLanguage());//channelLanguage
-                        pStatement.setString(13, stream.getChannel().getId());//channelId
-                        pStatement.setString(14, stream.getChannel().getName());//channelName
-                        pStatement.setInt(15, partner);
-                        pStatement.setString(16, stream.getChannel().getLogo());
-                        pStatement.setString(17, stream.getChannel().getVideoBanner());
-                        pStatement.setString(18, stream.getChannel().getProfileBanner());
-                        pStatement.setString(19, stream.getChannel().getUrl());
-                        pStatement.setInt(20, stream.getChannel().getViews());
-                        pStatement.setInt(21, stream.getChannel().getFollowers());
-                        pStatement.addBatch();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
+                        Integer partner = 0;
+                        if (stream.getChannel().getPartner()) {
+                            partner = 1;
+                        }
+
+                        try {
+                            pStatement.setString(1, guildId);
+                            pStatement.setString(2, flag);
+                            pStatement.setString(3, stream.getAdditionalProperties().get("announceChannel").toString());
+                            pStatement.setString(4, stream.getId());//streamsId
+                            pStatement.setString(5, stream.getGame());//streamsGame
+                            pStatement.setString(6, stream.getCommunityId());//streamsCommunityId
+                            pStatement.setInt(7, stream.getViewers());//streamsViewers
+                            pStatement.setString(8, stream.getCreatedAt());//streamsCreatedAt
+                            pStatement.setString(9, stream.getChannel().getStatus());//channelStatus
+                            pStatement.setString(10, stream.getChannel().getBroadcasterLanguage());//channelBroadcasterLang
+                            pStatement.setString(11, stream.getChannel().getDisplayName());//channelDisplayName
+                            pStatement.setString(12, stream.getChannel().getGame());//channelGame
+                            pStatement.setString(13, stream.getChannel().getLanguage());//channelLanguage
+                            pStatement.setString(14, stream.getChannel().getId());//channelId
+                            pStatement.setString(15, stream.getChannel().getName());//channelName
+                            pStatement.setInt(16, partner);
+                            pStatement.setString(17, stream.getChannel().getLogo());
+                            pStatement.setString(18, stream.getChannel().getVideoBanner());
+                            pStatement.setString(19, stream.getChannel().getProfileBanner());
+                            pStatement.setString(20, stream.getChannel().getUrl());
+                            pStatement.setInt(21, stream.getChannel().getViews());
+                            pStatement.setInt(22, stream.getChannel().getFollowers());
+                            pStatement.addBatch();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
                 pStatement.executeBatch();

@@ -39,7 +39,7 @@ public class GetTwitchStreams {
 
     public synchronized ConcurrentHashMap<String, Map<String, String>> onlineStreams() {
         try {
-            String query = "SELECT * FROM `twitchstreams` WHERE `messageId` IS NULL AND `online` = 1 ORDER BY `streamsId` ASC";
+            String query = "SELECT * FROM `twitchstreams` WHERE `messageId` IS NULL AND `online` = 1 ORDER BY `channelId` ASC";
 
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
@@ -76,7 +76,7 @@ public class GetTwitchStreams {
             CopyOnWriteArrayList<String> channelIds = new CopyOnWriteArrayList<>();
 
             while (result.next()) {
-                channelIds.addIfAbsent(result.getString("channelId"));
+                channelIds.add(result.getString("channelId"));
             }
             if (channelIds.size() > 0) {
                 return channelIds;
@@ -121,6 +121,8 @@ public class GetTwitchStreams {
         try {
             streamData.put("guildId", result.getString("guildId"));
             streamData.put("messageId", result.getString("messageId"));
+            streamData.put("typeFlag", result.getString("typeFlag"));
+            streamData.put("textChannelId", result.getString("textChannelId"));
             streamData.put("streamsId", result.getString("streamsId"));
             streamData.put("streamsGame", result.getString("streamsGame"));
             streamData.put("streamsCommunityId", result.getString("streamsCommunityId"));

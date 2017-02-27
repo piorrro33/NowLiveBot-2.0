@@ -22,57 +22,29 @@ import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
 
-/**
- * @author Veteran Software by Ague Mort
- */
-public class CheckTwitchData {
+public class TwitchData {
 
-    private static Connection connection;
-    private static PreparedStatement pStatement;
-    private static ResultSet result;
+    private Connection connection = Database.getInstance().getConnection();
+    private PreparedStatement pStatement;
 
-    public synchronized static Boolean action(String tableName, String guildId, String name) {
-        String query = "";
-        switch (tableName) {
-            case "channel":
-                query = "SELECT `channelName` FROM `twitch` WHERE `guildId` LIKE ? AND `channelName` = ?";
-                break;
-            case "gameFilter":
-                query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` LIKE ? AND `gameFilter` = ?";
-                break;
-            case "game":
-                query = "SELECT `gameName` FROM `twitch` WHERE `guildId` LIKE ? AND `gameName` = ?";
-                break;
-            case "titleFilter":
-                query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` LIKE ? AND `titleFilter` = ?";
-                break;
-            default:
-                break;
-        }
-
+    public synchronized Boolean action(String query) {
         try {
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            pStatement.setString(2, name);
-            result = pStatement.executeQuery();
-            if (result.isBeforeFirst()) {
-                System.out.println("Found channel: " + name);
+            this.pStatement = connection.prepareStatement(query);
+            if (pStatement.executeUpdate() > 0) {
                 return true;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(result, pStatement, connection);
+            cleanUp(pStatement, connection);
         }
         return false;
     }
-
 }

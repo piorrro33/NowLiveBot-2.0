@@ -71,13 +71,9 @@ public class Compact implements Command {
                 switch (args) {
                     case "off":
                         sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "compactOff"));
-
-                        break;
-                    case "on":
-                        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "compactOn"));
                         break;
                     default:
-                        System.out.println("[~ERROR~] This statement should never be reached.");
+                        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "compactOn"));
                         break;
                 }
             }

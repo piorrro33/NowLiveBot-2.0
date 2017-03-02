@@ -18,67 +18,71 @@
 
 package util.database.calls;
 
+import platform.twitch.models.Stream;
 import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-/**
- * @author Veteran Software by Ague Mort
- */
-public class CheckTwitchData {
+public class GetSpecificTitleFilters {
 
-    private static Connection connection;
-    private static PreparedStatement pStatement;
-    private static ResultSet result;
+    private Connection connection = Database.getInstance().getConnection();
+    private PreparedStatement pStatement;
 
-    public synchronized static Boolean action(String tableName, String guildId, String name) {
-        String query = "";
-        switch (tableName) {
-            case "channel":
-                query = "SELECT `channelName` FROM `twitch` WHERE `guildId` = ? AND `channelName` LIKE ?";
-                break;
-            case "community":
-                query = "SELECT `communityName` FROM `twitch` WHERE `guildId` = ? AND `communityName` LIKE ?";
-                break;
-            case "gameFilter":
-                query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? AND `gameFilter` LIKE ?";
-                break;
-            case "game":
-                query = "SELECT `gameName` FROM `twitch` WHERE `guildId` = ? AND `gameName` LIKE ?";
-                break;
-            case "team":
-                query = "SELECT `teamName` FROM `twitch` WHERE `guildId` = ? AND `teamName` LIKE ?";
-                break;
-            case "titleFilter":
-                query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` LIKE ?";
-                break;
-            default:
-                break;
-        }
+    public final synchronized List<String> fetch(Stream stream, String flag, String name) {
+        ResultSet result = null;
+
+        String guildId = stream.getAdditionalProperties().get("guildId").toString();
 
         try {
+            String query;
+            String value;
+            switch (flag) {
+                case "game":
+                    value = stream.getGame();
+                    query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` IS NOT NULL AND `gameName` = ?";
+                    break;
+                case "channel":
+                    value = stream.getChannel().getId();
+                    query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` IS NOT NULL AND `channelId` = ?";
+                    break;
+                case "community":
+                    value = name;
+                    query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` IS NOT NULL AND `communityName` = ?";
+                    break;
+                default:// Team name is passed
+                    value = name;
+                    query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` IS NOT NULL AND `teamName` = ?";
+                    break;
+            }
+
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
-            pStatement.setString(2, name);
+            pStatement.setString(2, value);
             result = pStatement.executeQuery();
+
+            List<String> gameFilters = new CopyOnWriteArrayList<>();
+
             if (result.isBeforeFirst()) {
-                System.out.println("Found channel: " + name);
-                return true;
+                while (result.next()) {
+                    gameFilters.add(result.getString("titleFilter").replaceAll("''", "'"));
+                }
+                return gameFilters;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        return false;
+        return null;
     }
-
 }

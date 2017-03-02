@@ -16,7 +16,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package platform.generic.listener;
+package platform.generic;
 
 import platform.discord.controller.DiscordController;
 import platform.twitch.controller.TwitchController;
@@ -36,7 +36,7 @@ public class PlatformListener {
 
     public PlatformListener() {
         try {
-            executor.scheduleWithFixedDelay(this::run, 0, 30, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this::run, 0, 60, TimeUnit.SECONDS);
         } catch (Exception e) {
             System.out.println("[~ERROR~] Caught an exception while keeping the executors active");
         }

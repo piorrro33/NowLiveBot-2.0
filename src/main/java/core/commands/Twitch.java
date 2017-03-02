@@ -47,6 +47,7 @@ public class Twitch implements Command {
     private ConcurrentHashMap<String, String> channel = new ConcurrentHashMap<>();
     private CopyOnWriteArrayList<String> games = new CopyOnWriteArrayList<>();
     private CopyOnWriteArrayList<String> teams = new CopyOnWriteArrayList<>();
+    private CopyOnWriteArrayList<String> communities = new CopyOnWriteArrayList<>();
     private List<String> notFoundChannel = new CopyOnWriteArrayList<>();
     private String discordChannelId = null;
     private List<String> gameFilter = new CopyOnWriteArrayList<>();
@@ -93,29 +94,6 @@ public class Twitch implements Command {
             if (valid) {
                 return true;
             }
-/*
-            String calledArgs = args.trim().substring(args.lastIndexOf(' ') + 1);
-
-            if (calledArgs.matches("^[a-zA-Z0-9_]{4,25}$")) {
-                if ("help".equals(args)) {
-                    return true;
-                }
-
-                String secondaryCommand;
-                try {
-                    secondaryCommand = args.trim().substring(0, args.indexOf(' '));
-                } catch (StringIndexOutOfBoundsException ex) {
-                    return false;
-                }
-
-                switch (secondaryCommand) {
-                    case "add":
-                    case "remove":
-                        return true;
-                    default:
-                        return false;
-                }
-            }*/
         }
         return false;
     }
@@ -138,13 +116,23 @@ public class Twitch implements Command {
                         if (gameFilter != null) {
                             gameFilter.clear();
                         }
+                        if (titleFilter != null) {
+                            titleFilter.clear();
+                        }
                         channelHandler(event, args.toLowerCase().replaceFirst("\\b(channel )\\b", ""));
-                        channelQueryCalls();
+                        channelQueryCalls(event);
 
                         sendToChannel(event, "```Markdown" + message.toString() + "```");
                         break;
                     case "community":
-
+                        if (gameFilter != null) {
+                            gameFilter.clear();
+                        }
+                        if (titleFilter != null) {
+                            titleFilter.clear();
+                        }
+                        communityHandler(event, args.toLowerCase().replaceFirst("\\b(community )\\b", ""));
+                        sendToChannel(event, "```Markdown" + message.toString() + "```");
                         break;
                     case "gamefilter":
                         if (gameFilter != null) {
@@ -154,11 +142,21 @@ public class Twitch implements Command {
                         sendToChannel(event, "```Markdown" + message.toString() + "```");
                         break;
                     case "game":
+                        if (titleFilter != null) {
+                            titleFilter.clear();
+                        }
                         gameHandler(event, args.toLowerCase().replaceFirst("\\b(game )\\b", ""));
                         sendToChannel(event, "```Markdown" + message.toString() + "```");
                         break;
                     case "team":
+                        if (gameFilter != null) {
+                            gameFilter.clear();
+                        }
+                        if (titleFilter != null) {
+                            titleFilter.clear();
+                        }
                         teamHandler(event, args.toLowerCase().replaceFirst("\\b(team )\\b", ""));
+                        sendToChannel(event, "```Markdown" + message.toString() + "```");
                         break;
                     case "titlefilter":
                         if (titleFilter != null) {
@@ -174,42 +172,18 @@ public class Twitch implements Command {
             }
         });
         message = new StringBuilder();
-/*
-        // Grab the secondary command (add and remove)
-        String secondaryCommand = args.trim().substring(0, args.indexOf(' '));
-        // the args to be passed to the secondaryCommand#called()
-        String calledArgs = args.trim().substring(args.indexOf(' ') + 1).trim();
-        // the args to be passed along with the platform identifier
-        String secondaryArgs = "twitch~" + args.trim().substring(args.indexOf(' ') + 1);
-        switch (secondaryCommand) {
-            case "add":
-            case "remove":
-                if (calledArgs.startsWith("channel")) {
-                    if (getCommands().get(secondaryCommand).called(calledArgs, event)) {
-                        getCommands().get(secondaryCommand).action(secondaryArgs, event);
-                    }
-                } else {
-                    sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "incorrectArgs"));
-                }
-                break;
-            case "help":
-                if (getCommands().get(secondaryCommand).called(calledArgs, event)) {
-                    getCommands().get(secondaryCommand).help(event);
-                }
-                break;
-            default:
-                // This should never be used
-                break;
-        }*/
     }
 
     private synchronized void teamHandler(GuildMessageReceivedEvent event, String args) {
         findDiscordChannel(args, event);
+        CopyOnWriteArrayList<String> teamsNotFound = new CopyOnWriteArrayList<>();
 
+        StringBuilder updateTeamAnnounceChannel = new StringBuilder();
         StringBuilder teamAddList = new StringBuilder();
         StringBuilder teamDeleteList = new StringBuilder();
         StringBuilder teamAddNameList = new StringBuilder();
         StringBuilder teamDeleteNameList = new StringBuilder();
+        CopyOnWriteArrayList<String> updateTeamNames = new CopyOnWriteArrayList<>();
 
         if (args.indexOf("|") > 0 && args.indexOf("#") > 0) {
             List<String> teamList = Arrays.stream(args.substring(0, args.indexOf("#") - 1).split("\\|")).collect(Collectors.toList());
@@ -224,21 +198,295 @@ public class Twitch implements Command {
         }
 
         if (teams != null && teams.size() > 0) {
+            TwitchController twitch = new TwitchController();
             teams.forEach(teamName -> {
                 if (!CheckTwitchData.action("team", event.getGuild().getId(), teamName)) {
-
+                    Integer teamId = twitch.getTeamId(teamName);
+                    if (teamId > 0) {
+                        if (teamAddList.length() > 0) {
+                            teamAddList.append(",");
+                            teamAddNameList.append(", ");
+                        }
+                        if (discordChannelId != null) {
+                            teamAddList.append(String.format("('%s','%s','%s','%s')",
+                                    event.getGuild().getId(),
+                                    teamName,
+                                    teamId,
+                                    discordChannelId));
+                            teamAddNameList.append(teamName);
+                        } else {
+                            teamAddList.append(String.format("('%s','%s','%s','%s')",
+                                    event.getGuild().getId(),
+                                    teamName,
+                                    teamId,
+                                    globalAnnounceChannelId));
+                            teamAddNameList.append(teamName);
+                        }
+                    } else if (teamId.equals(-1)) {
+                        teamsNotFound.add(teamName);
+                    }
+                } else {
+                    if (discordChannelId != null) {
+                        if (updateTeamAnnounceChannel.length() > 0) {
+                            updateTeamAnnounceChannel.append(",");
+                        }
+                        updateTeamAnnounceChannel.append(String.format("('%s','%s')",
+                                event.getGuild().getId(),
+                                teamName));
+                        updateTeamNames.addIfAbsent(teamName);
+                    } else {
+                        if (teamDeleteList.length() > 0) {
+                            teamDeleteNameList.append(", ");
+                            teamDeleteList.append(",");
+                        }
+                        teamDeleteList.append(String.format("('%s','%s')",
+                                event.getGuild().getId(),
+                                teamName));
+                        teamDeleteNameList.append(teamName);
+                    }
                 }
             });
         }
+
+        TwitchData twitchData = new TwitchData();
+        String query;
+        if (teamAddList.length() > 0) {
+
+            if (discordChannelId != null) {
+                query = String.format("INSERT INTO `twitch` (`guildId`, `teamName`, `teamId`, `announceChannel`) VALUES %s",
+                        teamAddList.toString());
+            } else {
+                query = String.format("INSERT INTO `twitch` (`guildId`, `teamName`, `teamId`, `announceChannel`) VALUES %s",
+                        teamAddList.toString());
+            }
+
+            if (twitchData.action(query)) {
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchTeamAdd"),
+                        teamAddNameList.toString().replaceAll("[\\[\\]]", "")));
+                if (teamsNotFound.size() > 0) {
+                    message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchTeamNotFound"),
+                            teamsNotFound.toString().replaceAll("[\\[\\]]", "")));
+                }
+                if (discordChannelId != null) {
+                    message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchTeamAnnounce"),
+                            event.getGuild().getTextChannelById(discordChannelId).getName()));
+                } else {
+                    message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchTeamAnnounce"),
+                            event.getGuild().getTextChannelById(globalAnnounceChannelId).getName()));
+                }
+            } else {
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchTeamAddFail"),
+                        teamAddNameList.toString().replaceAll("[\\[\\]]", "")));
+            }
+            teamAddList.setLength(0);
+            teamsNotFound.clear();
+            teamAddNameList.setLength(0);
+        }
+
+        if (teamsNotFound.size() > 0) {
+            message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchTeamNotFound"),
+                    teamsNotFound.toString().replaceAll("[\\[\\]]", "")));
+        }
+
+        if (updateTeamAnnounceChannel.length() > 0 && discordChannelId != null) {
+            query = String.format("UPDATE `twitch` SET `announceChannel` = '%s' WHERE (`guildId`,`teamName`) IN (%s)",
+                    discordChannelId,
+                    updateTeamAnnounceChannel);
+
+            if (twitchData.action(query)) {
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchAnnounceUpdate"),
+                        updateTeamNames.toString().replaceAll("[\\[\\]]", ""),
+                        discordChannelName));
+            } else {
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchAnnounceUpdateFail"),
+                        updateTeamNames.toString().replaceAll("[\\[\\]]", ""),
+                        discordChannelName));
+            }
+            updateTeamNames.clear();
+            updateTeamAnnounceChannel.setLength(0);
+
+        }
+
+        if (teamDeleteList.length() > 0) {
+            query = String.format("DELETE FROM `twitch` WHERE (`guildId`, `teamName`) IN (%s)",
+                    teamDeleteList.toString());
+
+            if (twitchData.action(query)) {
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchTeamRemove"),
+                        teamDeleteNameList.toString().replaceAll("[\\[\\]]", "")));
+            } else {
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchTeamRemoveFail"),
+                        teamDeleteNameList.toString().replaceAll("[\\[\\]]", "")));
+            }
+            teamDeleteList.setLength(0);
+            teamDeleteNameList.setLength(0);
+        }
+        teams = new CopyOnWriteArrayList<>();
+        discordChannelId = null;
+        globalAnnounceChannelId = null;
+    }
+
+    private synchronized void communityHandler(GuildMessageReceivedEvent event, String args) {
+        findDiscordChannel(args, event);
+        CopyOnWriteArrayList<String> communitiesNotFound = new CopyOnWriteArrayList<>();
+
+        StringBuilder updateCommunityAnnounceChannel = new StringBuilder();
+        StringBuilder communityAddList = new StringBuilder();
+        StringBuilder communityDeleteList = new StringBuilder();
+        StringBuilder communityAddNameList = new StringBuilder();
+        StringBuilder communityDeleteNameList = new StringBuilder();
+        CopyOnWriteArrayList<String> updateCommunityNames = new CopyOnWriteArrayList<>();
+
+        if (args.indexOf("|") > 0 && args.indexOf("#") > 0) {
+            List<String> communityList = Arrays.stream(args.substring(0, args.indexOf("#") - 1).split("\\|")).collect(Collectors.toList());
+            communityList.forEach(community -> communities.addIfAbsent(community.trim()));
+        } else if (args.indexOf("|") > 0) {
+            List<String> communityList = Arrays.stream(args.split("\\|")).collect(Collectors.toList());
+            communityList.forEach(community -> communities.addIfAbsent(community.trim()));
+        } else if (args.indexOf("#") > 0) {
+            communities.add(args.substring(0, args.indexOf("#") - 1).trim());
+        } else {
+            communities.add(args.trim());
+        }
+
+        if (communities != null && communities.size() > 0) {
+            TwitchController twitch = new TwitchController();
+            communities.forEach(communityName -> {
+                if (!CheckTwitchData.action("community", event.getGuild().getId(), communityName)) {
+                    String communityId = twitch.getCommunityId(communityName);
+                    if (communityId != null) {
+                        if (communityAddList.length() > 0) {
+                            communityAddList.append(",");
+                            communityAddNameList.append(", ");
+                        }
+                        if (discordChannelId != null) {
+                            communityAddList.append(String.format("('%s','%s','%s','%s')",
+                                    event.getGuild().getId(),
+                                    communityName,
+                                    communityId,
+                                    discordChannelId));
+                            communityAddNameList.append(communityName);
+                        } else {
+                            communityAddList.append(String.format("('%s','%s','%s','%s')",
+                                    event.getGuild().getId(),
+                                    communityName,
+                                    communityId,
+                                    globalAnnounceChannelId));
+                            communityAddNameList.append(communityName);
+                        }
+                    } else {
+                        communitiesNotFound.add(communityName);
+                    }
+                } else {
+                    if (discordChannelId != null) {
+                        if (updateCommunityAnnounceChannel.length() > 0) {
+                            updateCommunityAnnounceChannel.append(",");
+                        }
+                        updateCommunityAnnounceChannel.append(String.format("('%s','%s')",
+                                event.getGuild().getId(),
+                                communityName));
+                        updateCommunityNames.addIfAbsent(communityName);
+                    } else {
+                        if (communityDeleteList.length() > 0) {
+                            communityDeleteNameList.append(", ");
+                            communityDeleteList.append(",");
+                        }
+                        communityDeleteList.append(String.format("('%s','%s')",
+                                event.getGuild().getId(),
+                                communityName));
+                        communityDeleteNameList.append(communityName);
+                    }
+                }
+            });
+        }
+
+        TwitchData twitchData = new TwitchData();
+        String query;
+        if (communityAddList.length() > 0) {
+
+            if (discordChannelId != null) {
+                query = String.format("INSERT INTO `twitch` (`guildId`, `communityName`, `communityId`, `announceChannel`) VALUES %s",
+                        communityAddList.toString());
+            } else {
+                query = String.format("INSERT INTO `twitch` (`guildId`, `communityName`, `communityId`, `announceChannel`) VALUES %s",
+                        communityAddList.toString());
+            }
+
+            if (twitchData.action(query)) {
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchCommunityAdd"),
+                        communityAddNameList.toString().replaceAll("[\\[\\]]", "")));
+                if (communitiesNotFound.size() > 0) {
+                    message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchCommunityNotFound"),
+                            communitiesNotFound.toString().replaceAll("[\\[\\]]", "")));
+                }
+                if (discordChannelId != null) {
+                    message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchCommunityAnnounce"),
+                            event.getGuild().getTextChannelById(discordChannelId).getName()));
+                } else {
+                    message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchCommunityAnnounce"),
+                            event.getGuild().getTextChannelById(globalAnnounceChannelId).getName()));
+                }
+            } else {
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchCommunityAddFail"),
+                        communityAddNameList.toString().replaceAll("[\\[\\]]", "")));
+            }
+            communityAddList.setLength(0);
+            communitiesNotFound.clear();
+            communityAddNameList.setLength(0);
+        }
+
+        if (communitiesNotFound.size() > 0) {
+            message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchCommunityNotFound"),
+                    communitiesNotFound.toString().replaceAll("[\\[\\]]", "")));
+        }
+
+        if (updateCommunityAnnounceChannel.length() > 0 && discordChannelId != null) {
+            query = String.format("UPDATE `twitch` SET `announceChannel` = '%s' WHERE (`guildId`,`communityName`) IN (%s)",
+                    discordChannelId,
+                    updateCommunityAnnounceChannel);
+
+            if (twitchData.action(query)) {
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchAnnounceUpdate"),
+                        updateCommunityNames.toString().replaceAll("[\\[\\]]", ""),
+                        discordChannelName));
+            } else {
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchAnnounceUpdateFail"),
+                        updateCommunityNames.toString().replaceAll("[\\[\\]]", ""),
+                        discordChannelName));
+            }
+            updateCommunityNames.clear();
+            updateCommunityAnnounceChannel.setLength(0);
+
+        }
+
+        if (communityDeleteList.length() > 0) {
+            query = String.format("DELETE FROM `twitch` WHERE (`guildId`, `communityName`) IN (%s)",
+                    communityDeleteList.toString());
+
+            if (twitchData.action(query)) {
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchCommunityRemove"),
+                        communityDeleteNameList.toString().replaceAll("[\\[\\]]", "")));
+            } else {
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchCommunityRemoveFail"),
+                        communityDeleteNameList.toString().replaceAll("[\\[\\]]", "")));
+            }
+            communityDeleteList.setLength(0);
+            communityDeleteNameList.setLength(0);
+        }
+        communities = new CopyOnWriteArrayList<>();
+        discordChannelId = null;
+        globalAnnounceChannelId = null;
     }
 
     private synchronized void gameHandler(GuildMessageReceivedEvent event, String args) {
         findDiscordChannel(args, event);
 
+        StringBuilder updateGameAnnounceChannel = new StringBuilder();
         StringBuilder gameAddList = new StringBuilder();
         StringBuilder gameDeleteList = new StringBuilder();
         StringBuilder gameAddNameList = new StringBuilder();
         StringBuilder gameDeleteNameList = new StringBuilder();
+        CopyOnWriteArrayList<String> updateGameNames = new CopyOnWriteArrayList<>();
 
         if (args.indexOf("#") > 0 && args.indexOf("|") > 0) {
             List<String> gameList = Arrays.stream(args.substring(0, args.indexOf("#") - 1).split("\\|")).collect(Collectors.toList());
@@ -273,21 +521,31 @@ public class Twitch implements Command {
                         gameAddNameList.append(gameName);
                     }
                 } else {
-                    if (gameDeleteList.length() > 0) {
-                        gameDeleteList.append(",");
-                        gameDeleteNameList.append(", ");
+                    if (discordChannelId != null) {
+                        if (updateGameAnnounceChannel.length() > 0) {
+                            updateGameAnnounceChannel.append(",");
+                        }
+                        updateGameAnnounceChannel.append(String.format("('%s','%s')",
+                                event.getGuild().getId(),
+                                gameName));
+                        updateGameNames.addIfAbsent(gameName);
+                    } else {
+                        if (gameDeleteList.length() > 0) {
+                            gameDeleteList.append(",");
+                            gameDeleteNameList.append(", ");
+                        }
+                        gameDeleteList.append(String.format("('%s','%s')",
+                                event.getGuild().getId(),
+                                gameName));
+                        gameDeleteNameList.append(gameName);
                     }
-                    gameDeleteList.append(String.format("('%s','%s')",
-                            event.getGuild().getId(),
-                            gameName));
-                    gameDeleteNameList.append(gameName);
                 }
             });
         }
 
+        TwitchData twitchData = new TwitchData();
+        String query;
         if (gameAddList.length() > 0) {
-            TwitchData twitchData = new TwitchData();
-            String query;
 
             if (discordChannelId != null) {
                 query = String.format("INSERT INTO `twitch` (`guildId`, `gameName`, `announceChannel`) VALUES %s",
@@ -313,10 +571,27 @@ public class Twitch implements Command {
             }
         }
 
-        if (gameDeleteList.length() > 0) {
-            TwitchData twitchData = new TwitchData();
+        if (updateGameAnnounceChannel.length() > 0 && discordChannelId != null) {
+            query = String.format("UPDATE `twitch` SET `announceChannel` = '%s' WHERE (`guildId`,`gameName`) IN (%s)",
+                    discordChannelId,
+                    updateGameAnnounceChannel);
 
-            String query = String.format("DELETE FROM `twitch` WHERE (`guildId`, `gameName`) IN (%s)",
+            if (twitchData.action(query)) {
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchAnnounceUpdate"),
+                        updateGameNames.toString().replaceAll("[\\[\\]]", ""),
+                        discordChannelName));
+            } else {
+                message.append(String.format("\n! Failed to change the Twitch announce channel for %s to: %s.",
+                        updateGameNames.toString().replaceAll("[\\[\\]]", ""),
+                        discordChannelName));
+            }
+            updateAnnounceChannel = new StringBuilder();
+            updateGameNames.clear();
+        }
+
+        if (gameDeleteList.length() > 0) {
+
+            query = String.format("DELETE FROM `twitch` WHERE (`guildId`, `gameName`) IN (%s)",
                     gameDeleteList.toString());
 
             if (twitchData.action(query)) {
@@ -461,7 +736,7 @@ public class Twitch implements Command {
         }
     }
 
-    private synchronized void channelQueryCalls() {
+    private synchronized void channelQueryCalls(GuildMessageReceivedEvent event) {
         String query;
         TwitchData twitchData = new TwitchData();
 
@@ -527,7 +802,7 @@ public class Twitch implements Command {
                     updateAnnounceChannel);
 
             if (twitchData.action(query)) {
-                message.append(String.format("\n# Updated the Twitch announcement channel for %s to: %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchAnnounceUpdate"),
                         channel.values().toString().replaceAll("[\\[\\]]", ""),
                         discordChannelName));
             } else {
@@ -656,8 +931,6 @@ public class Twitch implements Command {
                 }
             });
         }
-        System.out.println(tFilterAddList);
-        System.out.println(tFilterDeleteList);
         if (tFilterAddList.length() > 0) {
             TwitchData twitchData = new TwitchData();
 
@@ -790,7 +1063,6 @@ public class Twitch implements Command {
         } else {
             this.titleFilter = null;
         }
-        System.out.println(titleFilter);
     }
 
     private Boolean checkValidDiscordChannel(GuildMessageReceivedEvent event, String channelName) {

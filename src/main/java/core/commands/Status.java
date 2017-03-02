@@ -84,10 +84,12 @@ public class Status implements Command {
         float[] rgb = Color.RGBtoHSB(208, 34, 56, null);
         eBuilder.setColor(Color.getHSBColor(rgb[0], rgb[1], rgb[2]));
 
-        eBuilder.setAuthor(Const.BOT_NAME + " Statistics", null, Const.BOT_LOGO);
+        eBuilder.setAuthor(
+                String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "botStatistics"), Const.BOT_NAME),
+                null, Const.BOT_LOGO);
 
-        eBuilder.addField("Servers", numFormat.format(guildCount), true);
-        eBuilder.addField("Num. Unique Members", numFormat.format(memberCount), true);
+        eBuilder.addField(LocaleString.getString(event.getMessage().getGuild().getId(), "servers"), numFormat.format(guildCount), true);
+        eBuilder.addField(LocaleString.getString(event.getMessage().getGuild().getId(), "numUniqueMembers"), numFormat.format(memberCount), true);
 
         // Number of times commands have been used
         try {
@@ -115,7 +117,8 @@ public class Status implements Command {
             result = pStatement.executeQuery();
 
             while (result.next()) {
-                eBuilder.addField("Unique Channels (Twitch)", numFormat.format(result.getInt("count")), true);
+                eBuilder.addField(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "uniqueChannels"), "(Twitch)"),
+                        numFormat.format(result.getInt("count")), true);
             }
 
             query = "SELECT DISTINCT COUNT(`gameName`) AS `count` FROM `twitch`";
@@ -123,15 +126,26 @@ public class Status implements Command {
             result = pStatement.executeQuery();
 
             while (result.next()) {
-                eBuilder.addField("Unique Games (Twitch)", numFormat.format(result.getInt("count")), true);
+                eBuilder.addField(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "uniqueGames"), "(Twitch)"),
+                        numFormat.format(result.getInt("count")), true);
             }
 
-            query = "SELECT DISTINCT COUNT(`gameFilter`) AS `count` FROM `twitch`";
+            query = "SELECT DISTINCT COUNT(`communityName`) AS `count` FROM `twitch`";
             pStatement = connection.prepareStatement(query);
             result = pStatement.executeQuery();
 
             while (result.next()) {
-                eBuilder.addField("Game Filters (Twitch)", numFormat.format(result.getInt("count")), true);
+                eBuilder.addField(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchCommunities"),
+                        numFormat.format(result.getInt("count")), true);
+            }
+
+            query = "SELECT DISTINCT COUNT(`teamName`) AS `count` FROM `twitch`";
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
+
+            while (result.next()) {
+                eBuilder.addField(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchTeams"),
+                        numFormat.format(result.getInt("count")), true);
             }
         } catch (SQLException e) {
             e.printStackTrace();

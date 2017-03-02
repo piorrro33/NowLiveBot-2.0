@@ -31,13 +31,11 @@ public class LanguageBundle extends ListResourceBundle {
     private Object[][] contents = {
             {"added", "Added "},
             {"addFail", "Failed to add "},
-            {"addHelp", "```Markdown\n# ADD\n* Used to add something to my database.\n\n## USAGE:  "
+            {"addHelp", "```Markdown\n# ADD\n* Used to add managers for your server.\n\n## USAGE:  "
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
                     + " add <option> <content>"
                     + "\n\t<option> <content>"
-                    + "\n\tfilter  - The game name that you want to filter streamers by"
-                    + "\n\tgame    - The name of the game exactly as it appears on the streaming platform"
                     + "\n\tmanager - The @ mention of the user to add as a manager"
                     + "\n\n## EXAMPLE: " + Const.COMMAND_PREFIX + Const.COMMAND + " add manager @Ague```"},
             {"adminOverride", "*Permission of this command have been overridden by a bot developer.*"},
@@ -63,6 +61,7 @@ public class LanguageBundle extends ListResourceBundle {
                     + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " botlang spanish" + "```"},
             {"botLangSuccess", "You've successfully changed my language."},
             {"botLangUnsupported", "That language is currently not supported."},
+            {"botStatistics", "%s Statistics"},
             {"broadcasterLangAllSuccess", " :ok_hand: I'll look for streams from all languages."},
             {"broadcasterLangFail", "Something went wrong and I'm still looking for all languages."},
             {"broadcasterLangSuccess", " :ok_hand: I'll only look for streams that are in that language!"},
@@ -171,6 +170,13 @@ public class LanguageBundle extends ListResourceBundle {
                     + "\n\tteam        - Lists the Twitch teams you follow"
                     + "\n\tsetting     - Lists common bot settings"
                     + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " list channel" + "```"},
+            {"listSettings", "```Markdown\n" +
+                    "# Bot Settings on Your Server" +
+                    "\n* Compact mode is %s." +
+                    "\n* Notification is set to %s." +
+                    "\n* Cleanup is set to %s." +
+                    "\n* Broadcaster language is set to %s." +
+                    "\n* Server language is set to %s.```"},
             {"moveDoNotOwnChannel", " :no_entry: Hey now, I can't announce to a channel that doesn't exists on your " +
                     "server!"},
             {"moveFail", " :no_entry: I can't seem to send announcements there.  Make sure I have the proper permissions " +
@@ -203,6 +209,7 @@ public class LanguageBundle extends ListResourceBundle {
             {"nowPlayingEmbed", "Now Playing"},
             {"nowPlayingLower", " is now playing "},
             {"nowStreamingEmbed", " is now streaming!"},
+            {"numUniqueMembers", "Number Unique Members"},
             {"offline", "OFFLINE!\n"},
             {"offlineEmbed", " has gone offline!"},
             {"on", " on "},
@@ -228,6 +235,7 @@ public class LanguageBundle extends ListResourceBundle {
                     + "\n\tgame    - The name of the game exactly as it appears on the streaming platform"
                     + "\n\tmanager - The @ mention of the user to add as a manager"
                     + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " remove filter Overwatch```"},
+            {"servers", "Servers"},
             {"statusHelp", "```Markdown\n# STATUS\n* Shows various statistics of the bot.\n\n## USAGE:  "
                     + Const.COMMAND_PREFIX + Const.COMMAND + " status```"},
             {"streamlangHelp", "```Markdown\n# STREAMLANG\n* Allows you to filter streams by the language it is being broadcast " +
@@ -246,6 +254,7 @@ public class LanguageBundle extends ListResourceBundle {
                     + Const.COMMAND
                     + " streams```"},
             {"totalViewsEmbed", "Total Views"},
+            {"twitchCommunities", "Twitch Communities"},
             {"twitchHelp", "```Markdown\n# TWITCH\n* Add and remove things that are Twitch.tv related.\n\n## USAGE:  "
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
@@ -255,7 +264,24 @@ public class LanguageBundle extends ListResourceBundle {
                     + "\n\tremove        channel  <channel-name>"
                     + "\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " twitch add channel aguemort"
                     + "\n\n- NOTE:  Do NOT include the full URL!  It will not work!  Use ONLY the channel name!```"},
+            {"twitchAnnounceUpdate", "\n# Updated the Twitch announcement channel for %s to: %s."},
+            {"twitchAnnounceUpdateFail", "\n! Failed to change the Twitch announce channel for %s to: %s."},
+            {"twitchCommunityAdd", "\n# Added community(s): %s."},
+            {"twitchCommunityAddFail", "\n# Failed to add community(s): %s."},
+            {"twitchCommunityAnnounce", "\n# The community(s) will announce in: #%s."},
+            {"twitchCommunityNotFound", "\n# Community(s) not found on Twitch: %s."},
+            {"twitchCommunityRemove", "\n# Removed community(s): %s."},
+            {"twitchCommunityRemoveFail", "\n# Failed to remove community(s): %s."},
+            {"twitchTeamAdd", "\n# Added team(s): %s."},
+            {"twitchTeamAddFail", "\n# Failed to add team(s): %s."},
+            {"twitchTeamAnnounce", "\n# The team(s) will announce in: #%s."},
+            {"twitchTeamNotFound", "\n# Team(s) not found on Twitch: %s."},
+            {"twitchTeamRemove", "\n# Removed team(s): %s."},
+            {"twitchTeamRemoveFail", "\n# Failed to remove team(s): %s."},
+            {"twitchTeams", "Twitch Teams"},
             {"typeOnce", "You only need to type that part once, silly."},
+            {"uniqueChannels", "Unique Channels %s"},
+            {"uniqueGames", "Unique Games %s"},
             {"usePlatform", "Oops!  That's the old way of doing things!  Use the platform specific command!  Type `" +
                     Const.COMMAND_PREFIX + Const.COMMAND + " help` for more info."},
             {"watchThemHere", "Watch them here: "},

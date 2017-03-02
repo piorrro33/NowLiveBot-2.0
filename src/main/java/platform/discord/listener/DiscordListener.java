@@ -38,7 +38,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import platform.generic.listener.PlatformListener;
 import util.Const;
 import util.DiscordLogger;
 import util.PropReader;
@@ -143,14 +142,12 @@ public class DiscordListener extends ListenerAdapter {
     public final void onReconnect(ReconnectedEvent event) {
         new DiscordLogger(" :heart: Discord's connection has been reconnected!", event);
         logger.info("JDA has been reconnected.");
-        new PlatformListener();
     }
 
     @Override
     public final void onResume(ResumedEvent event) {
         new DiscordLogger(" :heart: Discord's connection has been resumed!", event);
         logger.info("The JDA instance has been resumed.");
-        new PlatformListener();
     }
 
     @Override

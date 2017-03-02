@@ -24,59 +24,46 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-public class GetAnnounceChannel {
+public class GetGuildsByTeamCommunity {
+
     private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
-    private String query;
+    private CopyOnWriteArrayList<String> guildIds = new CopyOnWriteArrayList<>();
 
-    public synchronized String action(String guildId, String column, String value) {
-
-        switch (column) {
-            case "channel":
-                query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `channelId` = ?";
-                break;
-            case "community":
-                query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `communityName` = ?";
-                break;
-            case "game":
-                query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `gameName` = ?";
-                break;
-            default:
-                query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `teamName` = ?";
-                break;
-        }
-
+    public synchronized final CopyOnWriteArrayList<String> fetch(String flag, String name) {
         try {
+            String query;
+            if (flag.equals("team")) {
+                query = "SELECT `guildId` FROM `twitch` WHERE `teamName` = ?";
+            } else {
+                query = "SELECT `guildId` FROM `twitch` WHERE `communityName` = ?";
+            }
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
             this.pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            pStatement.setString(2, value);
-            this.result = pStatement.executeQuery();
+            pStatement.setString(1, name);
+            result = pStatement.executeQuery();
 
-            String announceChannel = null;
-            if (result.next()) {
-                announceChannel = result.getString("announceChannel");
+            guildIds.clear();
+
+            while (result.next()) {
+                guildIds.addIfAbsent(result.getString("guildId"));
             }
-            if (announceChannel != null) {
-                return announceChannel;
-            } else {
-                GetGlobalAnnounceChannel globalAnnounceChannel = new GetGlobalAnnounceChannel();
-                String global = globalAnnounceChannel.fetch(guildId);
-                if (global != null) {
-                    return global;
-                }
-            }
+
+            return guildIds;
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
+
         return null;
     }
 }

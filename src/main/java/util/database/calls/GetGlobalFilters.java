@@ -18,67 +18,67 @@
 
 package util.database.calls;
 
+import platform.twitch.models.Stream;
 import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-/**
- * @author Veteran Software by Ague Mort
- */
-public class CheckTwitchData {
+public class GetGlobalFilters {
 
-    private static Connection connection;
-    private static PreparedStatement pStatement;
-    private static ResultSet result;
+    private Connection connection = Database.getInstance().getConnection();
+    private PreparedStatement pStatement;
 
-    public synchronized static Boolean action(String tableName, String guildId, String name) {
-        String query = "";
-        switch (tableName) {
-            case "channel":
-                query = "SELECT `channelName` FROM `twitch` WHERE `guildId` = ? AND `channelName` LIKE ?";
-                break;
-            case "community":
-                query = "SELECT `communityName` FROM `twitch` WHERE `guildId` = ? AND `communityName` LIKE ?";
-                break;
-            case "gameFilter":
-                query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? AND `gameFilter` LIKE ?";
-                break;
-            case "game":
-                query = "SELECT `gameName` FROM `twitch` WHERE `guildId` = ? AND `gameName` LIKE ?";
-                break;
-            case "team":
-                query = "SELECT `teamName` FROM `twitch` WHERE `guildId` = ? AND `teamName` LIKE ?";
-                break;
-            case "titleFilter":
-                query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` LIKE ?";
-                break;
-            default:
-                break;
-        }
+    public final synchronized List<String> fetch(Stream stream, String type) {
+        ResultSet result = null;
+
+        String guildId = stream.getAdditionalProperties().get("guildId").toString();
 
         try {
+            String query;
+            switch (type) {
+                case "game":
+                    query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? AND `gameFilter` IS NOT NULL";
+                    break;
+                default:// Title filters
+                    query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` IS NOT NULL";
+                    break;
+            }
+
+
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
-            pStatement.setString(2, name);
             result = pStatement.executeQuery();
+
+            List<String> filters = new CopyOnWriteArrayList<>();
+
             if (result.isBeforeFirst()) {
-                System.out.println("Found channel: " + name);
-                return true;
+                while (result.next()) {
+                    switch (type) {
+                        case "game":
+                            filters.add(result.getString("gameFilter").replaceAll("''", "'"));
+                            break;
+                        default:
+                            filters.add(result.getString("titleFilter").replaceAll("''", "'"));
+                            break;
+                    }
+                }
+                return filters;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        return false;
+        return null;
     }
-
 }

@@ -22,28 +22,25 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import platform.twitch.models.*;
 import util.PropReader;
-import util.database.Database;
 import util.database.calls.*;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import static util.database.Database.cleanUp;
+import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 /**
  * @author keesh
@@ -51,8 +48,6 @@ import static util.database.Database.cleanUp;
 public class TwitchController {
 
     protected Integer count = 0;
-    private Connection connection;
-    private PreparedStatement pStatement;
     private HttpClient client = HttpClientBuilder.create().build();
     private HttpGet get;
     private HttpResponse response;
@@ -93,79 +88,19 @@ public class TwitchController {
         return null;
     }
 
-    private synchronized List<User> convertNameToId(List<String> names) {
-        URIBuilder uriBuilder = setBaseUrl("/users");
-        StringBuilder nameList = new StringBuilder();
-
-        names.forEach(name -> {
-            if (nameList.length() > 0) {
-                nameList.append(",");
-            }
-            nameList.append(name);
-        });
-        uriBuilder.setParameter("login", nameList.toString());
-
-        try {
-            URI uri = uriBuilder.build();
-            get = new HttpGet(uri);
-            get.addHeader("Cache-Control", "no-cache");
-            get.addHeader("Accept", "application/vnd.twitchtv.v5+json");
-            get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
-            response = client.execute(get);
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            IdConversion idConversion = objectMapper.readValue(
-                    new InputStreamReader(response.getEntity().getContent()), IdConversion.class);
-
-            if (idConversion.getTotal() != null && idConversion.getTotal() > 0) {
-                return idConversion.getUsers();
-            }
-
-        } catch (URISyntaxException | IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private synchronized List<String> checkGameFilters(String guildId) {
-        ResultSet result = null;
-
-        try {
-            String query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? AND `gameFilter` IS NOT NULL";
-
-            if (connection == null || connection.isClosed()) {
-                this.connection = Database.getInstance().getConnection();
-            }
-            this.pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            result = pStatement.executeQuery();
-
-            List<String> gameFilters = new CopyOnWriteArrayList<>();
-
-            if (result.isBeforeFirst()) {
-                while (result.next()) {
-                    gameFilters.add(result.getString("gameFilter").replaceAll("''", "'"));
-                }
-                return gameFilters;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(result, pStatement, connection);
-        }
-        return null;
-    }
-
-    private synchronized void channels() {
+    private synchronized void channels(CopyOnWriteArrayList<String> channelIds,String flag, String value) {
 
         CopyOnWriteArrayList<String> streamChannelIds = new CopyOnWriteArrayList<>();
         CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
         GetTwitchChannels twitchChannels = new GetTwitchChannels();
-        GetGuildsByStream guildsByStream = new GetGuildsByStream();
         StringBuilder channelString = new StringBuilder();
 
-        CopyOnWriteArrayList<String> channels = twitchChannels.fetch(1);
-
+        CopyOnWriteArrayList<String> channels;
+        if (flag.equals("channel")) {
+            channels = twitchChannels.fetch(0);
+        } else {
+            channels = channelIds;
+        }
         if (channels != null && channels.size() > 0) {
 
             channels.forEach(channel -> {
@@ -176,6 +111,7 @@ public class TwitchController {
                 streamChannelIds.add(channel);
 
                 if (streamChannelIds.size() == 100 || channels.size() == streamChannelIds.size()) {
+                    GetAnnounceChannel getAnnounceChannel = new GetAnnounceChannel();
 
                     URIBuilder uriBuilder = setBaseUrl("/streams");
                     uriBuilder.setParameter("channel", channelString.toString());
@@ -193,7 +129,7 @@ public class TwitchController {
 
                     // A little snooze to make sure to be in compliance with Twitch's Rate limiting policy
                     try {
-                        Thread.sleep(500);
+                        Thread.sleep(250);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -205,6 +141,9 @@ public class TwitchController {
 
                     try {
                         response = client.execute(get);
+                    } catch (ClientProtocolException cpe) {
+                        System.out.println("[~ERROR~] HTTP Protocol Error when checking Channels");
+                        cpe.printStackTrace();
                     } catch (IOException e) {
                         System.out.println("[~ERROR~] Input/Output Exception when getting HTTP Response");
                         e.printStackTrace();
@@ -216,7 +155,7 @@ public class TwitchController {
                     try {
                         streams = objectMapper.readValue(new InputStreamReader(response.getEntity().getContent()), Streams.class);
                     } catch (JsonMappingException jme) {
-                        System.out.println("[~ERROR~] The input JSON structure does not match structure expected");
+                        System.out.println("[~ERROR~] The input JSON structure (Stream) does not match structure expected");
                         System.out.println(uri);
                         jme.printStackTrace();
                     } catch (JsonParseException jpe) {
@@ -238,16 +177,44 @@ public class TwitchController {
                                 streamChannelIds.remove(stream.getChannel().getId());//Leftovers are offline
                             }
 
-                            CopyOnWriteArrayList<String> guildIds = guildsByStream.fetch(stream.getChannel().getId());
+                            CopyOnWriteArrayList<String> guildIds;
+                            switch (flag) {
+                                case "channel":
+                                    GetGuildsByStream guildsByStream = new GetGuildsByStream();
+                                    guildIds = guildsByStream.fetch(stream.getChannel().getId());
+                                    break;
+                                case "community":
+                                    GetGuildsByTeamCommunity guildsByCommunity = new GetGuildsByTeamCommunity();
+                                    guildIds = guildsByCommunity.fetch("community", value);
+                                    break;
+                                default:
+                                    GetGuildsByTeamCommunity guildsByTeam = new GetGuildsByTeamCommunity();
+                                    guildIds = guildsByTeam.fetch("team", value);
+                                    break;
+                            }
 
                             if (guildIds != null && guildIds.size() > 0) {
                                 guildIds.forEach(guildId -> {
                                     if (!checkTwitchStreams.check(stream.getChannel().getId(), guildId)) {
                                         stream.setAdditionalProperty("guildId", guildId);
-                                        GetAnnounceChannel getAnnounceChannel = new GetAnnounceChannel();
-                                        String announceChannel = getAnnounceChannel.action(guildId, "channel", stream.getChannel().getId());
-                                        System.out.println("Announce channel: " + announceChannel);
-                                        onLiveTwitchStream(stream);
+
+                                        switch (flag) {
+                                            case "channel":
+                                                stream.setAdditionalProperty("announceChannel",
+                                                        getAnnounceChannel.action(guildId, "channel", stream.getChannel().getId()));
+                                                onLiveTwitchStream(stream, flag, null);
+                                                break;
+                                            case "community":
+                                                stream.setAdditionalProperty("announceChannel",
+                                                        getAnnounceChannel.action(guildId, flag, value));
+                                                onLiveTwitchStream(stream, flag, value);
+                                                break;
+                                            default:
+                                                stream.setAdditionalProperty("announceChannel",
+                                                        getAnnounceChannel.action(guildId, flag, value));
+                                                onLiveTwitchStream(stream, flag, value);
+                                                break;
+                                        }
                                     }
                                 });
                             }
@@ -263,8 +230,17 @@ public class TwitchController {
                 }
             });
             if (online.size() > 0) {
-                new AddTwitchStream(online, "channel");
-                System.out.println("Made it here.");
+                switch (flag) {
+                    case "channel":
+                        new AddTwitchStream(online, "channel");
+                        break;
+                    case "community":
+                        new AddTwitchStream(online, "community");
+                        break;
+                    default:
+                        new AddTwitchStream(online, "team");
+                        break;
+                }
                 online.clear();
                 this.count = 0;
             }
@@ -287,7 +263,12 @@ public class TwitchController {
                 StreamsGames games = null;
 
                 URIBuilder uriBuilder = setBaseUrl("/streams");
-                uriBuilder.setParameter("game", gameName.replaceAll("''", "'"));
+                try {
+                    uriBuilder.setParameter("game", gameName.replaceAll("''", "'"));
+                } catch (PatternSyntaxException pse) {
+                    System.out.println("[~ERROR~] Invalid Regex syntax");
+                    pse.printStackTrace();
+                }
                 uriBuilder.setParameter("limit", "100");
                 uriBuilder.setParameter("offset", "0");
 
@@ -305,6 +286,9 @@ public class TwitchController {
                 get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
                 try {
                     response = client.execute(get);
+                } catch (ClientProtocolException cpe) {
+                    System.out.println("[~ERROR~] HTTP Protocol Error when checking Games");
+                    cpe.printStackTrace();
                 } catch (IOException e) {
                     System.out.println("[~ERROR~] Input/Output Exception when getting HTTP Response");
                     e.printStackTrace();
@@ -334,7 +318,7 @@ public class TwitchController {
                         guilds.forEach(guildId -> gameStreamers.forEach(stream -> {
 
                             // Remove online streams
-                            if (gameChannelIds != null && !gameChannelIds.isEmpty() && gameChannelIds.contains(stream.getChannel().getId())) {
+                            if (gameChannelIds != null && gameChannelIds.contains(stream.getChannel().getId())) {
                                 gameChannelIds.remove(stream.getChannel().getId());//Leftover is offline streams
                             }
 
@@ -344,7 +328,7 @@ public class TwitchController {
                                 stream.setAdditionalProperty("announceChannel",
                                         getAnnounceChannel.action(guildId, "game", stream.getChannel().getId()));
 
-                                onLiveTwitchStream(stream);
+                                onLiveTwitchStream(stream, "game", null);
                             }
                         }));
                     }
@@ -356,7 +340,6 @@ public class TwitchController {
                 }
             });
             if (online.size() > 0) {
-                System.out.println(online);
                 new AddTwitchStream(online, "game");
                 online.clear();
                 this.count = 0;
@@ -365,12 +348,289 @@ public class TwitchController {
     }
 
     public final synchronized void checkLiveStreams() {
-        channels();
+        System.out.println("Starting channels");
+        channels(new CopyOnWriteArrayList<>(), "channel", null);
+        System.out.println("Starting teams");
+        teams();
+        System.out.println("Starting games");
         games();
+        System.out.println("Starting communities");
+        communities();
     }
 
-    public final synchronized void teams(String team, String guildId) {
+    private synchronized void communities() {
+        GetTwitchCommunities twitchCommunities = new GetTwitchCommunities();
+        ConcurrentHashMap<String,String> communities = twitchCommunities.fetch();
 
+        if (communities != null && !communities.isEmpty() && communities.size() > 0) {
+            communities.forEach((String communityName, String communityId) -> {
+                if (communityId != null) {
+                    URIBuilder uriBuilder = setBaseUrl("/streams");
+                    uriBuilder.setParameter("community_id", communityId);
+
+                    URI uri = null;
+                    try {
+                        uri = uriBuilder.build();
+                    } catch (URISyntaxException e) {
+                        System.out.println("[~ERROR~] Malformed URI found.");
+                        e.printStackTrace();
+                    }
+
+                    // A little snooze to make sure to be in compliance with Twitch's Rate limiting policy
+                    try {
+                        Thread.sleep(250);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    get = new HttpGet(uri);
+                    get.addHeader("Cache-Control", "no-cache");
+                    get.addHeader("Accept", "application/vnd.twitchtv.v5+json");
+                    get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+
+                    try {
+                        response = client.execute(get);
+                    } catch (ClientProtocolException cpe) {
+                        System.out.println("[~ERROR~] HTTP Protocol Error when checking Communities");
+                        cpe.printStackTrace();
+                    } catch (IOException e) {
+                        System.out.println("[~ERROR~] Input/Output Exception when getting HTTP Response");
+                        e.printStackTrace();
+                    }
+
+                    if (response.getStatusLine().getStatusCode() == 200) {
+                        ObjectMapper objectMapper = new ObjectMapper();
+
+                        Streams streams = null;
+                        try {
+                            streams = objectMapper.readValue(new InputStreamReader(response.getEntity().getContent()), Streams.class);
+                        } catch (JsonMappingException jme) {
+                            System.out.println("[~ERROR~] The input JSON structure (Communities) does not match structure expected");
+                            System.out.println(uri);
+                            jme.printStackTrace();
+                        } catch (JsonParseException jpe) {
+                            System.out.println("[~ERROR~] The underlying input contains invalid content");
+                            System.out.println(uri);
+                            jpe.printStackTrace();
+                        } catch (IOException e) {
+                            System.out.println("[~ERROR~] Input/Output Exception when reading HTTP Response");
+                            e.printStackTrace();
+                        }
+
+                        if (streams != null && streams.getTotal() > 0) {
+                            CopyOnWriteArrayList<String> communityList = new CopyOnWriteArrayList<>();
+                            streams.getStreams().forEach(stream -> {
+                                communityList.add(stream.getChannel().getId());
+                                if (communityList.size() == 100) {
+                                    channels(communityList, "community", communityName);
+                                    communityList.clear();
+                                }
+                            });
+                            channels(communityList, "community", communityName);
+                        }
+
+                    } else if (response.getStatusLine().getStatusCode() == 404) {
+                        System.out.printf("Community %s not found.", communityName);
+                    }
+                }
+            });
+        }
+    }
+
+    public final synchronized Integer getTeamId(String teamName) {
+        if (teamName != null) {
+            URIBuilder uriBuilder = setBaseUrl("/teams/" + teamName);
+
+            URI uri = null;
+            try {
+                uri = uriBuilder.build();
+            } catch (URISyntaxException e) {
+                System.out.println("[~ERROR~] Malformed URI found.");
+                e.printStackTrace();
+            }
+
+            get = new HttpGet(uri);
+            get.addHeader("Cache-Control", "no-cache");
+            get.addHeader("Accept", "application/vnd.twitchtv.v5+json");
+            get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+
+            try {
+                response = client.execute(get);
+            } catch (ClientProtocolException cpe) {
+                System.out.println("[~ERROR~] HTTP Protocol Error when checking Team ID");
+                cpe.printStackTrace();
+            } catch (IOException e) {
+                System.out.println("[~ERROR~] Input/Output Exception when getting HTTP Response");
+                e.printStackTrace();
+            }
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                ObjectMapper objectMapper = new ObjectMapper();
+
+                Team team = null;
+                try {
+                    team = objectMapper.readValue(new InputStreamReader(response.getEntity().getContent()), Team.class);
+                } catch (JsonMappingException jme) {
+                    System.out.println("[~ERROR~] The input JSON structure (Teams ID) does not match structure expected");
+                    System.out.println(uri);
+                    jme.printStackTrace();
+                } catch (JsonParseException jpe) {
+                    System.out.println("[~ERROR~] The underlying input contains invalid content");
+                    System.out.println(uri);
+                    jpe.printStackTrace();
+                } catch (IOException e) {
+                    System.out.println("[~ERROR~] Input/Output Exception when reading HTTP Response");
+                    e.printStackTrace();
+                }
+
+                if (team != null) {
+                    return team.getId();
+                }
+
+            } else if (response.getStatusLine().getStatusCode() == 404) {
+                System.out.printf("Team %s not found.%n", teamName);
+                return -1;
+            }
+        }
+        return -1;
+    }
+
+    public final synchronized String getCommunityId(String communityName) {
+        if (communityName != null) {
+            URIBuilder uriBuilder = setBaseUrl("/communities");
+            uriBuilder.setParameter("name", communityName);
+
+            URI uri = null;
+            try {
+                uri = uriBuilder.build();
+            } catch (URISyntaxException e) {
+                System.out.println("[~ERROR~] Malformed URI found.");
+                e.printStackTrace();
+            }
+
+            get = new HttpGet(uri);
+            get.addHeader("Cache-Control", "no-cache");
+            get.addHeader("Accept", "application/vnd.twitchtv.v5+json");
+            get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+
+            try {
+                response = client.execute(get);
+            } catch (ClientProtocolException cpe) {
+                System.out.println("[~ERROR~] HTTP Protocol Error when checking Community ID");
+                cpe.printStackTrace();
+            } catch (IOException e) {
+                System.out.println("[~ERROR~] Input/Output Exception when getting HTTP Response");
+                e.printStackTrace();
+            }
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                ObjectMapper objectMapper = new ObjectMapper();
+
+                CommunityByName community = null;
+                try {
+                    community = objectMapper.readValue(new InputStreamReader(response.getEntity().getContent()), CommunityByName.class);
+                } catch (JsonMappingException jme) {
+                    System.out.println("[~ERROR~] The input JSON structure (Community By Name) does not match structure expected");
+                    System.out.println(uri);
+                    jme.printStackTrace();
+                } catch (JsonParseException jpe) {
+                    System.out.println("[~ERROR~] The underlying input contains invalid content");
+                    System.out.println(uri);
+                    jpe.printStackTrace();
+                } catch (IOException e) {
+                    System.out.println("[~ERROR~] Input/Output Exception when reading HTTP Response");
+                    e.printStackTrace();
+                }
+
+                if (community != null) {
+                    return community.getId();
+                }
+
+            } else if (response.getStatusLine().getStatusCode() == 404) {
+                System.out.printf("Team %s not found.%n", communityName);
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private synchronized void teams() {
+        GetTwitchTeams twitchTeams = new GetTwitchTeams();
+
+        CopyOnWriteArrayList<String> teams = twitchTeams.fetch();
+
+        if (teams != null && !teams.isEmpty() && teams.size() > 0) {
+            teams.forEach(teamName -> {
+                if (teamName != null) {
+                    URIBuilder uriBuilder = setBaseUrl("/teams/" + teamName);
+
+                    URI uri = null;
+                    try {
+                        uri = uriBuilder.build();
+                    } catch (URISyntaxException e) {
+                        System.out.println("[~ERROR~] Malformed URI found.");
+                        e.printStackTrace();
+                    }
+
+                    // A little snooze to make sure to be in compliance with Twitch's Rate limiting policy
+                    try {
+                        Thread.sleep(250);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    get = new HttpGet(uri);
+                    get.addHeader("Cache-Control", "no-cache");
+                    get.addHeader("Accept", "application/vnd.twitchtv.v5+json");
+                    get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+
+                    try {
+                        response = client.execute(get);
+                    } catch (ClientProtocolException cpe) {
+                        System.out.println("[~ERROR~] HTTP Protocol Error when checking Teams");
+                        cpe.printStackTrace();
+                    } catch (IOException e) {
+                        System.out.println("[~ERROR~] Input/Output Exception when getting HTTP Response");
+                        e.printStackTrace();
+                    }
+
+                    if (response.getStatusLine().getStatusCode() == 200) {
+                        ObjectMapper objectMapper = new ObjectMapper();
+
+                        Team team = null;
+                        try {
+                            team = objectMapper.readValue(new InputStreamReader(response.getEntity().getContent()), Team.class);
+                        } catch (JsonMappingException jme) {
+                            System.out.println("[~ERROR~] The input JSON structure (Teams) does not match structure expected");
+                            System.out.println(uri);
+                            jme.printStackTrace();
+                        } catch (JsonParseException jpe) {
+                            System.out.println("[~ERROR~] The underlying input contains invalid content");
+                            System.out.println(uri);
+                            jpe.printStackTrace();
+                        } catch (IOException e) {
+                            System.out.println("[~ERROR~] Input/Output Exception when reading HTTP Response");
+                            e.printStackTrace();
+                        }
+
+                        if (team != null && team.getId() > 0) {
+                            CopyOnWriteArrayList<String> teamList = new CopyOnWriteArrayList<>();
+                            team.getUsers().forEach(user -> {
+                                teamList.add(user.getId());
+                                if (teamList.size() == 100) {
+                                    channels(teamList, "team", teamName);
+                                    teamList.clear();
+                                }
+                            });
+                            channels(teamList, "team", teamName);
+                        }
+
+                    } else if (response.getStatusLine().getStatusCode() == 404) {
+                        System.out.printf("Team %s not found.", teamName);
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -378,20 +638,20 @@ public class TwitchController {
      *
      * @param stream Stream object
      */
-    private synchronized void onLiveTwitchStream(Stream stream) {
-        String guildId = stream.getAdditionalProperties().get("guildId").toString();
+    private synchronized void onLiveTwitchStream(Stream stream, String flag, String name) {
 
         GetBroadcasterLang getBroadcasterLang = new GetBroadcasterLang();
-        String lang = getBroadcasterLang.action(guildId);
+        String lang = getBroadcasterLang.action(stream.getAdditionalProperties().get("guildId").toString());
 
         if (lang != null &&
                 (lang.equalsIgnoreCase(stream.getChannel().getBroadcasterLanguage()) || "all".equals(lang))) {
+
             if (stream.getChannel().getStatus() != null
                     && stream.getGame() != null
                     && !stream.getGame().isEmpty()
                     && stream.getChannel().getGame() != null
                     && !stream.getChannel().getGame().isEmpty()) {
-                if (filterCheck(stream)) {
+                if (gameFilterCheck(stream, flag, name) && titleFilterCheck(stream, flag, name)) {
                     online.put(count, stream);
                     count++;
                 }
@@ -399,25 +659,83 @@ public class TwitchController {
         }
     }
 
-    /**
-     * Method by Hopewell
-     *
-     * @param stream Stream object
-     * @return boolean
-     */
-    private synchronized boolean filterCheck(Stream stream) {
-        String guildId = stream.getAdditionalProperties().get("guildId").toString();
+    private synchronized boolean gameFilterCheck(Stream stream, String flag, String name) {
+        Boolean specificGameFilter = false;
+        Boolean globalGameFilter = false;
 
-        List<String> filters = checkGameFilters(guildId);
-        if (filters == null || filters.isEmpty()) {
-            return true;
+        // Check channel specific game filters
+        GetSpecificGameFilters specificGameFilters = new GetSpecificGameFilters();
+        List<String> gameFilters = specificGameFilters.fetch(stream, flag, name);
+
+        if (gameFilters != null && gameFilters.size() > 0) {
+            for (String filter : gameFilters) {
+                if (filter.equalsIgnoreCase(stream.getGame())) {
+                    specificGameFilter = true;
+                }
+            }
+        } else {
+            specificGameFilter = true;
         }
 
-        for (String filter : filters) {
-            if (stream.getGame().equalsIgnoreCase(filter) || stream.getChannel().getGame().equalsIgnoreCase(filter)) {
-                return true;
+        // Check global game filters
+        GetGlobalFilters globalFilters = new GetGlobalFilters();
+        List<String> filters = globalFilters.fetch(stream, "game");
+
+        if (filters != null && filters.size() > 0) {
+            for (String filter : filters) {
+                if (stream.getGame().equalsIgnoreCase(filter)) {
+                    globalGameFilter = true;
+                }
+            }
+        } else {
+            globalGameFilter = true;
+        }
+
+        return specificGameFilter.equals(true) && globalGameFilter.equals(true);
+    }
+
+    private synchronized boolean titleFilterCheck(Stream stream, String flag, String name) {
+        Boolean specificTitleFilter = false;
+        Boolean globalTitleFilter = false;
+
+        // Check channel specific game filters
+        GetSpecificTitleFilters specificTitleFilters = new GetSpecificTitleFilters();
+        List<String> titleFilters = specificTitleFilters.fetch(stream, flag, name);
+
+        List<String> titleWords = Arrays
+                .stream(stream.getChannel().getStatus().split("\\s+"))
+                .collect(Collectors.toList());
+
+        if (titleWords != null && !titleWords.isEmpty() && titleWords.size() > 0) {
+            if (titleFilters != null && titleFilters.size() > 0) {
+                for (String filter : titleFilters) {
+                    for (String word : titleWords) {
+                        if (word.equalsIgnoreCase(filter)) {
+                            specificTitleFilter = true;
+                        }
+                    }
+                }
+            } else {
+                specificTitleFilter = true;
+            }
+
+            // Check global game filters
+            GetGlobalFilters globalFilters = new GetGlobalFilters();
+            List<String> filters = globalFilters.fetch(stream, "title");
+
+            if (filters != null && filters.size() > 0) {
+                for (String filter : filters) {
+                    for (String word : titleWords) {
+                        if (filter != null && filter.equalsIgnoreCase(word)) {
+                            globalTitleFilter = true;
+                        }
+                    }
+                }
+            } else {
+                globalTitleFilter = true;
             }
         }
-        return false;
+
+        return specificTitleFilter.equals(true) && globalTitleFilter.equals(true);
     }
 }

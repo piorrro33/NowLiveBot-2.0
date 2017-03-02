@@ -27,7 +27,7 @@ import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import platform.discord.listener.DiscordListener;
-import platform.generic.listener.PlatformListener;
+import platform.generic.PlatformListener;
 import util.Const;
 import util.PropReader;
 import util.database.Database;
@@ -94,7 +94,6 @@ public class Main {
         }
 
         guildCheck();
-
         new PlatformListener();
     }
 
@@ -126,31 +125,8 @@ public class Main {
 
                     String guildId = result.getString("guildId");
 
-                    tableList.add("guild");
-                    tableList.add("manager");
-                    tableList.add("notification");
-                    tableList.add("permission");
-                    tableList.add("twitch");
-                    tableList.add("twitchstreams");
+                    jda.getGuildById(guildId).leave().complete();
 
-                    try {
-                        for (String table : tableList) {
-                            query = "DELETE FROM `" + table + "` WHERE `guildId` = ?";
-
-                            if (connection == null || connection.isClosed()) {
-                                connection = Database.getInstance().getConnection();
-                            }
-                            pStatement = connection.prepareStatement(query);
-                            pStatement.setString(1, guildId);
-                            pStatement.executeUpdate();
-                        }
-
-                    } catch (Exception e) {
-                        logger.error("Failed to remove info from Guild " + guildId + ".");
-                        e.printStackTrace();
-                    } finally {
-                        cleanUp(pStatement, connection);
-                    }
                     System.out.printf("[SYSTEM] All data removed for G:%s.%n",
                             guildId);
                 }

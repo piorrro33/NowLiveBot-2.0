@@ -24,7 +24,6 @@ import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import util.Const;
 import util.database.Database;
 import util.database.calls.Tracker;
 
@@ -113,7 +112,7 @@ public class List implements Command {
                 message.append("__Bot Managers__\n\t");
                 break;
             case "titlefilter":
-                query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` iS NOT NULL ORDER BY `titleFilter` ASC";
+                query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` IS NOT NULL ORDER BY `titleFilter` ASC";
                 message.append("__Title Filters__\n\t");
                 break;
             case "team":
@@ -122,7 +121,7 @@ public class List implements Command {
                 break;
             case "setting":
                 message.append("__Bot Settings__\n\t");
-                sendToPm(event, getSettings(message));
+                sendToPm(event, getSettings(event, message));
                 return;
             default:
                 break;
@@ -224,7 +223,7 @@ public class List implements Command {
     }
 
 
-    private Message getSettings(MessageBuilder message) {
+    private Message getSettings(GuildMessageReceivedEvent event, MessageBuilder message) {
         Integer compact = 0;
         Integer cleanup = 0;
         String broadLang = "";
@@ -256,12 +255,12 @@ public class List implements Command {
                 notify = resultSet.getInt(1);
             }
 
-            message.append(Const.LIST_SETTINGS
-                    .replace("compactSetting", (compact == 0 ? "On" : "Off"))
-                    .replace("notificationSetting", (notify == 0 ? "no one" : notify == 2 ? "here" : "everyone"))
-                    .replace("cleanupSetting", (cleanup == 0 ? "do nothing" : cleanup == 1 ? "edit" : "delete"))
-                    .replace("broadLang", getLanguage(broadLang))
-                    .replace("serverLang", getLanguage(serverLang)));
+            message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "listHelp"),
+                    (compact == 0 ? "On" : "Off"),
+                    (notify == 0 ? "no one" : notify == 2 ? "here" : "everyone"),
+                    (cleanup == 0 ? "do nothing" : cleanup == 1 ? "edit" : "delete"),
+                    getLanguage(broadLang),
+                    getLanguage(serverLang)));
 
         } catch (SQLException e) {
             e.printStackTrace();

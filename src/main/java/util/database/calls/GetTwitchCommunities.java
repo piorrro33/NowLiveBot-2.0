@@ -24,59 +24,41 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static util.database.Database.cleanUp;
 
-public class GetAnnounceChannel {
+public class GetTwitchCommunities {
+
     private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
-    private String query;
 
-    public synchronized String action(String guildId, String column, String value) {
-
-        switch (column) {
-            case "channel":
-                query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `channelId` = ?";
-                break;
-            case "community":
-                query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `communityName` = ?";
-                break;
-            case "game":
-                query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `gameName` = ?";
-                break;
-            default:
-                query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `teamName` = ?";
-                break;
-        }
+    public synchronized ConcurrentHashMap<String,String> fetch() {
+        String query = "SELECT `communityName`, `communityId` FROM `twitch` WHERE `communityId` IS NOT NULL ORDER BY `timeAdded` ASC";
 
         try {
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
             this.pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            pStatement.setString(2, value);
             this.result = pStatement.executeQuery();
 
-            String announceChannel = null;
-            if (result.next()) {
-                announceChannel = result.getString("announceChannel");
-            }
-            if (announceChannel != null) {
-                return announceChannel;
-            } else {
-                GetGlobalAnnounceChannel globalAnnounceChannel = new GetGlobalAnnounceChannel();
-                String global = globalAnnounceChannel.fetch(guildId);
-                if (global != null) {
-                    return global;
+            ConcurrentHashMap<String,String> communities = new ConcurrentHashMap<>();
+
+            while (result.next()) {
+                if (!communities.contains(result.getString("communityId"))) {
+                    communities.put(result.getString("communityName"), result.getString("communityId"));
                 }
             }
+            return communities;
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        return null;
+        return new ConcurrentHashMap<>();
     }
+
 }

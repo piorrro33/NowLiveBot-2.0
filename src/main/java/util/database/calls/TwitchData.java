@@ -16,25 +16,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package platform.generic.controller;
+package util.database.calls;
 
-/**
- * @author Veteran Software by Ague Mort
- */
-public class PlatformController {
+import util.database.Database;
 
-    public static int getPlatformId(String args) {
-        if (args.contains("~")) {
-            String platform = args.substring(0, args.indexOf("~"));
-            switch (platform) {
-                case "twitch":
-                    return 1;
-                case "beam":
-                    return 2;
-                default:
-                    break;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import static util.database.Database.cleanUp;
+
+public class TwitchData {
+
+    private Connection connection = Database.getInstance().getConnection();
+    private PreparedStatement pStatement;
+
+    public synchronized Boolean action(String query) {
+        try {
+            if (connection == null || connection.isClosed()) {
+                this.connection = Database.getInstance().getConnection();
             }
+            this.pStatement = connection.prepareStatement(query);
+            if (pStatement.executeUpdate() > 0) {
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(pStatement, connection);
         }
-        return 0;
+        return false;
     }
 }

@@ -22,6 +22,7 @@ import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
@@ -29,26 +30,32 @@ import static util.database.Database.cleanUp;
 /**
  * @author Veteran Software by Ague Mort
  */
-public class AddOther {
+public class CheckTwitchData {
 
     private static Connection connection;
     private static PreparedStatement pStatement;
-    private static String query;
+    private static ResultSet result;
 
-    public synchronized static Boolean action(String tableName, String guildId, int platformId, String name) {
-
+    public synchronized static Boolean action(String tableName, String guildId, String name) {
+        String query = "";
         switch (tableName) {
             case "channel":
-                query = "INSERT INTO `channel` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
+                query = "SELECT `channelName` FROM `twitch` WHERE `guildId` = ? AND `channelName` LIKE ?";
                 break;
-            case "filter":
-                query = "INSERT INTO `filter` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
+            case "community":
+                query = "SELECT `communityName` FROM `twitch` WHERE `guildId` = ? AND `communityName` LIKE ?";
+                break;
+            case "gameFilter":
+                query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? AND `gameFilter` LIKE ?";
                 break;
             case "game":
-                query = "INSERT INTO `game` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
+                query = "SELECT `gameName` FROM `twitch` WHERE `guildId` = ? AND `gameName` LIKE ?";
                 break;
-            case "tag":
-                query = "INSERT INTO `tag` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
+            case "team":
+                query = "SELECT `teamName` FROM `twitch` WHERE `guildId` = ? AND `teamName` LIKE ?";
+                break;
+            case "titleFilter":
+                query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` LIKE ?";
                 break;
             default:
                 break;
@@ -60,15 +67,16 @@ public class AddOther {
             }
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
-            pStatement.setInt(2, platformId);
-            pStatement.setString(3, name);
-            if (pStatement.executeUpdate() == 1) {
+            pStatement.setString(2, name);
+            result = pStatement.executeQuery();
+            if (result.isBeforeFirst()) {
+                System.out.println("Found channel: " + name);
                 return true;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(pStatement, connection);
+            cleanUp(result, pStatement, connection);
         }
         return false;
     }

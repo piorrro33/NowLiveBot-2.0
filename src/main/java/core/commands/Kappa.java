@@ -41,7 +41,6 @@ import static util.database.Database.cleanUp;
 public class Kappa implements Command {
 
     private Connection connection;
-    private PreparedStatement pStatement;
     private ResultSet result;
 
     /**
@@ -64,13 +63,14 @@ public class Kappa implements Command {
      */
     @Override
     public void action(String args, GuildMessageReceivedEvent event) {
+        PreparedStatement pStatement = null;
 
         String query = "SELECT `channelId`, `guildId` FROM `guild`";
         try {
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             this.result = pStatement.executeQuery();
 
             MessageBuilder message = new MessageBuilder();
@@ -80,16 +80,12 @@ public class Kappa implements Command {
                 String guildName = Main.getJDA().getGuildById(result.getString("guildId")).getName();
                 Channel channel = Main.getJDA().getTextChannelById(result.getString("channelId"));
                 Member selfMember = Main.getJDA().getGuildById(result.getString("guildId")).getSelfMember();
-                if (!selfMember.hasPermission(channel, Permission.ADMINISTRATOR) ||
+                if (channel != null && !selfMember.hasPermission(channel, Permission.ADMINISTRATOR) ||
                         (!selfMember.hasPermission(channel, Permission.MESSAGE_READ) &&
                                 !selfMember.hasPermission(channel, Permission.MESSAGE_WRITE) &&
-                                !selfMember.hasPermission(channel, Permission.MESSAGE_MANAGE) &&
-                                !selfMember.hasPermission(channel, Permission.MESSAGE_HISTORY) &&
-                                !selfMember.hasPermission(channel, Permission.MESSAGE_READ) &&
-                                !selfMember.hasPermission(channel, Permission.MESSAGE_EMBED_LINKS) &&
-                                !selfMember.hasPermission(channel, Permission.MESSAGE_MENTION_EVERYONE))
-                        ) {
-                    message.append("\tG:" + guildName + ":" + result.getString("guildId") + "\n");
+                                !selfMember.hasPermission(channel, Permission.MESSAGE_EMBED_LINKS))) {
+                    String appended = String.format("\tG:%s:%s\n", guildName, result.getString("guildId"));
+                    message.append(appended);
                 }
                 if (message.length() >= 1800) {
                     DiscordController.sendToChannel(event, message.build().getRawContent());

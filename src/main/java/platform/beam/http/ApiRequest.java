@@ -50,7 +50,6 @@ public class ApiRequest {
     private String xRateLimit;
     private String xRateLimitRemaining;
     private String xRateLimitReset;
-    private HttpResponse response;
     private String cookie = PropReader.getInstance().getProp().getProperty("beam.cookie");
 
     public String getxRateLimit() {
@@ -105,6 +104,7 @@ public class ApiRequest {
             request.addHeader("cookie", cookie);
         }
 
+        HttpResponse response = null;
         try {
             response = client.execute(request);
             System.out.println("Response received...");
@@ -143,7 +143,9 @@ public class ApiRequest {
         try {
             System.out.println("Trying to read the JSON content from the API response...");
             ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readValue(new InputStreamReader(response.getEntity().getContent()), BeamChannel.class);
+            if (response != null) {
+                return objectMapper.readValue(new InputStreamReader(response.getEntity().getContent()), BeamChannel.class);
+            }
 
         } catch (IOException e) {
             e.printStackTrace();

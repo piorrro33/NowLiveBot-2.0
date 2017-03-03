@@ -57,7 +57,7 @@ public class DiscordLogger {
                 }
             }
             if (event instanceof GuildMemberJoinEvent) {
-                discordLogGMJE((GuildMemberJoinEvent) event);
+                //discordLogGMJE((GuildMemberJoinEvent) event);
             }
             if (event instanceof GuildMemberLeaveEvent) {
                 discordLogGMLE((GuildMemberLeaveEvent) event);
@@ -85,13 +85,13 @@ public class DiscordLogger {
     private void discordLogGMJE(GuildMemberJoinEvent event) {
         String user = event.getMember().getUser().getName();
         Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage("  :heart_eyes_cat: " + user + " joined the " +
-                "guild.");
+                "guild.").complete();
     }
 
     private void discordLogGMLE(GuildMemberLeaveEvent event) {
         String user = event.getMember().getUser().getName();
         Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage("  :scream_cat: " + user + " left the " +
-                "guild.");
+                "guild.").complete();
     }
 
     private void dateTime() {
@@ -116,7 +116,7 @@ public class DiscordLogger {
 
         Message dMessage = discord.build();
 
-        Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage(dMessage).queue();
+        Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage(dMessage).complete();
     }
 
     private void discordLogGLE(GuildLeaveEvent event) {
@@ -133,7 +133,7 @@ public class DiscordLogger {
 
         Message dMessage = discord.build();
 
-        Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage(dMessage).queue();
+        Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage(dMessage).complete();
     }
 
     private void discordLogNoEvent(String message) {
@@ -146,7 +146,7 @@ public class DiscordLogger {
 
         Message dMessage = discord.build();
 
-        Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage(dMessage).queue();
+        Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage(dMessage).complete();
     }
 
     private void discordLogGMRE(String message, GuildMessageReceivedEvent event) {
@@ -170,7 +170,7 @@ public class DiscordLogger {
 
         Message dMessage = discord.build();
 
-        Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage(dMessage).queue();
+        Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage(dMessage).complete();
     }
 
     private void discordLogPMRE(PrivateMessageReceivedEvent event) {
@@ -188,6 +188,6 @@ public class DiscordLogger {
         discord.append(authorId);
         discord.append("]\n\t\t :secret: Private Message Received");
 
-        Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage(discord.build()).queue();
+        Main.getJDA().getTextChannelById(Const.LOG_CHANNEL).sendMessage(discord.build()).complete();
     }
 }

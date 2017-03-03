@@ -43,6 +43,7 @@ public class CommandParser {
         commands.put("add", new Add());
         commands.put("announce", new Announce());
         commands.put("beam", new Beam());
+        commands.put("botlang", new BotLanguage());
         commands.put("cleanup", new CleanUp());
         commands.put("compact", new Compact());
         commands.put("help", new Help());
@@ -91,6 +92,7 @@ public class CommandParser {
                     break;
                 case "add":
                 case "beam":
+                case "botlang":
                 case "cleanup":
                 case "lang":
                 case "move":
@@ -127,8 +129,6 @@ public class CommandParser {
             } else {
                 getCommands().get(cmd.invoke).action(cmd.args, cmd.event);
             }
-        } else {
-            sendToChannel(cmd.event, LocaleString.getString(cmd.event.getMessage().getGuild().getId(), "incorrectArgs"));
         }
         getCommands().get(cmd.invoke).executed(safe, cmd.event);
     }

@@ -71,13 +71,9 @@ public class Compact implements Command {
                 switch (args) {
                     case "off":
                         sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "compactOff"));
-
-                        break;
-                    case "on":
-                        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "compactOn"));
                         break;
                     default:
-                        System.out.println("[~ERROR~] This statement should never be reached.");
+                        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "compactOn"));
                         break;
                 }
             }
@@ -91,7 +87,7 @@ public class Compact implements Command {
 
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Compact");
+        new Tracker("Command");
     }
 
     private boolean optionCheck(String args, String option) {

@@ -72,6 +72,6 @@ public class Leave implements Command {
      */
     @Override
     public void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Leave");
+        new Tracker("Command");
     }
 }

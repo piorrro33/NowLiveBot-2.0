@@ -24,42 +24,55 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-public class GetGuildFromMessage {
+public class GetTwitchChannels {
 
     private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
-    private String guildId;
 
-    public String getGuildId(String messageId) {
-        doStuff(messageId);
-        return guildId;
-    }
-
-    private synchronized void doStuff(String messageId) {
-        String query = "SELECT `guildId` FROM `stream` WHERE `messageId` = ?";
+    public synchronized CopyOnWriteArrayList<String> fetch(Integer flag) {
+        String query;
+        switch (flag) {
+            case -1:
+                query = "SELECT `channelName` FROM `twitch` WHERE `channelId` IS NULL ORDER BY `timeAdded` ASC";
+                break;
+            default:
+                query = "SELECT DISTINCT `channelId` FROM `twitch` WHERE `channelId` IS NOT NULL ORDER BY `channelId` ASC";
+                break;
+        }
 
         try {
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, messageId);
-            result = pStatement.executeQuery();
+            this.pStatement = connection.prepareStatement(query);
+            this.result = pStatement.executeQuery();
 
-            if (result.isBeforeFirst()) {
-                while (result.next()) {
-                    this.guildId = result.getString("guildId");
+            CopyOnWriteArrayList<String> channels = new CopyOnWriteArrayList<>();
+
+            while (result.next()) {
+                if (flag.equals(-1)) {
+                    if (!channels.contains(result.getString("channelName"))) {
+                        channels.add(result.getString("channelName"));
+                    }
+                } else {
+                    if (!channels.contains(result.getString("channelId"))) {
+                        channels.add(result.getString("channelId"));
+                    }
                 }
             }
+            return channels;
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
+        return null;
     }
 
 }

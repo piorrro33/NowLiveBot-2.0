@@ -19,16 +19,11 @@
 package util.database;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import com.mchange.v2.c3p0.PooledDataSource;
 import core.Main;
-import net.dv8tion.jda.core.MessageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.PropReader;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -139,32 +134,5 @@ public class Database {
             logger.error("There was an error getting the connection.", e);
         }
         return null;
-    }
-
-    public final void checkPooledStatus() {
-        try {
-            Context initContext = new InitialContext();
-            // TODO: Figure out the JNDI name of the database
-            Context appContext = (Context) initContext.lookup("java:/comp/env");
-            Database ds = (Database) appContext.lookup("jdbc/nowlivebot");
-            //InitialContext ictx = new InitialContext();
-            //Database ds = (Database) ictx.lookup("java:comp/env/jdbc/nowlivebot");
-
-            if (ds instanceof PooledDataSource) {
-                PooledDataSource pds = (PooledDataSource) ds;
-                MessageBuilder msg = new MessageBuilder();
-                msg.append("num_connections: " + pds.getNumConnectionsDefaultUser());
-                msg.append("\nnum_busy_connections: " + pds.getNumBusyConnectionsDefaultUser());
-                msg.append("\nnum_idle_connections: " + pds.getNumIdleConnectionsDefaultUser());
-                msg.append("\n");
-                msg.build();
-            } else {
-                logger.warn("Not a c3p0 PooledDataSource!!");
-            }
-        } catch (NamingException e) {
-            logger.error("Naming Exception encountered while checking the pooled connection status.", e);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 }

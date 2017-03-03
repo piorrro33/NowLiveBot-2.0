@@ -22,6 +22,7 @@ import core.Command;
 import core.Main;
 import langs.LocaleString;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.JDAInfo;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
@@ -34,6 +35,8 @@ import util.database.Database;
 import util.database.calls.Tracker;
 
 import java.awt.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -63,7 +66,7 @@ public class Status implements Command {
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
         // TODO: Clean this up and make it less bulky and more condensed
-        DecimalFormat numFormat = new DecimalFormat("###,###,###,###");
+        DecimalFormat numFormat = new DecimalFormat("###,###,###,###,###");
         // Total of all guilds the bot is in
         Integer guildCount = Main.getJDA().getGuilds().size();
 
@@ -78,11 +81,15 @@ public class Status implements Command {
         MessageBuilder mBuilder = new MessageBuilder();
         DateFormat dateTimeFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
-        eBuilder.setColor(Color.RED);
-        eBuilder.setAuthor(Const.BOT_NAME + " Statistics", null, Const.BOT_LOGO);
+        float[] rgb = Color.RGBtoHSB(208, 34, 56, null);
+        eBuilder.setColor(Color.getHSBColor(rgb[0], rgb[1], rgb[2]));
 
-        eBuilder.addField("# Servers", numFormat.format(guildCount), false);
-        eBuilder.addField("Num. Unique Members", numFormat.format(memberCount), false);
+        eBuilder.setAuthor(
+                String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "botStatistics"), Const.BOT_NAME),
+                null, Const.BOT_LOGO);
+
+        eBuilder.addField(LocaleString.getString(event.getMessage().getGuild().getId(), "servers"), numFormat.format(guildCount), true);
+        eBuilder.addField(LocaleString.getString(event.getMessage().getGuild().getId(), "numUniqueMembers"), numFormat.format(memberCount), true);
 
         // Number of times commands have been used
         try {
@@ -94,15 +101,51 @@ public class Status implements Command {
 
             pStatement = connection.prepareStatement(query);
             result = pStatement.executeQuery();
-            String heard;
+            String plural;
             while (result.next()) {
-                if (result.getString("commandName").equals("Messages")) {
-                    heard = " Heard";
+                if (result.getString("commandName").equals("Command")) {
+                    plural = "s";
                 } else {
-                    heard = "";
+                    plural = "";
                 }
 
-                eBuilder.addField(result.getString("commandName") + heard, numFormat.format(result.getInt("commandCount")), true);
+                eBuilder.addField(result.getString("commandName") + plural, numFormat.format(result.getInt("commandCount")), true);
+            }
+
+            query = "SELECT DISTINCT COUNT(`channelId`) AS `count` FROM `twitch`";
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
+
+            while (result.next()) {
+                eBuilder.addField(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "uniqueChannels"), "(Twitch)"),
+                        numFormat.format(result.getInt("count")), true);
+            }
+
+            query = "SELECT DISTINCT COUNT(`gameName`) AS `count` FROM `twitch`";
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
+
+            while (result.next()) {
+                eBuilder.addField(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "uniqueGames"), "(Twitch)"),
+                        numFormat.format(result.getInt("count")), true);
+            }
+
+            query = "SELECT DISTINCT COUNT(`communityName`) AS `count` FROM `twitch`";
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
+
+            while (result.next()) {
+                eBuilder.addField(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchCommunities"),
+                        numFormat.format(result.getInt("count")), true);
+            }
+
+            query = "SELECT DISTINCT COUNT(`teamName`) AS `count` FROM `twitch`";
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
+
+            while (result.next()) {
+                eBuilder.addField(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchTeams"),
+                        numFormat.format(result.getInt("count")), true);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -110,6 +153,15 @@ public class Status implements Command {
             cleanUp(result, pStatement, connection);
         }
 
+        eBuilder.addField("Bot Author", "Ague Mort", true);
+        eBuilder.addField("JDA Version", JDAInfo.VERSION, true);
+        eBuilder.addField("Active Threads", String.valueOf(Thread.activeCount()), true);
+
+        RuntimeMXBean rb = ManagementFactory.getRuntimeMXBean();
+        Date date = new Date(rb.getUptime());
+        DateFormat formatter = new SimpleDateFormat("DDD:HH:mm:ss:SSS");
+
+        eBuilder.addField("Uptime", formatter.format(date), true);
         eBuilder.setFooter("\nGenerated on: " + dateTimeFormat.format(new Date()), null);
 
         MessageEmbed mEmbed = eBuilder.build();
@@ -153,6 +205,6 @@ public class Status implements Command {
 
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Status");
+        new Tracker("Command");
     }
 }

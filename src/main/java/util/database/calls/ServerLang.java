@@ -35,33 +35,6 @@ public class ServerLang {
     private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
-    private String langCode;
-
-    public synchronized void setLang(String guildId, String language) {
-        switch (language.toLowerCase()) {
-            case "french":
-                langCode = "fr";
-                break;
-            default: // English
-                langCode = "en";
-            break;
-        }
-
-        try {
-            String query = "UPDATE `guild` SET `serverLang` = ? WHERE `guildId` = ?";
-            if (connection == null || connection.isClosed()) {
-                this.connection = Database.getInstance().getConnection();
-            }
-            this.pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, langCode);
-            pStatement.setString(2, guildId);
-            pStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(pStatement, connection);
-        }
-    }
 
     public synchronized String getLangCode(String guildId) {
         try {
@@ -73,9 +46,11 @@ public class ServerLang {
             pStatement.setString(1, guildId);
             this.result = pStatement.executeQuery();
 
-            while (result.next()) {
-                return result.getString("serverLang");
+            String lang = "";
+            if (result.next()) {
+                lang = result.getString("serverLang");
             }
+            return lang;
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {

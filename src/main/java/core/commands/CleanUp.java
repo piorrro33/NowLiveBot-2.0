@@ -40,11 +40,8 @@ public class CleanUp implements Command {
      */
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
-        if (args != null && !args.isEmpty()) {
-            return "none".equals(args) || "edit".equals(args) || "delete".equals(args) || "help".equals(args);
-        }
+        return args != null && !args.isEmpty() && ("none".equals(args) || "edit".equals(args) || "delete".equals(args) || "help".equals(args));
 
-        return false;
     }
 
     /**
@@ -99,6 +96,6 @@ public class CleanUp implements Command {
      */
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Cleanup");
+        new Tracker("Command");
     }
 }

@@ -24,39 +24,41 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-/**
- * @author Veteran Software by Ague Mort
- */
-public class CheckTableData {
+public class GetTwitchTeams {
 
-    private static Connection connection;
-    private static PreparedStatement pStatement;
-    private static ResultSet result;
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private ResultSet result;
 
-    public synchronized static Boolean action(String tableName, String guildId, Integer platformId, String name) {
-        final String query = "SELECT `name` FROM `" + tableName + "` WHERE `guildId` = ? AND `platformId` = ? AND " +
-                "`name` = ?";
+    public synchronized CopyOnWriteArrayList<String> fetch() {
+        String query = "SELECT `teamName` FROM `twitch` WHERE `teamName` IS NOT NULL ORDER BY `timeAdded` ASC";
+
         try {
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            pStatement.setInt(2, platformId);
-            pStatement.setString(3, name);
-            result = pStatement.executeQuery();
-            if (result.isBeforeFirst()) {
-                return true;
+            this.pStatement = connection.prepareStatement(query);
+            this.result = pStatement.executeQuery();
+
+            CopyOnWriteArrayList<String> teams = new CopyOnWriteArrayList<>();
+
+            while (result.next()) {
+                if (!teams.contains(result.getString("teamName"))) {
+                    teams.add(result.getString("teamName"));
+                }
             }
+            return teams;
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        return false;
+        return new CopyOnWriteArrayList<>();
     }
 
 }

@@ -97,6 +97,6 @@ public class Move implements Command {
 
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Move");
+        new Tracker("Command");
     }
 }

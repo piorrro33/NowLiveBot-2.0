@@ -23,6 +23,7 @@ import core.Main;
 import langs.LocaleString;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.events.DisconnectEvent;
+import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.events.ReconnectedEvent;
 import net.dv8tion.jda.core.events.ResumedEvent;
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
@@ -31,13 +32,20 @@ import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-import platform.generic.listener.PlatformListener;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
 import util.Const;
 import util.DiscordLogger;
+import util.PropReader;
 import util.database.calls.*;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.sql.SQLException;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
@@ -59,7 +67,9 @@ public class DiscordListener extends ListenerAdapter {
     @Override
     public synchronized final void onGuildMessageReceived(GuildMessageReceivedEvent event) {
 
-        new Tracker("Messages");
+        if (!event.getAuthor().isBot()) {//Don't log other bot messages
+            new Tracker("Messages Heard");
+        }
         if (!event.getMessage().getContent().equals(this.buffer)) {
 
             this.buffer = event.getMessage().getContent();
@@ -75,7 +85,8 @@ public class DiscordListener extends ListenerAdapter {
 
                 // A check to see if the bot was added to the guild while it was offline and to add it
                 if (!CheckBotInGuild.action(event)) {
-                    AddGuild.action(event);
+                    AddGuild addGuild = new AddGuild();
+                    addGuild.action(event);
                     new DiscordLogger(" :gear: Fixed broken guild.", event);
                     System.out.printf("[SYSTEM] [%s:%s] [%s:%s] Broken guild fixed.%n",
                             event.getGuild().getName(),
@@ -85,12 +96,13 @@ public class DiscordListener extends ListenerAdapter {
                 }
                 try {
                     new DiscordLogger(" :arrow_left: " + event.getMessage().getContent(), event);
-                    System.out.printf("[COMMAND] [%s:%s] [%s:%s] [%s:%s] %s%n",
+                    System.out.printf("[COMMAND] [%s:%s] [%s:%s] [%s#%s:%s] %s%n",
                             event.getGuild().getName(),
                             event.getGuild().getId(),
                             event.getChannel().getName(),
                             event.getChannel().getId(),
                             event.getAuthor().getName(),
+                            event.getAuthor().getDiscriminator(),
                             event.getAuthor().getId(),
                             event.getMessage().getContent());
                     commandFilter(cntMsg, event);
@@ -103,10 +115,16 @@ public class DiscordListener extends ListenerAdapter {
     }
 
     @Override
+    public void onReady(ReadyEvent event) {
+        super.onReady(event);
+        //updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
+    }
+
+    @Override
     public final void onPrivateMessageReceived(PrivateMessageReceivedEvent event) {
         if (!event.getAuthor().getId().equals(event.getJDA().getSelfUser().getId())) {
             MessageBuilder message = new MessageBuilder();
-            message.append(LocaleString.getString(event.getMessage().getGuild().getId(), "privateMessageReply"));
+            message.append(LocaleString.getString("250045505659207699", "privateMessageReply"));
             sendToPm(event, message.build());
         }
     }
@@ -124,19 +142,17 @@ public class DiscordListener extends ListenerAdapter {
     public final void onReconnect(ReconnectedEvent event) {
         new DiscordLogger(" :heart: Discord's connection has been reconnected!", event);
         logger.info("JDA has been reconnected.");
-        new PlatformListener();
-    }
-
-    @Override
-    public final void onGuildMemberJoin(GuildMemberJoinEvent event) {
-        new DiscordLogger(null, event);
     }
 
     @Override
     public final void onResume(ResumedEvent event) {
         new DiscordLogger(" :heart: Discord's connection has been resumed!", event);
         logger.info("The JDA instance has been resumed.");
-        new PlatformListener();
+    }
+
+    @Override
+    public final void onGuildMemberJoin(GuildMemberJoinEvent event) {
+        new DiscordLogger(null, event);
     }
 
     @Override
@@ -146,15 +162,17 @@ public class DiscordListener extends ListenerAdapter {
         System.out.printf("[GUILD JOIN] Now Live has joined G:%s:%s%n",
                 event.getGuild().getName(),
                 event.getGuild().getId());
+        updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
     }
 
     @Override
     public final void onGuildLeave(GuildLeaveEvent event) {
         GuildLeave.leaveGuild(event);
         new DiscordLogger(null, event);
-        System.out.printf("[GUILD LEAVE] Now Live has been dismissed from G:%s:%s%n",
+        System.out.printf("[GUILD LEAVE] Now Live has been dismissed/left from G:%s:%s%n",
                 event.getGuild().getName(),
                 event.getGuild().getId());
+        updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
     }
 
     private void commandFilter(String cntMsg, GuildMessageReceivedEvent event)
@@ -166,6 +184,97 @@ public class DiscordListener extends ListenerAdapter {
                 CommandParser.handleCommand(Main.parser.parse(cntMsg, event));
             } else {
                 sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "usePlatform"));
+            }
+        }
+    }
+
+    private void updateDiscordBotsServerCount(Integer count) {
+        HttpClient client = HttpClientBuilder.create().disableCookieManagement().build();
+        URIBuilder uriBuilder = new URIBuilder();
+        uriBuilder.setScheme("https").setHost("bots.discord.pw").setPath("/api/bots/240729664035880961/stats");
+        HttpPost post = null;
+        try {
+            post = new HttpPost(uriBuilder.build());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        if (post != null) {
+            post.addHeader("Authorization", PropReader.getInstance().getProp().getProperty("discord.bots.auth"));
+            post.addHeader("Content-Type", "application/json");
+            String json = "{ \"server_count\": " + count + "}";
+            try {
+                StringEntity entity = new StringEntity(json);
+                post.setEntity(entity);
+
+                HttpResponse response = client.execute(post);
+
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    System.out.println("[~ERROR~] Failed updating server count on bots.discord.pw");
+                } else {
+                    System.out.println("[SYSTEM] Successfully updated server count on bots.discord.pw");
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        // Carbonitex
+        uriBuilder = new URIBuilder();
+        uriBuilder.setScheme("https").setHost("www.carbonitex.net").setPath("/discord/data/botdata.php");
+        post = null;
+
+        try {
+            post = new HttpPost(uriBuilder.build());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        if (post != null) {
+            post.addHeader("Content-Type", "application/json");
+            String json = "{ \"servercount\": \"" + count + "\", \"key\": \"" + PropReader.getInstance().getProp().getProperty("carbonitex.auth") + "\" }";
+            try {
+                StringEntity entity = new StringEntity(json);
+                post.setEntity(entity);
+
+                HttpResponse response = client.execute(post);
+
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    System.out.println("[~ERROR~] Failed updating server count on Carbonitex");
+                } else {
+                    System.out.println("[SYSTEM] Successfully updated server count on Carbonitex");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        // Carbonitex
+        uriBuilder = new URIBuilder();
+        uriBuilder.setScheme("https").setHost("bots.discordlist.net").setPath("/api");
+        post = null;
+
+        try {
+            post = new HttpPost(uriBuilder.build());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        if (post != null) {
+            post.addHeader("Content-Type", "application/json");
+            String json = "{ \"servers\": \"" + count + "\", \"key\": \"" + PropReader.getInstance().getProp().getProperty("discordlist.auth") + "\" }";
+            try {
+                StringEntity entity = new StringEntity(json);
+                post.setEntity(entity);
+
+                HttpResponse response = client.execute(post);
+
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    System.out.println("[~ERROR~] Failed updating server count on bots.discordlist.net");
+                } else {
+                    System.out.println("[SYSTEM] Successfully updated server count on bots.discordlist.net");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }

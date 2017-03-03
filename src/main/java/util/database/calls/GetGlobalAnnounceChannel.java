@@ -24,35 +24,28 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-public class GetDbChannels {
+public class GetGlobalAnnounceChannel {
 
     private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
 
-    public synchronized List<String> fetch(Integer start) {
-        String query = "SELECT `name` FROM `channel` ORDER BY `timeAdded` ASC LIMIT " + start + ",100";
+    public synchronized String fetch(String guildId) {
+        String query = "SELECT `channelId` FROM `guild` WHERE `guildId` = ?";
         try {
             if (connection == null || connection.isClosed()) {
-                this.connection = Database.getInstance().getConnection();
+                connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
-            this.result = pStatement.executeQuery();
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            result = pStatement.executeQuery();
 
-            List<String> channels = new CopyOnWriteArrayList<>();
-
-            while (result.next()) {
-                if (!channels.contains(result.getString("name"))) {
-                    channels.add(result.getString("name"));
-                }
+            if (result.next()) {
+                return result.getString("channelId");
             }
-            return channels;
-
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -60,5 +53,4 @@ public class GetDbChannels {
         }
         return null;
     }
-
 }

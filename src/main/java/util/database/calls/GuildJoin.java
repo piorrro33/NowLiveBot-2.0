@@ -24,6 +24,7 @@ import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.core.exceptions.PermissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.database.Database;
@@ -56,15 +57,12 @@ public final class GuildJoin {
 
     public static void joinGuild(GuildJoinEvent gEvent) {
 
-        tableList.add("channel");
-        tableList.add("game");
         tableList.add("guild");
         tableList.add("manager");
         tableList.add("notification");
         tableList.add("permission");
-        tableList.add("stream");
-        tableList.add("tag");
-        tableList.add("team");
+        tableList.add("twitch");
+        tableList.add("twitchstreams");
 
         guildId = gEvent.getGuild().getId();
         defaultChannel = gEvent.getGuild().getPublicChannel().getId();
@@ -116,11 +114,34 @@ public final class GuildJoin {
             }
         }
         if (failed == 0) {
-            gEvent.getGuild().getPublicChannel().sendMessage(LocaleString.getString(gEvent.getGuild().getId(), "guildJoinSuccess")).queue(
-                    guildJoinSuccess -> System.out.printf("[SYSTEM] Joined G:%s:%s%n",
-                            gEvent.getGuild().getName(),
-                            gEvent.getGuild().getId())
-            );
+            try {
+                gEvent.getGuild().getPublicChannel().sendMessage(LocaleString.getString(gEvent.getGuild().getId(), "guildJoinSuccess")).queue(
+                        guildJoinSuccess -> System.out.printf("[SYSTEM] Joined G:%s:%s%n",
+                                gEvent.getGuild().getName(),
+                                gEvent.getGuild().getId())
+                );
+            } catch (PermissionException pe) {
+                try {
+                    gEvent.getGuild().getTextChannelById(guildId).sendMessage(LocaleString.getString(gEvent.getGuild().getId(), "guildJoinSuccess")).queue(
+                            guildJoinSuccess -> System.out.printf("[SYSTEM] Joined G:%s:%s%n",
+                                    gEvent.getGuild().getName(),
+                                    gEvent.getGuild().getId())
+                    );
+                } catch (PermissionException pe2) {
+                    if (gEvent.getGuild().getOwner().getUser().hasPrivateChannel()) {
+                        gEvent.getGuild().getOwner().getUser().openPrivateChannel().queue(
+                                success -> gEvent.getGuild().getOwner().getUser().getPrivateChannel().sendMessage(
+                                        "Hi there, it seems as though I can't send the welcome message due to lack of " +
+                                                "permissions to send messages in your server.\n\n" +
+                                                "If you need help setting me up, just use `-nl help` for more info.").queue(
+                                        sentPM -> System.out.printf("[BOT -> PM] [%s:%s]: %s%n",
+                                                gEvent.getGuild().getOwner().getUser().getName(),
+                                                gEvent.getGuild().getOwner().getUser().getId(),
+                                                sentPM.getContent())
+                                ));
+                    }
+                }
+            }
         } else {
             gEvent.getGuild().getPublicChannel().sendMessage("There was an error adding your guild!!").queue();
         }

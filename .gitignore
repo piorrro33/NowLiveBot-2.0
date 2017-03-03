@@ -1,11 +1,4 @@
 # NetBeans
-nbproject/private/
-nbbuild/
-dist/
-nbdist/
-.nb-gradle/
-.nb-gradle-properties
-
 # Gradle files
 .gradle/
 build/
@@ -60,9 +53,10 @@ src/test/
 gradle/
 gradlew
 gradlew.bat
-libs/
 *.txt
 restart.sh
 start.sh
 *.json
 *.jar
+*.gc
+*.php

@@ -108,6 +108,6 @@ public class Beam implements Command {
      */
     @Override
     public void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Beam");
+        new Tracker("Command");
     }
 }

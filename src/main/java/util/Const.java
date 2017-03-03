@@ -18,8 +18,6 @@
 
 package util;
 
-import langs.*;
-
 /**
  * Common variables used throughout
  *
@@ -38,5 +36,4 @@ public interface Const {
     String BOT_NAME = "Now Live";
     String PLAYING = COMMAND_PREFIX + COMMAND + " help";
     String LOG_CHANNEL = PropReader.getInstance().getProp().getProperty("discord.log.chan");
-    String LIST_SETTINGS = En.LIST_SETTINGS;
 }

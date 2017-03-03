@@ -55,6 +55,6 @@ public class Help implements Command {
 
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Help");
+        new Tracker("Command");
     }
 }

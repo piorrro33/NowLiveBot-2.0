@@ -556,17 +556,17 @@ public class Twitch implements Command {
             }
 
             if (twitchData.action(query)) {
-                message.append(String.format("\n# Added game(s): %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchGameAdd"),
                         gameAddNameList.toString().replaceAll("[\\[\\]]", "")));
                 if (discordChannelId != null) {
-                    message.append(String.format("\n# The game will announce in: #%s.",
+                    message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchGameAnnounce"),
                             event.getGuild().getTextChannelById(discordChannelId).getName()));
                 } else {
-                    message.append(String.format("\n# The game will announce in: #%s.",
+                    message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchGameAnnounce"),
                             event.getGuild().getTextChannelById(globalAnnounceChannelId).getName()));
                 }
             } else {
-                message.append(String.format("\n# Failed to add game(s): %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchGameAddFail"),
                         gameAddNameList.toString().replaceAll("[\\[\\]]", "")));
             }
         }
@@ -581,7 +581,7 @@ public class Twitch implements Command {
                         updateGameNames.toString().replaceAll("[\\[\\]]", ""),
                         discordChannelName));
             } else {
-                message.append(String.format("\n! Failed to change the Twitch announce channel for %s to: %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchAnnounceUpdateFail"),
                         updateGameNames.toString().replaceAll("[\\[\\]]", ""),
                         discordChannelName));
             }
@@ -595,10 +595,10 @@ public class Twitch implements Command {
                     gameDeleteList.toString());
 
             if (twitchData.action(query)) {
-                message.append(String.format("\n# Removed game(s): %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchGameRemove"),
                         gameDeleteNameList.toString().replaceAll("[\\[\\]]", "")));
             } else {
-                message.append(String.format("\n# Failed to remove game(s): %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchGameRemoveFail"),
                         gameDeleteNameList.toString().replaceAll("[\\[\\]]", "")));
             }
         }
@@ -768,28 +768,28 @@ public class Twitch implements Command {
             }
 
             if (twitchData.action(query)) {
-                message.append(String.format("\n# Added channels: %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchChannelAdd"),
                         addedChannels.toString().replaceAll("[\\[\\]]", "")));
 
                 if (discordChannelId != null) {
-                    message.append(String.format("\n# They will be announced in: #%s.",
+                    message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchChannelAnnounce"),
                             Main.getJDA().getTextChannelById(discordChannelId).getName()));
                 } else {
-                    message.append(String.format("\n# They will be announced in: #%s.",
+                    message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchChannelAnnounce"),
                             Main.getJDA().getTextChannelById(globalAnnounceChannelId).getName()));
                 }
 
                 if (gameFilter != null && gameFilter.size() > 0) {
-                    message.append(String.format("\n# They will only be announced when they are playing: %s.",
+                    message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchChannelGameFilter"),
                             gameFilter.toString().replaceAll("[\\[\\]]", "")));
                 }
 
                 if (titleFilter != null && titleFilter != null) {
-                    message.append(String.format("\n# They will only be announced when these words are in the title: %s.",
+                    message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchChannelTitleFilter"),
                             titleFilter.toString().replaceAll("[\\[\\]]", "")));
                 }
             } else {
-                message.append(String.format("\n# Failed to add channels: %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchChannelAddFail"),
                         addedChannels.toString().replaceAll("[\\[\\]]", "")));
             }
             insertChannelData.setLength(0);
@@ -806,7 +806,7 @@ public class Twitch implements Command {
                         channel.values().toString().replaceAll("[\\[\\]]", ""),
                         discordChannelName));
             } else {
-                message.append(String.format("\n! Failed to change the announce channel for %s to: %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchAnnounceUpdateFail"),
                         channel.values().toString().replaceAll("[\\[\\]]", ""),
                         discordChannelName));
             }
@@ -818,10 +818,10 @@ public class Twitch implements Command {
                     deleteChannelData);
 
             if (twitchData.action(query)) {
-                message.append(String.format("\n# Removed channels: %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchChannelRemove"),
                         deletedChannels.toString().replaceAll("[\\[\\]]", "")));
             } else {
-                message.append(String.format("\n! Failed to delete channels: %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchChannelRemoveFail"),
                         deletedChannels.toString().replaceAll("[\\[\\]]", "")));
             }
             deleteChannelData.setLength(0);
@@ -876,10 +876,10 @@ public class Twitch implements Command {
                     gFilterAddList.toString());
 
             if (twitchData.action(query)) {
-                message.append(String.format("\n# Added game filter(s): %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchGameFilterAdd"),
                         gFilterAddNameList.toString().replaceAll("[\\[\\]]", "")));
             } else {
-                message.append(String.format("\n# Failed to add game filter(s): %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchGameFilterAddFail"),
                         gFilterAddNameList.toString().replaceAll("[\\[\\]]", "")));
             }
         }
@@ -891,10 +891,10 @@ public class Twitch implements Command {
                     gFilterDeleteList.toString());
 
             if (twitchData.action(query)) {
-                message.append(String.format("\n# Removed game filter(s): %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchGameFilterRemove"),
                         gFilterDeleteNameList.toString().replaceAll("[\\[\\]]", "")));
             } else {
-                message.append(String.format("\n# Failed to remove game filter(s): %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchGameFilterRemoveFail"),
                         gFilterDeleteNameList.toString().replaceAll("[\\[\\]]", "")));
             }
         }
@@ -938,10 +938,10 @@ public class Twitch implements Command {
                     tFilterAddList.toString());
 
             if (twitchData.action(query)) {
-                message.append(String.format("\n# Added title filter(s): %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchTitleFilterAdd"),
                         tFilterAddNameList.toString().replaceAll("[\\[\\]]", "")));
             } else {
-                message.append(String.format("\n# Failed to add title filter(s): %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchTitleFilterAddFail"),
                         tFilterAddNameList.toString().replaceAll("[\\[\\]]", "")));
             }
         }
@@ -953,10 +953,10 @@ public class Twitch implements Command {
                     tFilterDeleteList.toString());
 
             if (twitchData.action(query)) {
-                message.append(String.format("\n# Removed title filter(s): %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchTitleFilterRemove"),
                         tFilterDeleteNameList.toString().replaceAll("[\\[\\]]", "")));
             } else {
-                message.append(String.format("\n# Failed to remove title filter(s): %s.",
+                message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchTitleFilterRemoveFail"),
                         tFilterDeleteNameList.toString().replaceAll("[\\[\\]]", "")));
             }
         }

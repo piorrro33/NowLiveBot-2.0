@@ -20,6 +20,7 @@ package platform.discord.controller;
 
 import core.Main;
 import langs.LocaleString;
+import net.dv8tion.jda.client.exceptions.VerificationLevelException;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.MessageBuilder;
@@ -31,6 +32,7 @@ import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.core.exceptions.ErrorResponseException;
+import net.dv8tion.jda.core.exceptions.PermissionException;
 import net.dv8tion.jda.core.requests.ErrorResponse;
 import util.Const;
 import util.DiscordLogger;
@@ -178,7 +180,7 @@ public class DiscordController {
         return -1;
     }
 
-    private synchronized MessageBuilder notifyLevel(String textChannel, Map<String, String> data, String guildId, MessageBuilder message) {
+    private synchronized MessageBuilder notifyLevel(String textChannel, Map<String, String> data, MessageBuilder message) {
         try {
             query = "SELECT `level`, `userId` FROM `notification` WHERE `guildId` = ?";
             if (nlConnection == null || nlConnection.isClosed()) {
@@ -186,7 +188,7 @@ public class DiscordController {
             }
             nlStatement = nlConnection.prepareStatement(query);
 
-            nlStatement.setString(1, guildId);
+            nlStatement.setString(1, data.get("guildId"));
             nlResult = nlStatement.executeQuery();
 
             // Not going to add these to the Lang files because they will eventually be tokenized for customization
@@ -195,30 +197,35 @@ public class DiscordController {
                     case 1: // User wants a @User mention
                         String userId = nlResult.getString("userId");
                         User user = Main.getJDA().getUserById(userId);
-                        message.append("Hey ");
-                        message.append(user);
-                        message.append("! Check out this streamer that just went live!");
+                        message.append(String.format(LocaleString.getString(data.get("guildId"), "announcementMentionMessageText"),
+                                user,
+                                data.get("channelDisplayName"),
+                                data.get("channelUrl")));
                         break;
                     case 2: // User wants @here mention
-                        if (Main.getJDA().getGuildById(guildId).getSelfMember().hasPermission(Main.getJDA().getTextChannelById(textChannel), Permission.MESSAGE_MENTION_EVERYONE)) {
-                            message.append("Hey ");
-                            message.append(MessageBuilder.HERE_MENTION);
-                            message.append("! Check out this streamer that just went live!");
+                        if (Main.getJDA().getGuildById(data.get("guildId")).getSelfMember().hasPermission(Main.getJDA().getTextChannelById(textChannel), Permission.MESSAGE_MENTION_EVERYONE)) {
+                            message.append(String.format(LocaleString.getString(data.get("guildId"), "announcementMentionMessageText"),
+                                    MessageBuilder.HERE_MENTION,
+                                    data.get("channelDisplayName"),
+                                    data.get("channelUrl")));
                         } else {
                             permsEveryoneBuilder(data, Main.getJDA());
                         }
                         break;
                     case 3: // User wants @everyone mention
-                        if (Main.getJDA().getGuildById(guildId).getSelfMember().hasPermission(Main.getJDA().getTextChannelById(textChannel), Permission.MESSAGE_MENTION_EVERYONE)) {
-                            message.append("Hey ");
-                            message.append(MessageBuilder.EVERYONE_MENTION);
-                            message.append("! Check out this streamer that just went live!");
+                        if (Main.getJDA().getGuildById(data.get("guildId")).getSelfMember().hasPermission(Main.getJDA().getTextChannelById(textChannel), Permission.MESSAGE_MENTION_EVERYONE)) {
+                            message.append(String.format(LocaleString.getString(data.get("guildId"), "announcementMentionMessageText"),
+                                    MessageBuilder.EVERYONE_MENTION,
+                                    data.get("channelDisplayName"),
+                                    data.get("channelUrl")));
                         } else {
                             permsEveryoneBuilder(data, Main.getJDA());
                         }
                         break;
                     default:
-                        // No mention
+                        message.append(String.format(LocaleString.getString(data.get("guildId"), "announcementNoMentionMessageText"),
+                                data.get("channelDisplayName"),
+                                data.get("channelUrl")));
                         break;
                 }
             }
@@ -323,7 +330,6 @@ public class DiscordController {
                 // Never should hit
                 break;
         }
-
         switch (action) {
             case "new":
                 eBuilder.setAuthor(displayName + LocaleString.getString(guildId, "nowStreamingEmbed"),
@@ -357,7 +363,7 @@ public class DiscordController {
         MessageEmbed embed = eBuilder.build();
         MessageBuilder mBuilder = new MessageBuilder();
 
-        notifyLevel(textChannel, streamData, guildId, mBuilder);
+        notifyLevel(textChannel, streamData, mBuilder);
 
         mBuilder.setEmbed(embed);
 
@@ -502,7 +508,7 @@ public class DiscordController {
                                                     }
                                                     edited.append(editStream);
 
-                                                    if (edited.length() > 1900) {
+                                                    if (edited.length() > 1800) {
                                                         String loggerBuilder = "```Markdown\n# Announcements Edited\n " + edited + "```";
                                                         new DiscordLogger(loggerBuilder, null);
                                                         edited = new StringBuilder();
@@ -544,7 +550,7 @@ public class DiscordController {
                                                     }
                                                     deleted.append(deleteStreamBuilder);
 
-                                                    if (deleted.length() > 1900) {
+                                                    if (deleted.length() > 1800) {
                                                         String loggerBuilder = "```Markdown\n# Announcements Deleted\n " + deleted + "```";
                                                         new DiscordLogger(loggerBuilder, null);
                                                         deleted = new StringBuilder();
@@ -622,6 +628,12 @@ public class DiscordController {
 
                                             try {
                                                 messageId = jda.getTextChannelById(announceChannel).sendMessage(message).complete().getId();
+                                            } catch (PermissionException pe) {
+                                                System.out.println("Permissions Exception");
+                                                pe.printStackTrace();
+                                            } catch (VerificationLevelException vle) {
+                                                System.out.println("Verification Level Exception Exception");
+                                                vle.printStackTrace();
                                             } catch (IllegalArgumentException iae) {
                                                 System.out.println("Runtime Exception");
                                                 iae.printStackTrace();
@@ -646,7 +658,7 @@ public class DiscordController {
                                                     }
                                                     announced.append(currentStream);
 
-                                                    if (announced.length() > 1900) {
+                                                    if (announced.length() > 1800) {
                                                         String loggerBuilder = "```Markdown\n# Streams Announced\n " + announced.toString() + "```";
                                                         new DiscordLogger(loggerBuilder, null);
                                                         announced = new StringBuilder();
@@ -666,9 +678,6 @@ public class DiscordController {
                                                         new Tracker("Twitch Streams");
                                                         break;
                                                 }
-                                            } else {
-                                                DeleteTwitchStream deleteStream = new DeleteTwitchStream();
-                                                deleteStream.process(streamData.get("guildId"), streamData.get("channelId"));
                                             }
                                         } else {
                                             DeleteTwitchStream deleteStream = new DeleteTwitchStream();

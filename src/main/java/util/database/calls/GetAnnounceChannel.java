@@ -31,10 +31,10 @@ public class GetAnnounceChannel {
     private Connection connection;
     private PreparedStatement pStatement;
     private ResultSet result;
-    private String query;
 
     public synchronized String action(String guildId, String column, String value) {
 
+        String query;
         switch (column) {
             case "channel":
                 query = "SELECT `announceChannel` FROM `twitch` WHERE `guildId` = ? AND `channelId` = ?";

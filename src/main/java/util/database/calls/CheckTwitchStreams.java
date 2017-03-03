@@ -59,4 +59,33 @@ public class CheckTwitchStreams {
         }
         return true; // Found in the stream table
     }
+
+    public synchronized Boolean checkMessageId(String channelId, String guildId) {
+        PreparedStatement pStatement = null;
+        ResultSet result = null;
+
+        try {
+            String query = "SELECT COUNT(*) AS `count` FROM `twitchstreams` WHERE `channelId` = ? AND `guildId` = ? AND `messageId` IS NOT NULL";
+
+            if (connection == null || connection.isClosed()) {
+                this.connection = Database.getInstance().getConnection();
+            }
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, channelId);
+            pStatement.setString(2, guildId);
+            result = pStatement.executeQuery();
+
+            if (result.next()) {
+                Integer count = result.getInt("count");
+                if (count.equals(1)) {
+                    return true; // Stream announced
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
+        }
+        return false; // Stream not announced
+    }
 }

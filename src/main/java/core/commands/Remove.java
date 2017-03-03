@@ -117,13 +117,19 @@ public class Remove implements Command {
     }
 
     private synchronized void removeResponse(GuildMessageReceivedEvent event, Integer resultVar) {
+        StringBuilder message = new StringBuilder();
+        message.append("```Markdown\n");
+        message.append("# ");
         if (resultVar > 0) {
-            sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "removed") +
-                    "`" + this.option + "` " + this.argument);
+            message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "removed"),
+                    "manager",
+                    this.argument));
         } else {
-            sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "removeFail1") +
-                    "`" + this.option + "`" + this.argument + LocaleString.getString(event.getMessage().getGuild().getId(), "removeFail2"));
+            message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "removeFail"),
+                    this.argument));
         }
+        message.append("```");
+        sendToChannel(event, message.toString());
     }
 
     @Override

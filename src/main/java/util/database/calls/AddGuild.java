@@ -50,10 +50,6 @@ public class AddGuild {
 
     private synchronized String getQuery(String table) {
         switch (table) {
-            case "channel":
-                return "SELECT COUNT(channelName) AS `count` FROM `twitch` WHERE `guildId` = ?";
-            case "filter":
-                return "SELECT COUNT(gameFilter) AS `count` FROM `twitch` WHERE `guildId` = ?";
             case "guild":
                 return "SELECT COUNT(*) AS `count` FROM `guild` WHERE `guildId` = ?";
             case "manager":
@@ -62,12 +58,10 @@ public class AddGuild {
                 return "SELECT COUNT(*) AS `count` FROM `notification` WHERE `guildId` = ?";
             case "permission":
                 return "SELECT COUNT(*) AS `count` FROM `permission` WHERE `guildId` = ?";
-            case "stream":
-                return "SELECT COUNT(streamsId) AS `count` FROM `twitchstreams` WHERE `guildId` = ?";
-            case "tag":
-                return "SELECT COUNT(titleFilter) AS `count` FROM `twitch` WHERE `guildId` = ?";
-            case "team":
-                return "SELECT COUNT(teamName) AS `count` FROM `twitch` WHERE `guildId` = ?";
+            case "twitch":
+                return "SELECT COUNT(*) AS `count` FROM `twitch` WHERE `guildId` = ?";
+            case "twitchstreams":
+                return "SELECT COUNT(*) AS `count` FROM `twitchstreams` WHERE `guildId` = ?";
             default:
                 break;
         }
@@ -81,6 +75,8 @@ public class AddGuild {
         tableList.add("manager");
         tableList.add("notification");
         tableList.add("permission");
+        tableList.add("twitch");
+        tableList.add("twitchstreams");
 
         for (String table : tableList) {
             try {

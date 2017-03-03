@@ -77,7 +77,8 @@ public class Streams implements Command {
         }
         if (rowCount.equals(0)) {
             MessageBuilder noneOnline = new MessageBuilder();
-            noneOnline.append(LocaleString.getString(event.getMessage().getGuild().getId(), "noneOnline"));
+            noneOnline.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "noneOnline"),
+                    event.getAuthor().getName()));
             sendToPm(event, noneOnline.build());
         } else {
             try {

@@ -51,7 +51,7 @@ public class TwitchController {
     private HttpClient client = HttpClientBuilder.create().build();
     private HttpGet get;
     private HttpResponse response;
-    private ConcurrentHashMap<Integer, Stream> online = new ConcurrentHashMap<>();
+    private CopyOnWriteArrayList<Stream> online = new CopyOnWriteArrayList<>();
 
     public TwitchController() {
     }
@@ -348,13 +348,9 @@ public class TwitchController {
     }
 
     public final synchronized void checkLiveStreams() {
-        System.out.println("Starting channels");
         channels(new CopyOnWriteArrayList<>(), "channel", null);
-        System.out.println("Starting teams");
         teams();
-        System.out.println("Starting games");
         games();
-        System.out.println("Starting communities");
         communities();
     }
 
@@ -652,7 +648,7 @@ public class TwitchController {
                     && stream.getChannel().getGame() != null
                     && !stream.getChannel().getGame().isEmpty()) {
                 if (gameFilterCheck(stream, flag, name) && titleFilterCheck(stream, flag, name)) {
-                    online.put(count, stream);
+                    online.addIfAbsent(stream);
                     count++;
                 }
             }

@@ -21,6 +21,7 @@ package core.commands;
 import core.Command;
 import langs.LocaleString;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.core.exceptions.PermissionException;
 import util.DiscordLogger;
 import util.database.Database;
 import util.database.calls.Tracker;
@@ -59,8 +60,13 @@ public class Announce implements Command {
 
             result = pStatement.executeQuery();
             while (result.next()) {
-                event.getJDA().getGuildById(result.getString("guildId")).getPublicChannel()
-                        .sendMessage(LocaleString.getString(event.getMessage().getGuild().getId(), "devMessage") + args).queue();
+                try {
+                    event.getJDA().getGuildById(result.getString("guildId")).getPublicChannel()
+                            .sendMessage(LocaleString.getString(event.getMessage().getGuild().getId(), "devMessage") + args).complete();
+                } catch (PermissionException pe) {
+                    System.out.println("Permissions exception.");
+                    pe.printStackTrace();
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -75,7 +81,6 @@ public class Announce implements Command {
 
     @Override
     public final void help(GuildMessageReceivedEvent event) {
-        // TODO: Add some sort of check for being a bot admin here so this doesn't show up to guild owners and users
         sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "announceHelp"));
     }
 

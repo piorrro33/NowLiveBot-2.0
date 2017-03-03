@@ -38,13 +38,15 @@ public class LanguageBundle extends ListResourceBundle {
                     + "\n\t<option> <content>"
                     + "\n\tmanager - The @ mention of the user to add as a manager"
                     + "\n\n## EXAMPLE: " + Const.COMMAND_PREFIX + Const.COMMAND + " add manager @Ague```"},
-            {"adminOverride", "*Permission of this command have been overridden by a bot developer.*"},
+            {"adminOverride", "*Permission of this command have been overridden by a developer.*"},
             {"alreadyExists", "It looks like you already added that to my database. ¯\\_(ツ)_/¯"},
             {"alreadyManager", "It seems I've already hired that user as a manager.  Find moar humanz!"},
             {"announceHelp", "```Markdown\n# ANNOUNCE\n* Shhh...  I'm a secret...\n\n## USAGE:  "
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
                     + " announce <content>\n\tThis command is only available to the developers.```"},
+            {"announcementMentionMessageText", "Hey %s! %s has just gone live! Watch their stream here: %s"},
+            {"announcementNoMentionMessageText", "Hey! %s has just gone live! Watch their stream here: %s"},
             {"beamHelp", "```Markdown\n# BEAM\n* Add and remove things that are Beam.pro related.\n\n## USAGE:  "
                     + Const.COMMAND_PREFIX + Const.COMMAND + " beam <sub-command> <option> <argument>\n"
                     + "\t<sub-command> <option> <argument>\n"
@@ -101,7 +103,7 @@ public class LanguageBundle extends ListResourceBundle {
                     " help` for a list of my commands.\n\nIf you need some help setting me up, come " +
                     "join my Discord at " + Const.DISCORD_URL + " and check out the how-to-setup and command-list " +
                     "channels for all the info!\n\nDon't forget to say hey!"},
-            {"helpPm", "Hey there %s! So I hear you're looking for some help? Below is a list of my commands.\n\n" +
+            {"helpPm", "Hey there, %s! So I hear you're looking for some help? Below is a list of my commands.\n\n" +
                     "```Markdown\n" +
                     "# ADD\n" +
                     "* Used to add information to my database. For more information, type: " +
@@ -151,9 +153,8 @@ public class LanguageBundle extends ListResourceBundle {
                     "Ague is still working hard to finish up new things for me to do for you!\n\n~~" + Const.BOT_NAME + "\n\n" +
                     "If you need additional help, join my Discord.  Lots of helpful people there:  " + Const.DISCORD_URL + "\n\n" +
                     "***P.S. I don't monitor this mailbox, so please don't send me any messages through PM***"},
-            {"incorrectArgs", "You passed incorrect or missing arguments to me.  Check the help command for more info" +
-                    "."},
-            {"invite", "Hey buddy! Invite me to your server!\n\n\t"
+            {"incorrectArgs", "You passed incorrect or missing arguments to me.  Check the help command for more info."},
+            {"invite", "Hey %s! Invite me to your server!\n\n\t"
                     + "**Click here:** https://discordapp.com/oauth2/authorize?&client_id="
                     + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=8"},
             {"inviteHelp", "```Markdown\n# INVITE\n* Used to display my invite link.\n\n## USAGE:  "
@@ -162,13 +163,14 @@ public class LanguageBundle extends ListResourceBundle {
                     + " invite\n\tInvite NowLive bot to your Discord Server.```"},
             {"listHelp", "```Markdown\n# LIST\n* This command lists things from the database.\n\n## USAGE:  "
                     + Const.COMMAND_PREFIX + Const.COMMAND + " list *option*"
-                    + "\n\tchannel     - I'll list out all of the individual stream channels you want me to watch"
-                    + "\n\tgamefilter  - I'll list all of the game filters that you have set up"
-                    + "\n\tgame        - List the games that I'm tracking for you"
-                    + "\n\tmanager     - Lists the managers of your channel"
-                    + "\n\ttitlefilter - Lists your title filters"
-                    + "\n\tteam        - Lists the Twitch teams you follow"
-                    + "\n\tsetting     - Lists common bot settings"
+                    + "\n\ttwitchChannel   - Lists the Twitch Channels you follow"
+                    + "\n\ttwitchCommunity - List the Twitch Communities you follow"
+                    + "\n\tgamefilter      - Lists all game filters you have set up"
+                    + "\n\ttwitchGame      - List the Twitch Games that I'm tracking for you"
+                    + "\n\tmanager         - Lists the managers of your server"
+                    + "\n\ttitlefilter     - Lists all title filters you have set up"
+                    + "\n\ttwitchTeam      - Lists the Twitch teams you follow"
+                    + "\n\tsetting         - Lists common bot settings"
                     + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " list channel" + "```"},
             {"listSettings", "```Markdown\n" +
                     "# Bot Settings on Your Server" +
@@ -187,12 +189,13 @@ public class LanguageBundle extends ListResourceBundle {
                     + " move <channel>\n\t"
                     + "<channel> - The name of the channel you wish to move my announcements to (MUST include the #)"
                     + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " move #discordchannel" + "```"},
-            {"moveSuccess", " :ok_hand: I'll announce over there! :arrow_right: "},
-            {"needOneManager", "If you remove that one, who will manage me?"},
+            {"moveSuccess", " :ok_hand: I'll announce over there!"},
+            {"needOneManager", "If you remove that manager, who will manage me?"},
             {"noBotManager", "It's against the Discord Bot Union By-Laws for bots to manage me. Sorry, try and find a " +
                     "suitable human for the job. :thumbsup:"},
-            {"noneOnline", "Sorry bud, but there's nobody online right now that this Discord is following."},
-            {"notAManager", "Sorry, but only my managers can do that."},
+            {"noneOnline", "Sorry %s, but there's nobody online right now that this server is following."},
+            {"notAManager", "Sorry, but only my managers can do that. Type `" + Const.COMMAND_PREFIX + Const.COMMAND +
+                    " list manager` for a list of people that can."},
             {"notAnAdmin", "To whom it may concern:  I am your servant, but you are not my master."},
             {"notifyEveryone", ":tada: WHOA!!  **EVERYONE** that belongs to the server will get notified when I " +
                     "announce streams!  *(Are you sure?  I don't recommend this for large servers...  It can make " +
@@ -223,16 +226,13 @@ public class LanguageBundle extends ListResourceBundle {
                     + Const.COMMAND_PREFIX + Const.COMMAND + " ping```"},
             {"privateMessageReply", "I'm sorry, but the bot you are trying to reach has a voice mail box that has not " +
                     "been setup yet.  Please try your PM again later."},
-            {"removed", "Removed "},
-            {"removeFail1", "I can't remove "},
-            {"removeFail2", " because it's not in my database."},
-            {"removeHelp", "```Markdown\n# REMOVE\n* Used to remove something from my database.\n\n## USAGE:  "
+            {"removed", "Removed %s %s."},
+            {"removeManagerFail", "I can't remove %s because they are not in my database."},
+            {"removeHelp", "```Markdown\n# REMOVE\n* Used to remove managers from my database.\n\n## USAGE:  "
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
                     + " remove <option> <content>"
                     + "\n\t<option>\t<content>"
-                    + "\n\tfilter  - The game name that you want to filter streamers by"
-                    + "\n\tgame    - The name of the game exactly as it appears on the streaming platform"
                     + "\n\tmanager - The @ mention of the user to add as a manager"
                     + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " remove filter Overwatch```"},
             {"servers", "Servers"},
@@ -255,23 +255,59 @@ public class LanguageBundle extends ListResourceBundle {
                     + " streams```"},
             {"totalViewsEmbed", "Total Views"},
             {"twitchCommunities", "Twitch Communities"},
-            {"twitchHelp", "```Markdown\n# TWITCH\n* Add and remove things that are Twitch.tv related.\n\n## USAGE:  "
-                    + Const.COMMAND_PREFIX
-                    + Const.COMMAND
-                    + " twitch <sub-command> <option> <argument>"
-                    + "\n\t<sub-command> <option> <argument>"
-                    + "\n\tadd           channel  <channel-name>"
-                    + "\n\tremove        channel  <channel-name>"
-                    + "\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " twitch add channel aguemort"
-                    + "\n\n- NOTE:  Do NOT include the full URL!  It will not work!  Use ONLY the channel name!```"},
             {"twitchAnnounceUpdate", "\n# Updated the Twitch announcement channel for %s to: %s."},
             {"twitchAnnounceUpdateFail", "\n! Failed to change the Twitch announce channel for %s to: %s."},
+            {"twitchChannelAdd", "\n# Added channel(s): %s."},
+            {"twitchChannelAddFail", "\n# Failed to add channels: %s."},
+            {"twitchChannelAnnounce", "\n# They will be announced in: #%s."},
+            {"twitchChannelGameFilter", "\n# They will only be announced when they are playing: %s."},
+            {"twitchChannelRemove", "\n# Removed channels: %s."},
+            {"twitchChannelRemoveFail", "\n! Failed to delete channels: %s."},
+            {"twitchChannelTitleFilter", "\n# They will only be announced when these words are in the title: %s."},
             {"twitchCommunityAdd", "\n# Added community(s): %s."},
             {"twitchCommunityAddFail", "\n# Failed to add community(s): %s."},
             {"twitchCommunityAnnounce", "\n# The community(s) will announce in: #%s."},
             {"twitchCommunityNotFound", "\n# Community(s) not found on Twitch: %s."},
             {"twitchCommunityRemove", "\n# Removed community(s): %s."},
             {"twitchCommunityRemoveFail", "\n# Failed to remove community(s): %s."},
+            {"twitchGameAdd", "\n# Added game(s): %s."},
+            {"twitchGameAddFail", "\n# Failed to add game(s): %s."},
+            {"twitchGameAnnounce", "\n# The game will announce in: #%s."},
+            {"twitchGameFilterAdd", "\n# Added game filter(s): %s."},
+            {"twitchGameFilterAddFail", "\n# Failed to add game filter(s): %s."},
+            {"twitchGameFilterRemove", "\n# Removed game filter(s): %s."},
+            {"twitchGameFilterRemoveFail", "\n# Failed to remove game filter(s): %s."},
+            {"twitchGameRemove", "\n# Removed game(s): %s."},
+            {"twitchGameRemoveFail", "\n# Failed to remove game(s): %s."},
+            {"twitchHelp", "```Markdown\n# TWITCH\n* Add and remove things that are Twitch.tv related.\n"
+                    + "* Notes:\n\t"
+                    + "To add game filters and title filters, you MUST include the brackets.\n\t"
+                    + "Do NOT use the full Twitch URL. It will not work!! Use only the channel name (www.twitch.tv/channelName)\n\t"
+                    + "The Team name must be from the URL, not the display name of the team. (www.twitch.tv/team/teamName)\n\t"
+                    + "You may add multiple channels, teams, games, communities, game and title filters by using the pipe character | between them.\n\t"
+                    + "The only required options are: channelName/communityName/teamName/gameName\n\n"
+                    + "## Twitch Channels\n"
+                    + "Note: Adding an announcement channel, game and title filters are optional."
+                    + "* Format: " + Const.COMMAND_PREFIX + Const.COMMAND + " twitch channel channelName #announcementChannel {gameFilters} [titleFilters]\n\n"
+                    + "## Twitch Communities (Announce ALL live streams in the community)\n"
+                    + "* Format: " + Const.COMMAND_PREFIX + Const.COMMAND + " twitch community communityName #announcementChannel\n\n"
+                    + "## Twitch Games (Announce ALL live streams for that game)\n"
+                    + "* Format: " + Const.COMMAND_PREFIX + Const.COMMAND + " twitch game gameName #announcementChannel\n\n"
+                    + "## Twitch Teams (Announce ALL live streams in the team)\n"
+                    + "* Format: " + Const.COMMAND_PREFIX + Const.COMMAND + " twitch team teamName #announcementChannel\n\n"
+                    + "## Twitch Game Filters (Global)\n"
+                    + "* NOTE: This affects all stream announcements for Twitch\n"
+                    + "* Format: " + Const.COMMAND_PREFIX + Const.COMMAND + " twitch gamefilter {gameName|gameName} #announcementChannel\n\n"
+                    + "## Twitch Title Filters (Global)\n"
+                    + "* NOTE: This affects all stream announcements for Twitch\n"
+                    + "* Format: " + Const.COMMAND_PREFIX + Const.COMMAND + " twitch titlefilter gameName #announcementChannel\n\n"
+                    + "* Examples:\n\t"
+                    + Const.COMMAND_PREFIX + Const.COMMAND + " twitch channel AgueMort #live-streams {Overwatch|World of "
+                    + "Warcraft} (adds a channel to announce in a certain channel and game filters)\n\t"
+                    + Const.COMMAND_PREFIX + Const.COMMAND + " twitch game Overwatch (adds a game to the global announcement channel)\n\t"
+                    + Const.COMMAND_PREFIX + Const.COMMAND + " twitch community MMORPG #live-streams (adds the community with a specified announcement channel)\n\t"
+                    + Const.COMMAND_PREFIX + Const.COMMAND + " twitch team thekingdom #the-kingdom-streamers (adds a team with a specific announcement channel)\n\n"
+                    + "```"},
             {"twitchTeamAdd", "\n# Added team(s): %s."},
             {"twitchTeamAddFail", "\n# Failed to add team(s): %s."},
             {"twitchTeamAnnounce", "\n# The team(s) will announce in: #%s."},
@@ -279,6 +315,10 @@ public class LanguageBundle extends ListResourceBundle {
             {"twitchTeamRemove", "\n# Removed team(s): %s."},
             {"twitchTeamRemoveFail", "\n# Failed to remove team(s): %s."},
             {"twitchTeams", "Twitch Teams"},
+            {"twitchTitleFilterAdd", "\n# Added title filter(s): %s."},
+            {"twitchTitleFilterAddFail", "\n# Failed to add title filter(s): %s."},
+            {"twitchTitleFilterRemove", "\n# Removed title filter(s): %s."},
+            {"twitchTitleFilterRemoveFail", "\n# Failed to remove title filter(s): %s."},
             {"typeOnce", "You only need to type that part once, silly."},
             {"uniqueChannels", "Unique Channels %s"},
             {"uniqueGames", "Unique Games %s"},

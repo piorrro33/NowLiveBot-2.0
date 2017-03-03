@@ -24,7 +24,7 @@ import util.database.Database;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
@@ -32,11 +32,11 @@ public class AddTwitchStream {
     private Connection connection;
     private PreparedStatement pStatement;
 
-    public AddTwitchStream(ConcurrentHashMap<Integer, Stream> streams, String flag) {
+    public AddTwitchStream(CopyOnWriteArrayList<Stream> streams, String flag) {
         process(streams, flag);
     }
 
-    private synchronized void process(ConcurrentHashMap<Integer, Stream> streams, String flag) {
+    private synchronized void process(CopyOnWriteArrayList<Stream> streams, String flag) {
         if (streams.size() > 0) {
             try {
                 String query = "INSERT INTO `twitchstreams` " +
@@ -52,7 +52,7 @@ public class AddTwitchStream {
 
                 this.pStatement = connection.prepareStatement(query);
 
-                streams.values().forEach(stream -> {
+                streams.forEach(stream -> {
                     String guildId = stream.getAdditionalProperties().get("guildId").toString();
 
                     CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();

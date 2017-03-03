@@ -854,7 +854,7 @@ public class Twitch implements Command {
                     }
                     gFilterAddList.append(String.format("('%s','%s')",
                             event.getGuild().getId(),
-                            gFilter));
+                            gFilter.replaceAll("'", "''")));
                     gFilterAddNameList.append(gFilter);
                 } else {
                     if (gFilterDeleteList.length() > 0) {
@@ -863,7 +863,7 @@ public class Twitch implements Command {
                     }
                     gFilterDeleteList.append(String.format("('%s','%s')",
                             event.getGuild().getId(),
-                            gFilter));
+                            gFilter.replaceAll("'", "''")));
                     gFilterDeleteNameList.append(gFilter);
                 }
             });
@@ -917,7 +917,7 @@ public class Twitch implements Command {
                     }
                     tFilterAddList.append(String.format("('%s','%s')",
                             event.getGuild().getId(),
-                            tFilter));
+                            tFilter.replaceAll("'", "''")));
                     tFilterAddNameList.append(tFilter);
                 } else {
                     if (tFilterDeleteList.length() > 0) {
@@ -926,7 +926,7 @@ public class Twitch implements Command {
                     }
                     tFilterDeleteList.append(String.format("('%s','%s')",
                             event.getGuild().getId(),
-                            tFilter));
+                            tFilter.replaceAll("'", "''")));
                     tFilterDeleteNameList.append(tFilter);
                 }
             });

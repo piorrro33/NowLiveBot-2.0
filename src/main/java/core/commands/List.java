@@ -47,7 +47,7 @@ public class List implements Command {
     private String option;
     private String query;
     private String guildId;
-    private String[] options = new String[]{"channel", "gamefilter", "game", "manager", "titlefilter", "team", "help", "setting"};
+    private String[] options = new String[]{"twitchChannel", "gamefilter", "twitchGame", "manager", "titlefilter", "twitchTeam", "help", "setting", "twitchCommunity"};
 
     /**
      * Used to determine if appropriate arguments exist
@@ -95,11 +95,11 @@ public class List implements Command {
         message.append("!  Here's the info you asked for:\n\n");
 
         switch (option) {
-            case "channel":
+            case "twitchChannel":
                 query = "SELECT `channelName` FROM `twitch` WHERE `guildId` = ? AND `channelId` IS NOT NULL ORDER BY `channelName` ASC";
                 message.append("__Twitch Channels__\n\t");
                 break;
-            case "game":
+            case "twitchGame":
                 query = "SELECT `gameName` FROM `twitch` WHERE `guildId` = ? AND `gameName` IS NOT NULL ORDER BY `gameName` ASC";
                 message.append("__Twitch Games__\n\t");
                 break;
@@ -115,8 +115,12 @@ public class List implements Command {
                 query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` IS NOT NULL ORDER BY `titleFilter` ASC";
                 message.append("__Title Filters__\n\t");
                 break;
-            case "team":
+            case "twitchTeam":
                 query = "SELECT `teamName` FROM `twitch` WHERE `guildId` = ? AND `teamName` IS NOT NULL ORDER BY `teamName` ASC";
+                message.append("__Twitch Teams__\n\t");
+                break;
+            case "twitchCommunity":
+                query = "SELECT `communityName` FROM `twitch` WHERE `guildId` = ? AND `communityName` IS NOT NULL ORDER BY `communityName` ASC";
                 message.append("__Twitch Teams__\n\t");
                 break;
             case "setting":
@@ -255,7 +259,7 @@ public class List implements Command {
                 notify = resultSet.getInt(1);
             }
 
-            message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "listHelp"),
+            message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "listSettings"),
                     (compact == 0 ? "On" : "Off"),
                     (notify == 0 ? "no one" : notify == 2 ? "here" : "everyone"),
                     (cleanup == 0 ? "do nothing" : cleanup == 1 ? "edit" : "delete"),

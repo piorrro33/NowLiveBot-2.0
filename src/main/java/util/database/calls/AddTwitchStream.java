@@ -53,42 +53,44 @@ public class AddTwitchStream {
                 this.pStatement = connection.prepareStatement(query);
 
                 streams.forEach(stream -> {
-                    String guildId = stream.getAdditionalProperties().get("guildId").toString();
+                    if (stream.getAdditionalProperties().get("announceChannel").toString() != null){
+                        String guildId = stream.getAdditionalProperties().get("guildId").toString();
 
-                    CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
-                    if (!checkTwitchStreams.check(stream.getChannel().getId(), guildId)) {
+                        CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
+                        if (!checkTwitchStreams.check(stream.getChannel().getId(), guildId)) {
 
-                        Integer partner = 0;
-                        if (stream.getChannel().getPartner()) {
-                            partner = 1;
-                        }
+                            Integer partner = 0;
+                            if (stream.getChannel().getPartner()) {
+                                partner = 1;
+                            }
 
-                        try {
-                            pStatement.setString(1, guildId);
-                            pStatement.setString(2, flag);
-                            pStatement.setString(3, stream.getAdditionalProperties().get("announceChannel").toString());
-                            pStatement.setString(4, stream.getId());//streamsId
-                            pStatement.setString(5, stream.getGame());//streamsGame
-                            pStatement.setString(6, stream.getCommunityId());//streamsCommunityId
-                            pStatement.setInt(7, stream.getViewers());//streamsViewers
-                            pStatement.setString(8, stream.getCreatedAt());//streamsCreatedAt
-                            pStatement.setString(9, stream.getChannel().getStatus());//channelStatus
-                            pStatement.setString(10, stream.getChannel().getBroadcasterLanguage());//channelBroadcasterLang
-                            pStatement.setString(11, stream.getChannel().getDisplayName());//channelDisplayName
-                            pStatement.setString(12, stream.getChannel().getGame());//channelGame
-                            pStatement.setString(13, stream.getChannel().getLanguage());//channelLanguage
-                            pStatement.setString(14, stream.getChannel().getId());//channelId
-                            pStatement.setString(15, stream.getChannel().getName());//channelName
-                            pStatement.setInt(16, partner);
-                            pStatement.setString(17, stream.getChannel().getLogo());
-                            pStatement.setString(18, stream.getChannel().getVideoBanner());
-                            pStatement.setString(19, stream.getChannel().getProfileBanner());
-                            pStatement.setString(20, stream.getChannel().getUrl());
-                            pStatement.setInt(21, stream.getChannel().getViews());
-                            pStatement.setInt(22, stream.getChannel().getFollowers());
-                            pStatement.addBatch();
-                        } catch (SQLException e) {
-                            e.printStackTrace();
+                            try {
+                                pStatement.setString(1, guildId);
+                                pStatement.setString(2, flag);
+                                pStatement.setString(3, stream.getAdditionalProperties().get("announceChannel").toString());
+                                pStatement.setString(4, stream.getId());//streamsId
+                                pStatement.setString(5, stream.getGame());//streamsGame
+                                pStatement.setString(6, stream.getCommunityId());//streamsCommunityId
+                                pStatement.setInt(7, stream.getViewers());//streamsViewers
+                                pStatement.setString(8, stream.getCreatedAt());//streamsCreatedAt
+                                pStatement.setString(9, stream.getChannel().getStatus());//channelStatus
+                                pStatement.setString(10, stream.getChannel().getBroadcasterLanguage());//channelBroadcasterLang
+                                pStatement.setString(11, stream.getChannel().getDisplayName());//channelDisplayName
+                                pStatement.setString(12, stream.getChannel().getGame());//channelGame
+                                pStatement.setString(13, stream.getChannel().getLanguage());//channelLanguage
+                                pStatement.setString(14, stream.getChannel().getId());//channelId
+                                pStatement.setString(15, stream.getChannel().getName());//channelName
+                                pStatement.setInt(16, partner);
+                                pStatement.setString(17, stream.getChannel().getLogo());
+                                pStatement.setString(18, stream.getChannel().getVideoBanner());
+                                pStatement.setString(19, stream.getChannel().getProfileBanner());
+                                pStatement.setString(20, stream.getChannel().getUrl());
+                                pStatement.setInt(21, stream.getChannel().getViews());
+                                pStatement.setInt(22, stream.getChannel().getFollowers());
+                                pStatement.addBatch();
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 });

@@ -84,12 +84,6 @@ public class DiscordController {
         if (event.getGuild().getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_WRITE)) {
             event.getMessage().getChannel().sendMessage(message).queue(success -> {
                         new DiscordLogger(message, event);
-                        System.out.printf("[BOT -> GUILD] [%s:%s] [%s:%s] %s%n",
-                                event.getGuild().getName(),
-                                event.getGuild().getId(),
-                                event.getChannel().getName(),
-                                event.getChannel().getId(),
-                                success.getContent());
                     }, failure -> System.out.printf("[~ERROR~] Unable to send message to %s:%s %s:%s.  Trying public channel.%n",
                     event.getGuild().getName(),
                     event.getGuild().getId(),
@@ -101,12 +95,6 @@ public class DiscordController {
             event.getGuild().getPublicChannel().sendMessage(message).queue(
                     success -> {
                         new DiscordLogger(message, event);
-                        System.out.printf("[BOT -> GUILD] [%s:%s] [%s:%s]: %s%n",
-                                event.getGuild().getName(),
-                                event.getGuild().getId(),
-                                event.getGuild().getPublicChannel().getName(),
-                                event.getGuild().getPublicChannel().getId(),
-                                success.getContent());
                     },
                     failure -> System.out.printf("[~ERROR~] Unable to send message to %s:%s, Public Channel: %s:%s.%n",
                             event.getGuild().getName(),
@@ -197,15 +185,15 @@ public class DiscordController {
                     case 1: // User wants a @User mention
                         String userId = nlResult.getString("userId");
                         User user = Main.getJDA().getUserById(userId);
-                        message.append(String.format(LocaleString.getString(data.get("guildId"), "announcementMentionMessageText"),
-                                user,
+                        message.append(user.getAsMention());
+                        message.append(String.format(" " + LocaleString.getString(data.get("guildId"), "announcementMessageText"),
                                 data.get("channelDisplayName"),
                                 data.get("channelUrl")));
                         break;
                     case 2: // User wants @here mention
                         if (Main.getJDA().getGuildById(data.get("guildId")).getSelfMember().hasPermission(Main.getJDA().getTextChannelById(textChannel), Permission.MESSAGE_MENTION_EVERYONE)) {
-                            message.append(String.format(LocaleString.getString(data.get("guildId"), "announcementMentionMessageText"),
-                                    MessageBuilder.HERE_MENTION,
+                            message.append(MessageBuilder.HERE_MENTION);
+                            message.append(String.format(" " + LocaleString.getString(data.get("guildId"), "announcementMessageText"),
                                     data.get("channelDisplayName"),
                                     data.get("channelUrl")));
                         } else {
@@ -214,8 +202,8 @@ public class DiscordController {
                         break;
                     case 3: // User wants @everyone mention
                         if (Main.getJDA().getGuildById(data.get("guildId")).getSelfMember().hasPermission(Main.getJDA().getTextChannelById(textChannel), Permission.MESSAGE_MENTION_EVERYONE)) {
-                            message.append(String.format(LocaleString.getString(data.get("guildId"), "announcementMentionMessageText"),
-                                    MessageBuilder.EVERYONE_MENTION,
+                            message.append(MessageBuilder.EVERYONE_MENTION);
+                            message.append(String.format(" " + LocaleString.getString(data.get("guildId"), "announcementMessageText"),
                                     data.get("channelDisplayName"),
                                     data.get("channelUrl")));
                         } else {
@@ -223,7 +211,7 @@ public class DiscordController {
                         }
                         break;
                     default:
-                        message.append(String.format(LocaleString.getString(data.get("guildId"), "announcementNoMentionMessageText"),
+                        message.append(String.format(LocaleString.getString(data.get("guildId"), "announcementMessageText"),
                                 data.get("channelDisplayName"),
                                 data.get("channelUrl")));
                         break;

@@ -129,7 +129,7 @@ public class TwitchController {
 
                     // A little snooze to make sure to be in compliance with Twitch's Rate limiting policy
                     try {
-                        Thread.sleep(250);
+                        Thread.sleep(500);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -148,12 +148,15 @@ public class TwitchController {
                         System.out.println("[~ERROR~] Input/Output Exception when getting HTTP Response");
                         e.printStackTrace();
                     }
-
                     ObjectMapper objectMapper = new ObjectMapper();
 
                     Streams streams = null;
                     try {
                         streams = objectMapper.readValue(new InputStreamReader(response.getEntity().getContent()), Streams.class);
+                    } catch (UnsupportedOperationException uoe) {
+                        System.out.println("[~ERROR~] Unsupported Operation Exception - Content does not match");
+                        System.out.println(uri);
+                        uoe.printStackTrace();
                     } catch (JsonMappingException jme) {
                         System.out.println("[~ERROR~] The input JSON structure (Stream) does not match structure expected");
                         System.out.println(uri);
@@ -201,7 +204,7 @@ public class TwitchController {
                                         switch (flag) {
                                             case "channel":
                                                 stream.setAdditionalProperty("announceChannel",
-                                                        getAnnounceChannel.action(guildId, "channel", stream.getChannel().getId()));
+                                                        getAnnounceChannel.action(guildId, flag, stream.getChannel().getId()));
                                                 onLiveTwitchStream(stream, flag, null);
                                                 break;
                                             case "community":
@@ -348,10 +351,14 @@ public class TwitchController {
     }
 
     public final synchronized void checkLiveStreams() {
+        System.out.println("Checking channels");
         channels(new CopyOnWriteArrayList<>(), "channel", null);
+        System.out.println("Checking teams");
         teams();
-        games();
+        System.out.println("Checking communities");
         communities();
+        System.out.println("Checking games");
+        games();
     }
 
     private synchronized void communities() {
@@ -641,7 +648,6 @@ public class TwitchController {
 
         if (lang != null &&
                 (lang.equalsIgnoreCase(stream.getChannel().getBroadcasterLanguage()) || "all".equals(lang))) {
-
             if (stream.getChannel().getStatus() != null
                     && stream.getGame() != null
                     && !stream.getGame().isEmpty()

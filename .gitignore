@@ -53,10 +53,10 @@ src/test/
 gradle/
 gradlew
 gradlew.bat
-libs/
 *.txt
 restart.sh
 start.sh
 *.json
 *.jar
 *.gc
+*.php

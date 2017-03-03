@@ -45,8 +45,7 @@ public class LanguageBundle extends ListResourceBundle {
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
                     + " announce <content>\n\tThis command is only available to the developers.```"},
-            {"announcementMentionMessageText", "Hey %s! %s has just gone live! Watch their stream here: %s"},
-            {"announcementNoMentionMessageText", "Hey! %s has just gone live! Watch their stream here: %s"},
+            {"announcementMessageText", "Hey!  %s has just gone live! Watch their stream here: %s"},
             {"beamHelp", "```Markdown\n# BEAM\n* Add and remove things that are Beam.pro related.\n\n## USAGE:  "
                     + Const.COMMAND_PREFIX + Const.COMMAND + " beam <sub-command> <option> <argument>\n"
                     + "\t<sub-command> <option> <argument>\n"
@@ -167,7 +166,7 @@ public class LanguageBundle extends ListResourceBundle {
                     + "\n\ttwitchCommunity - List the Twitch Communities you follow"
                     + "\n\tgamefilter      - Lists all game filters you have set up"
                     + "\n\ttwitchGame      - List the Twitch Games that I'm tracking for you"
-                    + "\n\tmanager         - Lists the managers of your server"
+                    + "\n\tmanager         - Lists the managers on this server"
                     + "\n\ttitlefilter     - Lists all title filters you have set up"
                     + "\n\ttwitchTeam      - Lists the Twitch teams you follow"
                     + "\n\tsetting         - Lists common bot settings"
@@ -178,7 +177,7 @@ public class LanguageBundle extends ListResourceBundle {
                     "\n* Notification is set to %s." +
                     "\n* Cleanup is set to %s." +
                     "\n* Broadcaster language is set to %s." +
-                    "\n* Server language is set to %s.```"},
+                    "\n* Bot language is set to %s.```"},
             {"moveDoNotOwnChannel", " :no_entry: Hey now, I can't announce to a channel that doesn't exists on your " +
                     "server!"},
             {"moveFail", " :no_entry: I can't seem to send announcements there.  Make sure I have the proper permissions " +
@@ -229,12 +228,9 @@ public class LanguageBundle extends ListResourceBundle {
             {"removed", "Removed %s %s."},
             {"removeManagerFail", "I can't remove %s because they are not in my database."},
             {"removeHelp", "```Markdown\n# REMOVE\n* Used to remove managers from my database.\n\n## USAGE:  "
-                    + Const.COMMAND_PREFIX
-                    + Const.COMMAND
-                    + " remove <option> <content>"
-                    + "\n\t<option>\t<content>"
-                    + "\n\tmanager - The @ mention of the user to add as a manager"
-                    + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " remove filter Overwatch```"},
+                    + Const.COMMAND_PREFIX + Const.COMMAND + " remove manager @userName"
+                    + "\n\tmanager - The @ mention of the user to remove as a manager"
+                    + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " remove manager @AgueMort```"},
             {"servers", "Servers"},
             {"statusHelp", "```Markdown\n# STATUS\n* Shows various statistics of the bot.\n\n## USAGE:  "
                     + Const.COMMAND_PREFIX + Const.COMMAND + " status```"},

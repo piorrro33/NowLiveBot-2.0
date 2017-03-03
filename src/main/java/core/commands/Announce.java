@@ -61,8 +61,10 @@ public class Announce implements Command {
             result = pStatement.executeQuery();
             while (result.next()) {
                 try {
-                    event.getJDA().getGuildById(result.getString("guildId")).getPublicChannel()
-                            .sendMessage(LocaleString.getString(event.getMessage().getGuild().getId(), "devMessage") + args).complete();
+                    if (!result.getString("guildId").equals("110373943822540800")) {
+                        event.getJDA().getGuildById(result.getString("guildId")).getPublicChannel()
+                                .sendMessage(LocaleString.getString(event.getMessage().getGuild().getId(), "devMessage") + args).complete();
+                    }
                 } catch (PermissionException pe) {
                     System.out.println("Permissions exception.");
                     pe.printStackTrace();

@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
@@ -68,10 +69,10 @@ public class Twitch implements Command {
     private void addCommands() {
         commands.add("channel");
         commands.add("community");
-        commands.add("gamefilter");
+        commands.add("gfilter");
         commands.add("game");
         commands.add("team");
-        commands.add("titlefilter");
+        commands.add("tfilter");
         commands.add("help");
     }
 
@@ -134,7 +135,7 @@ public class Twitch implements Command {
                         communityHandler(event, args.toLowerCase().replaceFirst("\\b(community )\\b", ""));
                         sendToChannel(event, "```Markdown" + message.toString() + "```");
                         break;
-                    case "gamefilter":
+                    case "gfilter":
                         if (gameFilter != null) {
                             gameFilter.clear();
                         }
@@ -158,7 +159,7 @@ public class Twitch implements Command {
                         teamHandler(event, args.toLowerCase().replaceFirst("\\b(team )\\b", ""));
                         sendToChannel(event, "```Markdown" + message.toString() + "```");
                         break;
-                    case "titlefilter":
+                    case "tfilter":
                         if (titleFilter != null) {
                             titleFilter.clear();
                         }
@@ -510,13 +511,13 @@ public class Twitch implements Command {
                     if (discordChannelId != null) {
                         gameAddList.append(String.format("('%s','%s','%s')",
                                 event.getGuild().getId(),
-                                gameName,
+                                gameName.replaceAll(Pattern.quote("'"), "''"),
                                 discordChannelId));
                         gameAddNameList.append(gameName);
                     } else {
                         gameAddList.append(String.format("('%s','%s','%s')",
                                 event.getGuild().getId(),
-                                gameName,
+                                gameName.replaceAll(Pattern.quote("'"), "''"),
                                 globalAnnounceChannelId));
                         gameAddNameList.append(gameName);
                     }
@@ -527,7 +528,7 @@ public class Twitch implements Command {
                         }
                         updateGameAnnounceChannel.append(String.format("('%s','%s')",
                                 event.getGuild().getId(),
-                                gameName));
+                                gameName.replaceAll(Pattern.quote("'"), "''")));
                         updateGameNames.addIfAbsent(gameName);
                     } else {
                         if (gameDeleteList.length() > 0) {
@@ -536,7 +537,7 @@ public class Twitch implements Command {
                         }
                         gameDeleteList.append(String.format("('%s','%s')",
                                 event.getGuild().getId(),
-                                gameName));
+                                gameName.replaceAll(Pattern.quote("'"), "''")));
                         gameDeleteNameList.append(gameName);
                     }
                 }
@@ -854,7 +855,7 @@ public class Twitch implements Command {
                     }
                     gFilterAddList.append(String.format("('%s','%s')",
                             event.getGuild().getId(),
-                            gFilter.replaceAll("'", "''")));
+                            gFilter.replaceAll(Pattern.quote("'"), "''")));
                     gFilterAddNameList.append(gFilter);
                 } else {
                     if (gFilterDeleteList.length() > 0) {
@@ -863,7 +864,7 @@ public class Twitch implements Command {
                     }
                     gFilterDeleteList.append(String.format("('%s','%s')",
                             event.getGuild().getId(),
-                            gFilter.replaceAll("'", "''")));
+                            gFilter.replaceAll(Pattern.quote("'"), "''")));
                     gFilterDeleteNameList.append(gFilter);
                 }
             });
@@ -917,7 +918,7 @@ public class Twitch implements Command {
                     }
                     tFilterAddList.append(String.format("('%s','%s')",
                             event.getGuild().getId(),
-                            tFilter.replaceAll("'", "''")));
+                            tFilter.replaceAll(Pattern.quote("'"), "''")));
                     tFilterAddNameList.append(tFilter);
                 } else {
                     if (tFilterDeleteList.length() > 0) {
@@ -926,7 +927,7 @@ public class Twitch implements Command {
                     }
                     tFilterDeleteList.append(String.format("('%s','%s')",
                             event.getGuild().getId(),
-                            tFilter.replaceAll("'", "''")));
+                            tFilter.replaceAll(Pattern.quote("'"), "''")));
                     tFilterDeleteNameList.append(tFilter);
                 }
             });

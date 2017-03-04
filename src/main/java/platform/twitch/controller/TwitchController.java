@@ -96,7 +96,7 @@ public class TwitchController {
         StringBuilder channelString = new StringBuilder();
 
         CopyOnWriteArrayList<String> channels;
-        if (flag.equals("channel")) {
+        if ("channel".equals(flag)) {
             channels = twitchChannels.fetch(0);
         } else {
             channels = channelIds;
@@ -671,7 +671,7 @@ public class TwitchController {
 
         if (gameFilters != null && gameFilters.size() > 0) {
             for (String filter : gameFilters) {
-                if (filter.equalsIgnoreCase(stream.getGame())) {
+                if (filter.equalsIgnoreCase(stream.getGame()) && filter.equalsIgnoreCase(stream.getChannel().getGame())) {
                     specificGameFilter = true;
                 }
             }
@@ -685,7 +685,7 @@ public class TwitchController {
 
         if (filters != null && filters.size() > 0) {
             for (String filter : filters) {
-                if (stream.getGame().equalsIgnoreCase(filter)) {
+                if (stream.getGame().equalsIgnoreCase(filter) && stream.getChannel().getGame().equalsIgnoreCase(filter)) {
                     globalGameFilter = true;
                 }
             }
@@ -693,7 +693,7 @@ public class TwitchController {
             globalGameFilter = true;
         }
 
-        return specificGameFilter.equals(true) && globalGameFilter.equals(true);
+        return specificGameFilter && globalGameFilter;
     }
 
     private synchronized boolean titleFilterCheck(Stream stream, String flag, String name) {
@@ -738,6 +738,6 @@ public class TwitchController {
             }
         }
 
-        return specificTitleFilter.equals(true) && globalTitleFilter.equals(true);
+        return specificTitleFilter && globalTitleFilter;
     }
 }

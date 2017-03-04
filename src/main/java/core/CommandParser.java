@@ -53,7 +53,6 @@ public class CommandParser {
         commands.put("leave", new Leave());
         commands.put("move", new Move());
         commands.put("notify", new Notify());
-        commands.put("permissions", new Permissions());
         commands.put("ping", new Ping());
         commands.put("remove", new Remove());
         commands.put("status", new Status());

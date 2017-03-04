@@ -32,13 +32,14 @@ public class GetGuildsByTeamCommunity {
 
     private Connection connection;
     private PreparedStatement pStatement;
-    private ResultSet result;
-    private CopyOnWriteArrayList<String> guildIds = new CopyOnWriteArrayList<>();
 
     public synchronized final CopyOnWriteArrayList<String> fetch(String flag, String name) {
+
+        ResultSet result = null;
+        CopyOnWriteArrayList<String> guildIds = new CopyOnWriteArrayList<>();
         try {
             String query;
-            if (flag.equals("team")) {
+            if ("team".equals(flag)) {
                 query = "SELECT `guildId` FROM `twitch` WHERE `teamName` = ?";
             } else {
                 query = "SELECT `guildId` FROM `twitch` WHERE `communityName` = ?";

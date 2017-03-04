@@ -41,7 +41,6 @@ import static util.database.Database.cleanUp;
 public class Kappa implements Command {
 
     private Connection connection;
-    private ResultSet result;
 
     /**
      * Used to determine if appropriate arguments exist
@@ -64,6 +63,7 @@ public class Kappa implements Command {
     @Override
     public void action(String args, GuildMessageReceivedEvent event) {
         PreparedStatement pStatement = null;
+        ResultSet result = null;
 
         String query = "SELECT `channelId`, `guildId` FROM `guild`";
         try {
@@ -71,7 +71,7 @@ public class Kappa implements Command {
                 this.connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);
-            this.result = pStatement.executeQuery();
+            result = pStatement.executeQuery();
 
             MessageBuilder message = new MessageBuilder();
             message.append("Here's a list of guilds that don't have the proper permissions set for the bot:\n");

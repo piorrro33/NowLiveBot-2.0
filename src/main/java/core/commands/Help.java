@@ -39,7 +39,6 @@ public class Help implements Command {
 
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
-        // TODO: need to revamp how help is done bc 2,000 character limit
         MessageBuilder message = new MessageBuilder();
         message.append(
                 String.format(

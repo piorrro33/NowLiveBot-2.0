@@ -47,7 +47,8 @@ public class List implements Command {
     private String option;
     private String query;
     private String guildId;
-    private String[] options = new String[]{"twitchChannel", "gamefilter", "twitchGame", "manager", "titlefilter", "twitchTeam", "help", "setting", "twitchCommunity"};
+    private String[] options = new String[]{"twitchChannel", "twitchchannel", "gamefilter", "twitchGame", "twitchgame",
+            "manager", "titlefilter", "twitchTeam", "twitchteam", "help", "setting", "twitchCommunity", "twitchcommunity"};
 
     /**
      * Used to determine if appropriate arguments exist
@@ -96,10 +97,12 @@ public class List implements Command {
 
         switch (option) {
             case "twitchChannel":
+            case "twitchchannel":
                 query = "SELECT `channelName` FROM `twitch` WHERE `guildId` = ? AND `channelId` IS NOT NULL ORDER BY `channelName` ASC";
                 message.append("__Twitch Channels__\n\t");
                 break;
             case "twitchGame":
+            case "twitchgame":
                 query = "SELECT `gameName` FROM `twitch` WHERE `guildId` = ? AND `gameName` IS NOT NULL ORDER BY `gameName` ASC";
                 message.append("__Twitch Games__\n\t");
                 break;
@@ -116,10 +119,12 @@ public class List implements Command {
                 message.append("__Title Filters__\n\t");
                 break;
             case "twitchTeam":
+            case "twitchteam":
                 query = "SELECT `teamName` FROM `twitch` WHERE `guildId` = ? AND `teamName` IS NOT NULL ORDER BY `teamName` ASC";
                 message.append("__Twitch Teams__\n\t");
                 break;
             case "twitchCommunity":
+            case "twitchcommunity":
                 query = "SELECT `communityName` FROM `twitch` WHERE `guildId` = ? AND `communityName` IS NOT NULL ORDER BY `communityName` ASC";
                 message.append("__Twitch Teams__\n\t");
                 break;
@@ -260,9 +265,9 @@ public class List implements Command {
             }
 
             message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "listSettings"),
-                    (compact == 0 ? "On" : "Off"),
-                    (notify == 0 ? "no one" : notify == 2 ? "here" : "everyone"),
-                    (cleanup == 0 ? "do nothing" : cleanup == 1 ? "edit" : "delete"),
+                    compact == 0 ? "On" : "Off",
+                    notify == 0 ? "no one" : notify == 2 ? "here" : "everyone",
+                    cleanup == 0 ? "do nothing" : cleanup == 1 ? "edit" : "delete",
                     getLanguage(broadLang),
                     getLanguage(serverLang)));
 

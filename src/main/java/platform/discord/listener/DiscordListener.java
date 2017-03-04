@@ -29,6 +29,7 @@ import net.dv8tion.jda.core.events.ResumedEvent;
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
+import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -152,7 +153,16 @@ public class DiscordListener extends ListenerAdapter {
 
     @Override
     public final void onGuildMemberJoin(GuildMemberJoinEvent event) {
-        new DiscordLogger(null, event);
+        if (event.getGuild().getId().equals("250045505659207699")) {
+            new DiscordLogger(null, event);
+        }
+    }
+
+    @Override
+    public final void onGuildMemberLeave(GuildMemberLeaveEvent event) {
+        if (event.getGuild().getId().equals("250045505659207699")) {
+            new DiscordLogger(null, event);
+        }
     }
 
     @Override

@@ -223,7 +223,7 @@ public class CommunityByName {
         if (!(other instanceof CommunityByName)) {
             return false;
         }
-        CommunityByName rhs = ((CommunityByName) other);
+        CommunityByName rhs = (CommunityByName) other;
         return new EqualsBuilder().append(id, rhs.id).append(ownerId, rhs.ownerId).append(name, rhs.name).append(summary, rhs.summary).append(description, rhs.description).append(descriptionHtml, rhs.descriptionHtml).append(rules, rhs.rules).append(rulesHtml, rhs.rulesHtml).append(language, rhs.language).append(avatarImageUrl, rhs.avatarImageUrl).append(coverImageUrl, rhs.coverImageUrl).append(additionalProperties, rhs.additionalProperties).isEquals();
     }
 

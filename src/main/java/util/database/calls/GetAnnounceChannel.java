@@ -30,9 +30,9 @@ import static util.database.Database.cleanUp;
 public class GetAnnounceChannel {
     private Connection connection;
     private PreparedStatement pStatement;
-    private ResultSet result;
 
     public synchronized String action(String guildId, String column, String value) {
+        ResultSet result = null;
 
         String query;
         switch (column) {
@@ -57,7 +57,7 @@ public class GetAnnounceChannel {
             this.pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
             pStatement.setString(2, value);
-            this.result = pStatement.executeQuery();
+            result = pStatement.executeQuery();
 
             String announceChannel = null;
             if (result.next()) {

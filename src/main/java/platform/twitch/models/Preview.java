@@ -114,7 +114,7 @@ public class Preview {
         if (!(other instanceof Preview)) {
             return false;
         }
-        Preview rhs = ((Preview) other);
+        Preview rhs = (Preview) other;
         return new EqualsBuilder().append(small, rhs.small).append(medium, rhs.medium).append(large, rhs.large).append(template, rhs.template).append(additionalProperties, rhs.additionalProperties).isEquals();
     }
 

@@ -46,7 +46,7 @@ public class LanguageBundle_fr extends ListResourceBundle {
                     + Const.COMMAND
                     + " announce <contenu>\n\tCette commande est uniquement disponible aux développeurs.```"},
             {"announcementMessageText", "Hey ! %s est maintenant en live ! Regarde son stream ici : %s"},
-            {"beamHelp", "```Markdown\n# BEAM\n* Ajouter et supprimer tout ce qui a à voir avec Beam.pro.\n\n## USAGE:  "
+            {"beamHelp", "```Markdown\n# BEAM\n* Ajouter et supprimer tout ce qui a à voir avec Beam.pro.\n\n## UTILISATION :  "
                     + Const.COMMAND_PREFIX + Const.COMMAND + " beam <sous-commande> <option> <argument>\n"
                     + "\t<sous-commande> <option> <argument>\n"
                     + "\tadd           channel  <nomChaîne>\n"
@@ -182,7 +182,7 @@ public class LanguageBundle_fr extends ListResourceBundle {
                     "serveur !"},
             {"moveFail", " :no_entry: J'ai pas l'impression de pouvoir annoncer là-bas. Assure-toi que j'ai les bonnes permissions " +
                     "dans ce canal."},
-            {"moveHelp", "```Markdown\n# MOVE\n* Changer où je fais mes annonces.\n\n## USAGE:  "
+            {"moveHelp", "```Markdown\n# MOVE\n* Changer où je fais mes annonces.\n\n## UTILISATION :  "
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
                     + " move <canal>\n\t"
@@ -221,7 +221,7 @@ public class LanguageBundle_fr extends ListResourceBundle {
             {"oops", "Oups ! Quelque chose s'est mal passé et rien n'a été modifié ! Essayons encore."},
             {"ping", "Quand j'étais en Chine dans l'équipe d'Amérique de ping-pong, j'adorais jouer avec ma " +
                     "raquette de ping-pong Flexolite."},
-            {"pingHelp", "```Markdown\n# PING\n* Utilisé pour m'envoyer un ping. Si je fonctionne bien, je vous renverrai un pong.\n\n## USAGE: "
+            {"pingHelp", "```Markdown\n# PING\n* Utilisé pour m'envoyer un ping. Si je fonctionne bien, je vous renverrai un pong.\n\n## UTILISATION : "
                     + Const.COMMAND_PREFIX + Const.COMMAND + " ping```"},
             {"privateMessageReply", "Je suis désolé, mais le bot que tu essaies d'atteindre a une messagerie vocale qui n'a pas encore " +
                     "été mise en place.  Réessaie d'envoyer ton message plus tard."},
@@ -245,7 +245,7 @@ public class LanguageBundle_fr extends ListResourceBundle {
             {"streamTitleEmbed", "Titre du Stream"},
             {"streamsHelp", "```Markdown\n# STREAMS\n* Je t'enverrai par message privé une liste des streamers actifs.\n* (NOTE : Tu recevras sûrement " +
                     "plusieurs messages en utilisant cette commande, suivant le nombre de streams que votre serveur " +
-                    "surveille !)\n\n## USAGE:  "
+                    "surveille !)\n\n## UTILISATION :  "
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
                     + " streams```"},

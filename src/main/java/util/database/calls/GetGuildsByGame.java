@@ -31,17 +31,18 @@ import static util.database.Database.cleanUp;
 public class GetGuildsByGame {
 
     private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
-    private CopyOnWriteArrayList<String> guildIds = new CopyOnWriteArrayList<>();
 
     public synchronized final CopyOnWriteArrayList<String> fetch(String gameName) {
+        PreparedStatement pStatement = null;
+        ResultSet result = null;
+        CopyOnWriteArrayList<String> guildIds = new CopyOnWriteArrayList<>();
+
         try {
             String query = "SELECT `guildId` FROM `twitch` WHERE `gameName` = ?";
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             pStatement.setString(1, gameName);
             result = pStatement.executeQuery();
 

@@ -45,10 +45,8 @@ public class List implements Command {
     private static PreparedStatement pStatement;
     private static ResultSet resultSet;
     private String option;
-    private String query;
     private String guildId;
-    private String[] options = new String[]{"twitchChannel", "twitchchannel", "gamefilter", "twitchGame", "twitchgame",
-            "manager", "titlefilter", "twitchTeam", "twitchteam", "help", "setting", "twitchCommunity", "twitchcommunity"};
+    private String[] options = new String[]{"twitchchannel", "gamefilter", "twitchgame", "manager", "titlefilter", "twitchteam", "help", "setting", "twitchcommunity"};
 
     /**
      * Used to determine if appropriate arguments exist
@@ -62,14 +60,14 @@ public class List implements Command {
         for (String s : this.options) { // Iterate through the available options for this command
             if (args != null && !args.isEmpty()) {
                 String arg = args;
-                if (arg.endsWith("s")) {
+                if (arg.toLowerCase().endsWith("s")) {
                     arg = args.substring(0, args.length() - 1);
                 }
-                if (arg.equals(s)) {
+                if (arg.equalsIgnoreCase(s)) {
                     // Sets the class scope variables that will be used by action()
                     this.option = s;
                     return true;
-                } else if ("help".equals(arg)) {
+                } else if ("help".equalsIgnoreCase(arg)) {
                     // If the help argument is the only argument that is passed
                     return true;
                 }
@@ -87,6 +85,7 @@ public class List implements Command {
      */
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
+        String query = "";
 
         this.guildId = event.getGuild().getId();
 
@@ -95,13 +94,11 @@ public class List implements Command {
         message.append(event.getAuthor().getName());
         message.append("!  Here's the info you asked for:\n\n");
 
-        switch (option) {
-            case "twitchChannel":
+        switch (option.toLowerCase()) {
             case "twitchchannel":
                 query = "SELECT `channelName` FROM `twitch` WHERE `guildId` = ? AND `channelId` IS NOT NULL ORDER BY `channelName` ASC";
                 message.append("__Twitch Channels__\n\t");
                 break;
-            case "twitchGame":
             case "twitchgame":
                 query = "SELECT `gameName` FROM `twitch` WHERE `guildId` = ? AND `gameName` IS NOT NULL ORDER BY `gameName` ASC";
                 message.append("__Twitch Games__\n\t");
@@ -118,12 +115,10 @@ public class List implements Command {
                 query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` IS NOT NULL ORDER BY `titleFilter` ASC";
                 message.append("__Title Filters__\n\t");
                 break;
-            case "twitchTeam":
             case "twitchteam":
                 query = "SELECT `teamName` FROM `twitch` WHERE `guildId` = ? AND `teamName` IS NOT NULL ORDER BY `teamName` ASC";
                 message.append("__Twitch Teams__\n\t");
                 break;
-            case "twitchCommunity":
             case "twitchcommunity":
                 query = "SELECT `communityName` FROM `twitch` WHERE `guildId` = ? AND `communityName` IS NOT NULL ORDER BY `communityName` ASC";
                 message.append("__Twitch Teams__\n\t");

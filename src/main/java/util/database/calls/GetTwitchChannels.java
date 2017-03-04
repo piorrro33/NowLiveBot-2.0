@@ -31,10 +31,10 @@ import static util.database.Database.cleanUp;
 public class GetTwitchChannels {
 
     private Connection connection;
-    private PreparedStatement pStatement;
 
     public synchronized CopyOnWriteArrayList<String> fetch(Integer flag) {
         String query;
+        PreparedStatement pStatement = null;
         ResultSet result = null;
 
         switch (flag) {
@@ -50,7 +50,7 @@ public class GetTwitchChannels {
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             result = pStatement.executeQuery();
 
             CopyOnWriteArrayList<String> channels = new CopyOnWriteArrayList<>();

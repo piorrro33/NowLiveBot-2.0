@@ -31,18 +31,19 @@ import static util.database.Database.cleanUp;
 public class GetTwitchTeams {
 
     private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
 
     public synchronized CopyOnWriteArrayList<String> fetch() {
+        PreparedStatement pStatement = null;
+        ResultSet result = null;
+
         String query = "SELECT `teamName` FROM `twitch` WHERE `teamName` IS NOT NULL ORDER BY `timeAdded` ASC";
 
         try {
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
-            this.result = pStatement.executeQuery();
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
 
             CopyOnWriteArrayList<String> teams = new CopyOnWriteArrayList<>();
 

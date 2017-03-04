@@ -33,9 +33,9 @@ import static util.database.Database.cleanUp;
 public class GetGlobalFilters {
 
     private Connection connection = Database.getInstance().getConnection();
-    private PreparedStatement pStatement;
 
     public final synchronized List<String> fetch(Stream stream, String type) {
+        PreparedStatement pStatement = null;
         ResultSet result = null;
 
         String guildId = stream.getAdditionalProperties().get("guildId").toString();

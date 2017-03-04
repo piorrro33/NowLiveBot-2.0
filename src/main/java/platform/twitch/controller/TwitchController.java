@@ -53,9 +53,6 @@ public class TwitchController {
     private HttpResponse response;
     private CopyOnWriteArrayList<Stream> online = new CopyOnWriteArrayList<>();
 
-    public TwitchController() {
-    }
-
     private synchronized URIBuilder setBaseUrl(String endpoint) {
         URIBuilder builder = new URIBuilder();
         builder.setScheme("https").setHost("api.twitch.tv").setPath("/kraken" + endpoint);

@@ -29,14 +29,15 @@ import static util.database.Database.cleanUp;
 public class TwitchData {
 
     private Connection connection = Database.getInstance().getConnection();
-    private PreparedStatement pStatement;
 
     public synchronized Boolean action(String query) {
+        PreparedStatement pStatement = null;
+
         try {
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             if (pStatement.executeUpdate() > 0) {
                 return true;
             }

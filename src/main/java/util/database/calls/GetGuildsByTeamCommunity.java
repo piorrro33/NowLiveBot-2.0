@@ -31,12 +31,12 @@ import static util.database.Database.cleanUp;
 public class GetGuildsByTeamCommunity {
 
     private Connection connection;
-    private PreparedStatement pStatement;
 
     public synchronized final CopyOnWriteArrayList<String> fetch(String flag, String name) {
-
+        PreparedStatement pStatement = null;
         ResultSet result = null;
         CopyOnWriteArrayList<String> guildIds = new CopyOnWriteArrayList<>();
+
         try {
             String query;
             if ("team".equals(flag)) {
@@ -47,7 +47,7 @@ public class GetGuildsByTeamCommunity {
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             pStatement.setString(1, name);
             result = pStatement.executeQuery();
 

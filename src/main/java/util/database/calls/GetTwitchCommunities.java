@@ -31,18 +31,19 @@ import static util.database.Database.cleanUp;
 public class GetTwitchCommunities {
 
     private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
 
     public synchronized ConcurrentHashMap<String,String> fetch() {
+        PreparedStatement pStatement = null;
+        ResultSet result = null;
+
         String query = "SELECT `communityName`, `communityId` FROM `twitch` WHERE `communityId` IS NOT NULL ORDER BY `timeAdded` ASC";
 
         try {
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
-            this.result = pStatement.executeQuery();
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
 
             ConcurrentHashMap<String,String> communities = new ConcurrentHashMap<>();
 

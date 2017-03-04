@@ -29,16 +29,16 @@ import static util.database.Database.cleanUp;
 public class DeleteTwitchStream {
 
     private Connection connection;
-    private PreparedStatement pStatement;
 
     public synchronized void process(String guildId, String channelId) {
+        PreparedStatement pStatement = null;
         try {
             String query = "DELETE FROM `twitchstreams` WHERE `guildId` = ? AND `channelId` = ?";
 
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
             pStatement.setString(2, channelId);
 

@@ -85,7 +85,7 @@ public class TwitchController {
         return null;
     }
 
-    private synchronized void channels(CopyOnWriteArrayList<String> channelIds,String flag, String value) {
+    private synchronized void channels(CopyOnWriteArrayList<String> channelIds, String flag, String value) {
 
         CopyOnWriteArrayList<String> streamChannelIds = new CopyOnWriteArrayList<>();
         CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
@@ -170,12 +170,15 @@ public class TwitchController {
                     // Checks to make sure that some streams are returned
                     if (streams != null && streams.getTotal() != null && streams.getTotal() > 0) {// Make sure the returned object is not null
 
-                        List<Stream> onlineStreams = streams.getStreams();
+                        CopyOnWriteArrayList<Stream> onlineStreams = (CopyOnWriteArrayList<Stream>) streams.getStreams();
 
-                        onlineStreams.forEach(stream -> {
-                            if (streamChannelIds.contains(stream.getChannel().getId())) {
-                                streamChannelIds.remove(stream.getChannel().getId());//Leftovers are offline
-                            }
+                        onlineStreams.forEach((Stream stream) -> {
+                            streamChannelIds.forEach((String streamChannelId) -> {
+                                if (streamChannelId.equals(stream.getChannel().getId())) {
+                                    streamChannelIds.remove(stream.getChannel().getId());//Leftovers are offline
+                                }
+                            });
+
 
                             CopyOnWriteArrayList<String> guildIds;
                             switch (flag) {
@@ -312,7 +315,7 @@ public class TwitchController {
                     CopyOnWriteArrayList<String> gameChannelIds = getGameStreams.gameStreams(gameName);
 
                     if (guilds != null && guilds.size() > 0) {
-                        List<Stream> gameStreamers = games.getStreams();
+                        CopyOnWriteArrayList<Stream> gameStreamers = (CopyOnWriteArrayList<Stream>) games.getStreams();
 
 
                         guilds.forEach(guildId -> gameStreamers.forEach(stream -> {
@@ -360,7 +363,7 @@ public class TwitchController {
 
     private synchronized void communities() {
         GetTwitchCommunities twitchCommunities = new GetTwitchCommunities();
-        ConcurrentHashMap<String,String> communities = twitchCommunities.fetch();
+        ConcurrentHashMap<String, String> communities = twitchCommunities.fetch();
 
         if (communities != null && !communities.isEmpty() && communities.size() > 0) {
             communities.forEach((String communityName, String communityId) -> {

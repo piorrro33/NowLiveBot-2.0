@@ -36,6 +36,7 @@ import net.dv8tion.jda.core.exceptions.PermissionException;
 import net.dv8tion.jda.core.requests.ErrorResponse;
 import util.Const;
 import util.DiscordLogger;
+import util.ExceptionHandlerNoRestart;
 import util.database.Database;
 import util.database.calls.*;
 
@@ -72,11 +73,12 @@ public class DiscordController {
     private StringBuilder permsEveryone = new StringBuilder();
 
     public DiscordController(GuildMessageReceivedEvent event) {
+        Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandlerNoRestart());
         mentionedUsersID(event);
     }
 
     public DiscordController() {
-
+        Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandlerNoRestart());
     }
 
     public static void sendToChannel(GuildMessageReceivedEvent event, String message) {
@@ -113,12 +115,11 @@ public class DiscordController {
         event.getAuthor().openPrivateChannel().queue(
                 success ->
                         event.getAuthor().getPrivateChannel().sendMessage(message).queue(
-                                sentMessage -> System.out.printf("[BOT -> PM] [%s:%s] [%s:%s]: %s%n",
+                                sentMessage -> System.out.printf("[BOT -> PM] [%s:%s] [%s:%s]%n",
                                         event.getGuild().getName(),
                                         event.getGuild().getId(),
                                         event.getAuthor().getName(),
-                                        event.getAuthor().getId(),
-                                        sentMessage.getContent())
+                                        event.getAuthor().getId())
                         ),
                 failure ->
                         System.out.printf("[~ERROR~] Unable to send PM to %s:%s, Author: %s:%s.%n",
@@ -134,10 +135,9 @@ public class DiscordController {
             event.getAuthor().openPrivateChannel().queue(
                     success ->
                             event.getAuthor().getPrivateChannel().sendMessage(message).queue(
-                                    sentPM -> System.out.printf("[BOT -> PM] [%s:%s]: %s%n",
+                                    sentPM -> System.out.printf("[BOT -> PM] [%s:%s]%n",
                                             event.getAuthor().getName(),
-                                            event.getAuthor().getId(),
-                                            sentPM.getContent())
+                                            event.getAuthor().getId())
                             ),
                     failure ->
                             System.out.printf("[~ERROR~] Unable to send PM to author: %s:%s.%n",
@@ -333,6 +333,9 @@ public class DiscordController {
 
         eBuilder.setTitle(url, url);
 
+        if (streamTitle.length() > 300) {
+            streamTitle = streamTitle.substring(0, 299);
+        }
         eBuilder.addField(LocaleString.getString(guildId, "nowPlayingEmbed"), game, false);
         eBuilder.addField(LocaleString.getString(guildId, "streamTitleEmbed"), streamTitle, false);
 
@@ -608,9 +611,7 @@ public class DiscordController {
                             if (jda.getGuildById(streamData.get("guildId")).getSelfMember().hasPermission(jda.getTextChannelById(announceChannel), Permission.MESSAGE_READ)) {
                                 if (jda.getGuildById(streamData.get("guildId")).getSelfMember().hasPermission(jda.getTextChannelById(announceChannel), Permission.MESSAGE_WRITE)) {
                                     if (jda.getGuildById(streamData.get("guildId")).getSelfMember().hasPermission(jda.getTextChannelById(announceChannel), Permission.MESSAGE_EMBED_LINKS)) {
-
                                         if (streamData.get("messageId") == null && streamData.get("online").equals("1")) {
-
                                             // Send the message with blocking to ensure completion before moving on
                                             String messageId = null;
 
@@ -628,6 +629,8 @@ public class DiscordController {
                                             } catch (RuntimeException re) {
                                                 System.out.println("Illegal Arguement Exception");
                                                 re.printStackTrace();
+                                            } finally {
+                                                System.out.println(streamData);
                                             }
 
                                             if (messageId != null) {

@@ -183,19 +183,15 @@ public final class GuildJoin {
                 break;
 
             case "notification":
-                if (Main.debugMode()) {
-                    if (addNotification() > 0) {
-                        logger.info("Populated the notification table with default data.");
-                    } else {
-                        logger.info("Failed to add data to the notification table.");
-                    }
+                if (addNotification() > 0) {
+                    logger.info("Populated the notification table with default data.");
+                } else {
+                    logger.info("Failed to add data to the notification table.");
                 }
                 break;
 
             default:
-                if (Main.debugMode()) {
-                    logger.info("No data to add to table: " + s);
-                }
+                logger.info("No data to add to table: " + s);
                 break;
         }
     }

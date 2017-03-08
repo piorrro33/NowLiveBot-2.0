@@ -28,6 +28,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import platform.twitch.models.*;
+import util.ExceptionHandlerNoRestart;
 import util.PropReader;
 import util.database.calls.*;
 
@@ -52,6 +53,10 @@ public class TwitchController {
     private HttpGet get;
     private HttpResponse response;
     private CopyOnWriteArrayList<Stream> online = new CopyOnWriteArrayList<>();
+
+    public TwitchController() {
+        Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandlerNoRestart());
+    }
 
     private synchronized URIBuilder setBaseUrl(String endpoint) {
         URIBuilder builder = new URIBuilder();
@@ -170,7 +175,7 @@ public class TwitchController {
                     // Checks to make sure that some streams are returned
                     if (streams != null && streams.getTotal() != null && streams.getTotal() > 0) {// Make sure the returned object is not null
 
-                        CopyOnWriteArrayList<Stream> onlineStreams = (CopyOnWriteArrayList<Stream>) streams.getStreams();
+                        List<Stream> onlineStreams = streams.getStreams();
 
                         onlineStreams.forEach((Stream stream) -> {
                             streamChannelIds.forEach((String streamChannelId) -> {
@@ -315,7 +320,7 @@ public class TwitchController {
                     CopyOnWriteArrayList<String> gameChannelIds = getGameStreams.gameStreams(gameName);
 
                     if (guilds != null && guilds.size() > 0) {
-                        CopyOnWriteArrayList<Stream> gameStreamers = (CopyOnWriteArrayList<Stream>) games.getStreams();
+                        List<Stream> gameStreamers = games.getStreams();
 
 
                         guilds.forEach(guildId -> gameStreamers.forEach(stream -> {

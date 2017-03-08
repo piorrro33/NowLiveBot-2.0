@@ -21,8 +21,10 @@ package platform.generic;
 import platform.discord.controller.DiscordController;
 import platform.twitch.controller.TwitchController;
 import util.DiscordLogger;
+import util.ExceptionHandler;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -30,22 +32,27 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Veteran Software by Ague Mort
  */
-public class PlatformListener {
+public class PlatformListener implements Runnable {
     private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
     private DiscordController discord = new DiscordController();
 
     public PlatformListener() {
         try {
-            executor.scheduleWithFixedDelay(this::run, 0, 60, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this, 0, 60, TimeUnit.SECONDS);
         } catch (Exception e) {
             System.out.println("[~ERROR~] Caught an exception while keeping the executors active");
+        } catch (Throwable t) {
+            System.err.println("Uncaught exception is detected! " + t + " st: " + Arrays.toString(t.getStackTrace()));
         }
     }
 
-    private synchronized void run() {
+    @Override
+    public synchronized void run() {
+
+        Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandler());
         checkStreams();
-        announceStreams();
         editDeleteAnnouncements();
+        announceStreams();
 
         String loggerBuilder;
         if (discord.getAnnounced().length() > 0) {

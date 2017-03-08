@@ -123,10 +123,14 @@ public class Main {
 
                     String guildId = result.getString("guildId");
 
-                    jda.getGuildById(guildId).leave().complete();
+                    if (jda.getGuildById(guildId) != null) {
+                        jda.getGuildById(guildId).leave().complete();
 
-                    System.out.printf("[SYSTEM] All data removed for G:%s.%n",
-                            guildId);
+                        System.out.printf("[SYSTEM] All data removed for G:%s.%n",
+                                guildId);
+                    } else {
+                        System.out.println(result.getString("guildId"));
+                    }
                 }
             }
         } catch (SQLException e) {

@@ -170,7 +170,7 @@ public class LanguageBundle extends ListResourceBundle {
                     + "\n\ttitlefilter     - Lists all title filters you have set up"
                     + "\n\ttwitchTeam      - Lists the Twitch teams you follow"
                     + "\n\tsetting         - Lists common bot settings"
-                    + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " list channel" + "```"},
+                    + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " list twitchChannel" + "```"},
             {"listSettings", "```Markdown\n" +
                     "# Bot Settings on Your Server" +
                     "\n* Compact mode is %s." +

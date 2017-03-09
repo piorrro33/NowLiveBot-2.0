@@ -92,6 +92,7 @@ public class Main {
         }
 
         guildCheck();
+
         new PlatformListener();
     }
 

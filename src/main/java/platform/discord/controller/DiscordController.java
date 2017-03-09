@@ -55,12 +55,9 @@ import static util.database.Database.cleanUp;
  */
 public class DiscordController {
 
-    private static Connection nlConnection;
     private static Connection ccConnection;
-    private static PreparedStatement nlStatement;
     private static PreparedStatement pStatement;
     private static String query;
-    private static ResultSet nlResult;
     private static ResultSet result;
     private String mentionedUsersId;
     private StringBuilder announced = new StringBuilder();
@@ -168,64 +165,6 @@ public class DiscordController {
         return -1;
     }
 
-    private synchronized MessageBuilder notifyLevel(String textChannel, Map<String, String> data, MessageBuilder message) {
-        try {
-            query = "SELECT `level`, `userId` FROM `notification` WHERE `guildId` = ?";
-            if (nlConnection == null || nlConnection.isClosed()) {
-                nlConnection = Database.getInstance().getConnection();
-            }
-            nlStatement = nlConnection.prepareStatement(query);
-
-            nlStatement.setString(1, data.get("guildId"));
-            nlResult = nlStatement.executeQuery();
-
-            // Not going to add these to the Lang files because they will eventually be tokenized for customization
-            while (nlResult.next()) {
-                switch (nlResult.getInt("level")) {
-                    case 1: // User wants a @User mention
-                        String userId = nlResult.getString("userId");
-                        User user = Main.getJDA().getUserById(userId);
-                        message.append(user.getAsMention());
-                        message.append(String.format(" " + LocaleString.getString(data.get("guildId"), "announcementMessageText"),
-                                data.get("channelDisplayName"),
-                                data.get("channelUrl")));
-                        break;
-                    case 2: // User wants @here mention
-                        if (Main.getJDA().getGuildById(data.get("guildId")).getSelfMember().hasPermission(Main.getJDA().getTextChannelById(textChannel), Permission.MESSAGE_MENTION_EVERYONE)) {
-                            message.append(MessageBuilder.HERE_MENTION);
-                            message.append(String.format(" " + LocaleString.getString(data.get("guildId"), "announcementMessageText"),
-                                    data.get("channelDisplayName"),
-                                    data.get("channelUrl")));
-                        } else {
-                            permsEveryoneBuilder(data, Main.getJDA());
-                        }
-                        break;
-                    case 3: // User wants @everyone mention
-                        if (Main.getJDA().getGuildById(data.get("guildId")).getSelfMember().hasPermission(Main.getJDA().getTextChannelById(textChannel), Permission.MESSAGE_MENTION_EVERYONE)) {
-                            message.append(MessageBuilder.EVERYONE_MENTION);
-                            message.append(String.format(" " + LocaleString.getString(data.get("guildId"), "announcementMessageText"),
-                                    data.get("channelDisplayName"),
-                                    data.get("channelUrl")));
-                        } else {
-                            permsEveryoneBuilder(data, Main.getJDA());
-                        }
-                        break;
-                    default:
-                        message.append(String.format(LocaleString.getString(data.get("guildId"), "announcementMessageText"),
-                                data.get("channelDisplayName"),
-                                data.get("channelUrl")));
-                        break;
-                }
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(nlResult, nlStatement, nlConnection);
-        }
-        return message;
-    }
-
     public StringBuilder getPermsEveryone() {
         return permsEveryone;
     }
@@ -309,6 +248,7 @@ public class DiscordController {
             case "twitch":
                 rgb = Color.RGBtoHSB(100, 65, 165, null);
                 eBuilder.setColor(Color.getHSBColor(rgb[0], rgb[1], rgb[2]));
+                System.out.println("Color set");
                 break;
             case "beam":
                 rgb = Color.RGBtoHSB(83, 109, 254, null);
@@ -354,7 +294,16 @@ public class DiscordController {
         MessageEmbed embed = eBuilder.build();
         MessageBuilder mBuilder = new MessageBuilder();
 
-        notifyLevel(textChannel, streamData, mBuilder);
+        System.out.println("Setting notify level");
+        NotifyLevel notify = new NotifyLevel();
+        MessageBuilder messageBuilder = notify.getLevel(textChannel, streamData, mBuilder);
+
+        if (messageBuilder == null) {
+            permsEveryoneBuilder(streamData, Main.getJDA());
+        } else {
+            mBuilder = messageBuilder;
+        }
+        System.out.println("Notify level set");
 
         mBuilder.setEmbed(embed);
 
@@ -599,11 +548,15 @@ public class DiscordController {
         if (newStreams != null && newStreams.size() > 0) {
             newStreams.values().forEach(streamData -> {
 
+                System.out.println("~~~~~The Start~~~~~");
+
                 String announceChannel = streamData.get("textChannelId");
 
-                Message message = buildEmbed(announceChannel, streamData, platform, "new");
-
                 if (announceChannel != null && !announceChannel.isEmpty() && !"".equals(announceChannel)) {
+
+                    Message message = buildEmbed(announceChannel, streamData, platform, "new");
+                    System.out.println("~~~~Post Embed Creation~~~~");
+
                     // Check to ensure the bot is connected to the websocket
                     if (jda.getStatus() == JDA.Status.CONNECTED) {
                         if (jda.getTextChannelById(announceChannel) != null && message != null) {

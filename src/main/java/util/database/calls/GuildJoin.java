@@ -152,8 +152,8 @@ public final class GuildJoin {
         switch (s) {
             case "guild":
                 try {
-                    query = "INSERT INTO `guild` (`guildId`, `channelId`, `isCompact`, `cleanup`, " +
-                            "`emoji`) VALUES (?, ?, 0, 0, ?)";
+                    query = "INSERT INTO `guild` (`guildId`, `channelId`, `isCompact`, `cleanup`, `emoji`) " +
+                            "VALUES (?, ?, 0, 0, ?)";
                     if (connection == null || connection.isClosed()) {
                         connection = Database.getInstance().getConnection();
                     }
@@ -183,7 +183,8 @@ public final class GuildJoin {
                 break;
 
             case "notification":
-                if (addNotification() > 0) {
+                DefaultNotification notification = new DefaultNotification();
+                if (notification.defaultData(gEvent.getGuild().getId()) > 0) {
                     logger.info("Populated the notification table with default data.");
                 } else {
                     logger.info("Failed to add data to the notification table.");
@@ -238,24 +239,5 @@ public final class GuildJoin {
                 }
             }
         }
-    }
-
-    private static Integer addNotification() {
-        try {
-            query = "INSERT INTO `notification` (`guildId`, `level`) VALUES (?, ?)";
-            if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
-            }
-            pStatement = connection.prepareStatement(query);
-
-            pStatement.setString(1, guildId);
-            pStatement.setInt(2, 0);
-            return pStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(pStatement, connection);
-        }
-        return -1;
     }
 }

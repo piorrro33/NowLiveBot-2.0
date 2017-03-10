@@ -61,10 +61,10 @@ public class NotifyLevel {
                 // Not going to add these to the Lang files because they will eventually be tokenized for customization
                 if (result.isBeforeFirst() && textChannel != null && !textChannel.isEmpty()) {
                     while (result.next()) {
-                        System.out.println("Notification Level Result: " + result.getInt("level"));
-                        System.out.println("Guild: " + Main.getJDA().getGuildById(data.get("guildId")));
-                        System.out.println("Self Member: " + Main.getJDA().getGuildById(data.get("guildId")).getSelfMember());
-                        System.out.println("Text Channel: " + Main.getJDA().getTextChannelById(textChannel));
+                        //System.out.println("Notification Level Result: " + result.getInt("level"));
+                        //System.out.println("Guild: " + Main.getJDA().getGuildById(data.get("guildId")));
+                        //System.out.println("Self Member: " + Main.getJDA().getGuildById(data.get("guildId")).getSelfMember());
+                        //System.out.println("Text Channel: " + Main.getJDA().getTextChannelById(textChannel));
 
                         switch (result.getInt("level")) {
                             case 1: // User wants a @User mention

@@ -248,7 +248,6 @@ public class DiscordController {
             case "twitch":
                 rgb = Color.RGBtoHSB(100, 65, 165, null);
                 eBuilder.setColor(Color.getHSBColor(rgb[0], rgb[1], rgb[2]));
-                System.out.println("Color set");
                 break;
             case "beam":
                 rgb = Color.RGBtoHSB(83, 109, 254, null);
@@ -579,8 +578,6 @@ public class DiscordController {
                                                 } catch (RuntimeException re) {
                                                     System.out.println("Illegal Arguement Exception");
                                                     re.printStackTrace();
-                                                } finally {
-                                                    System.out.println(streamData);
                                                 }
 
                                                 if (messageId != null) {

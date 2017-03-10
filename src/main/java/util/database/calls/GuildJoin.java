@@ -162,19 +162,11 @@ public final class GuildJoin {
                     pStatement.setString(1, guildId);
                     pStatement.setString(2, defaultChannel);
                     pStatement.setString(3, ":heart_eyes_cat:");
-                    result = pStatement.executeUpdate();
+                    pStatement.executeUpdate();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 } finally {
                     cleanUp(pStatement, connection);
-                }
-
-                if (Main.debugMode()) {
-                    if (result > 0) {
-                        logger.info("Successfully added guild " + guildId + " to my database");
-                    } else {
-                        logger.warn("Failed to add guild information to my database");
-                    }
                 }
                 break;
 
@@ -184,15 +176,10 @@ public final class GuildJoin {
 
             case "notification":
                 DefaultNotification notification = new DefaultNotification();
-                if (notification.defaultData(gEvent.getGuild().getId()) > 0) {
-                    logger.info("Populated the notification table with default data.");
-                } else {
-                    logger.info("Failed to add data to the notification table.");
-                }
+                notification.defaultData(gEvent.getGuild().getId());
                 break;
 
             default:
-                logger.info("No data to add to table: " + s);
                 break;
         }
     }
@@ -224,19 +211,11 @@ public final class GuildJoin {
 
                 pStatement.setString(1, guildId);
                 pStatement.setString(2, users);
-                result = pStatement.executeUpdate();
+                pStatement.executeUpdate();
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
                 cleanUp(pStatement, connection);
-            }
-
-            if (Main.debugMode()) {
-                if (result > 0) {
-                    logger.info("Successfully added manager " + users + " to guild " + guildId + ".");
-                } else {
-                    logger.warn("Failed to add manager to my database~");
-                }
             }
         }
     }

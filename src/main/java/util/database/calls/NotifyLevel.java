@@ -62,7 +62,6 @@ public class NotifyLevel {
                 if (result.isBeforeFirst() && textChannel != null && !textChannel.isEmpty()) {
                     while (result.next()) {
                         System.out.println("Notification Level Result: " + result.getInt("level"));
-                        System.out.println(data.get("guildId"));
                         System.out.println("Guild: " + Main.getJDA().getGuildById(data.get("guildId")));
                         System.out.println("Self Member: " + Main.getJDA().getGuildById(data.get("guildId")).getSelfMember());
                         System.out.println("Text Channel: " + Main.getJDA().getTextChannelById(textChannel));
@@ -77,9 +76,7 @@ public class NotifyLevel {
                                         data.get("channelUrl")));
                                 break;
                             case 2: // User wants @here mention
-                                System.out.println("Inside case 2");
                                 if (Main.getJDA().getGuildById(data.get("guildId")).getSelfMember().hasPermission(Main.getJDA().getTextChannelById(textChannel), Permission.MESSAGE_MENTION_EVERYONE)) {
-                                    System.out.println("~~~~ Bot has everyone permissions ~~~~");
                                     message.append(MessageBuilder.HERE_MENTION);
                                     message.append(" ");
                                     message.append(String.format(LocaleString.getString(data.get("guildId"), "announcementMessageText"),

@@ -294,7 +294,6 @@ public class DiscordController {
         MessageEmbed embed = eBuilder.build();
         MessageBuilder mBuilder = new MessageBuilder();
 
-        System.out.println("Setting notify level");
         NotifyLevel notify = new NotifyLevel();
         MessageBuilder messageBuilder = notify.getLevel(textChannel, streamData, mBuilder);
 
@@ -303,7 +302,6 @@ public class DiscordController {
         } else {
             mBuilder = messageBuilder;
         }
-        System.out.println("Notify level set");
 
         mBuilder.setEmbed(embed);
 
@@ -548,80 +546,84 @@ public class DiscordController {
         if (newStreams != null && newStreams.size() > 0) {
             newStreams.values().forEach(streamData -> {
 
-                System.out.println("~~~~~The Start~~~~~");
-
                 String announceChannel = streamData.get("textChannelId");
 
                 if (announceChannel != null && !announceChannel.isEmpty() && !"".equals(announceChannel)) {
 
-                    Message message = buildEmbed(announceChannel, streamData, platform, "new");
-                    System.out.println("~~~~Post Embed Creation~~~~");
 
                     // Check to ensure the bot is connected to the websocket
                     if (jda.getStatus() == JDA.Status.CONNECTED) {
-                        if (jda.getTextChannelById(announceChannel) != null && message != null) {
-
+                        if (jda.getTextChannelById(announceChannel) != null) {
                             if (jda.getGuildById(streamData.get("guildId")).getSelfMember().hasPermission(jda.getTextChannelById(announceChannel), Permission.MESSAGE_READ)) {
                                 if (jda.getGuildById(streamData.get("guildId")).getSelfMember().hasPermission(jda.getTextChannelById(announceChannel), Permission.MESSAGE_WRITE)) {
                                     if (jda.getGuildById(streamData.get("guildId")).getSelfMember().hasPermission(jda.getTextChannelById(announceChannel), Permission.MESSAGE_EMBED_LINKS)) {
                                         if (streamData.get("messageId") == null && streamData.get("online").equals("1")) {
-                                            // Send the message with blocking to ensure completion before moving on
-                                            String messageId = null;
+                                            CheckTwitchStreams cts = new CheckTwitchStreams();
 
-                                            try {
-                                                messageId = jda.getTextChannelById(announceChannel).sendMessage(message).complete().getId();
-                                            } catch (PermissionException pe) {
-                                                System.out.println("Permissions Exception");
-                                                pe.printStackTrace();
-                                            } catch (VerificationLevelException vle) {
-                                                System.out.println("Verification Level Exception Exception");
-                                                vle.printStackTrace();
-                                            } catch (IllegalArgumentException iae) {
-                                                System.out.println("Runtime Exception");
-                                                iae.printStackTrace();
-                                            } catch (RuntimeException re) {
-                                                System.out.println("Illegal Arguement Exception");
-                                                re.printStackTrace();
-                                            } finally {
-                                                System.out.println(streamData);
-                                            }
+                                            if (!cts.checkMessageId(streamData.get("channelId"), streamData.get("guildId"))) {
+                                                Message message = buildEmbed(announceChannel, streamData, platform, "new");
 
-                                            if (messageId != null) {
+                                                String messageId = null;
 
-                                                UpdateMessageId updateMessageId = new UpdateMessageId();
-                                                updateMessageId.executeUpdate(streamData.get("guildId"), streamData.get("channelId"), messageId);
-
-                                                StringBuilder currentStream = new StringBuilder();
-                                                currentStream.append(jda.getGuildById(streamData.get("guildId")).getName()).append(":");
-                                                currentStream.append(streamData.get("channelName")).append(":");
-                                                currentStream.append(streamData.get("streamsGame"));
-
-                                                if (announced.indexOf(currentStream.toString()) == -1) {
-                                                    if (announced.length() > 0) {
-                                                        announced.append(", ");
-                                                    }
-                                                    announced.append(currentStream);
-
-                                                    if (announced.length() > 1800) {
-                                                        String loggerBuilder = "```Markdown\n# Streams Announced\n " + announced.toString() + "```";
-                                                        new DiscordLogger(loggerBuilder, null);
-                                                        announced = new StringBuilder();
-                                                    }
+                                                try {
+                                                    messageId = jda.getTextChannelById(announceChannel).sendMessage(message).complete().getId();
+                                                } catch (PermissionException pe) {
+                                                    System.out.println("Permissions Exception");
+                                                    pe.printStackTrace();
+                                                } catch (VerificationLevelException vle) {
+                                                    System.out.println("Verification Level Exception Exception");
+                                                    vle.printStackTrace();
+                                                } catch (IllegalArgumentException iae) {
+                                                    System.out.println("Runtime Exception");
+                                                    iae.printStackTrace();
+                                                } catch (RuntimeException re) {
+                                                    System.out.println("Illegal Arguement Exception");
+                                                    re.printStackTrace();
+                                                } finally {
+                                                    System.out.println(streamData);
                                                 }
 
-                                                System.out.printf("[STREAM ANNOUNCE] [%s:%s] [%s:%s] [%s]: %s%n",
-                                                        jda.getGuildById(streamData.get("guildId")).getName(),
-                                                        jda.getGuildById(streamData.get("guildId")).getId(),
-                                                        jda.getTextChannelById(announceChannel).getName(),
-                                                        jda.getTextChannelById(announceChannel).getId(),
-                                                        messageId,
-                                                        streamData.get("channelName") + " is streaming " + streamData.get("streamsGame"));
+                                                if (messageId != null) {
 
-                                                switch (platform) {
-                                                    case "twitch":
-                                                        new Tracker("Twitch Streams");
-                                                        break;
+                                                    UpdateMessageId updateMessageId = new UpdateMessageId();
+                                                    updateMessageId.executeUpdate(streamData.get("guildId"), streamData.get("channelId"), messageId);
+
+                                                    StringBuilder currentStream = new StringBuilder();
+                                                    currentStream.append(jda.getGuildById(streamData.get("guildId")).getName()).append(":");
+                                                    currentStream.append(streamData.get("channelName")).append(":");
+                                                    currentStream.append(streamData.get("streamsGame"));
+
+                                                    if (announced.indexOf(currentStream.toString()) == -1) {
+                                                        if (announced.length() > 0) {
+                                                            announced.append(", ");
+                                                        }
+                                                        announced.append(currentStream);
+
+                                                        if (announced.length() > 1800) {
+                                                            String loggerBuilder = "```Markdown\n# Streams Announced\n " + announced.toString() + "```";
+                                                            new DiscordLogger(loggerBuilder, null);
+                                                            announced = new StringBuilder();
+                                                        }
+                                                    }
+
+                                                    System.out.printf("[STREAM ANNOUNCE] [%s:%s] [%s:%s] [%s]: %s%n",
+                                                            jda.getGuildById(streamData.get("guildId")).getName(),
+                                                            jda.getGuildById(streamData.get("guildId")).getId(),
+                                                            jda.getTextChannelById(announceChannel).getName(),
+                                                            jda.getTextChannelById(announceChannel).getId(),
+                                                            messageId,
+                                                            streamData.get("channelName") + " is streaming " + streamData.get("streamsGame"));
+
+                                                    switch (platform) {
+                                                        case "twitch":
+                                                            new Tracker("Twitch Streams");
+                                                            break;
+                                                    }
                                                 }
+                                            } else {
+                                                System.out.println("[~ERROR~] Stream was already announced.  Skipping and deleting!");
+                                                DeleteTwitchStream deleteStream = new DeleteTwitchStream();
+                                                deleteStream.process(streamData.get("guildId"), streamData.get("channelId"));
                                             }
                                         } else {
                                             DeleteTwitchStream deleteStream = new DeleteTwitchStream();

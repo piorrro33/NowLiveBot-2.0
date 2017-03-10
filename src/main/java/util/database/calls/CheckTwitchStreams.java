@@ -79,6 +79,9 @@ public class CheckTwitchStreams {
                 Integer count = result.getInt("count");
                 if (count.equals(1)) {
                     return true; // Stream announced
+                } else if (count > 1) {
+                    System.out.println("[~~~ERROR~~~] Stream has been announced multiple times!");
+                    return true;
                 }
             }
         } catch (SQLException e) {

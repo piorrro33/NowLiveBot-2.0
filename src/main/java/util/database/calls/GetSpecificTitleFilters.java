@@ -33,9 +33,9 @@ import static util.database.Database.cleanUp;
 public class GetSpecificTitleFilters {
 
     private Connection connection = Database.getInstance().getConnection();
-    private PreparedStatement pStatement;
 
     public final synchronized List<String> fetch(Stream stream, String flag, String name) {
+        PreparedStatement pStatement = null;
         ResultSet result = null;
 
         String guildId = stream.getAdditionalProperties().get("guildId").toString();

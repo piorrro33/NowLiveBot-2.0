@@ -87,7 +87,7 @@ public class Streams {
         if (!(other instanceof Streams)) {
             return false;
         }
-        Streams rhs = ((Streams) other);
+        Streams rhs = (Streams) other;
         return new EqualsBuilder().append(total, rhs.total).append(streams, rhs.streams).append(additionalProperties, rhs.additionalProperties).isEquals();
     }
 

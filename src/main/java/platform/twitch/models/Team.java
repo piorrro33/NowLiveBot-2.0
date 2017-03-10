@@ -199,7 +199,7 @@ public class Team {
         if (!(other instanceof Team)) {
             return false;
         }
-        Team rhs = ((Team) other);
+        Team rhs = (Team) other;
         return new EqualsBuilder().append(id, rhs.id).append(name, rhs.name).append(info, rhs.info).append(displayName, rhs.displayName).append(createdAt, rhs.createdAt).append(updatedAt, rhs.updatedAt).append(logo, rhs.logo).append(banner, rhs.banner).append(background, rhs.background).append(users, rhs.users).append(additionalProperties, rhs.additionalProperties).isEquals();
     }
 

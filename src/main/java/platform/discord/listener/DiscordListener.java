@@ -23,12 +23,12 @@ import core.Main;
 import langs.LocaleString;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.events.DisconnectEvent;
-import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.events.ReconnectedEvent;
 import net.dv8tion.jda.core.events.ResumedEvent;
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
+import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
 
-import static platform.discord.controller.DiscordController.sendToChannel;
 import static platform.discord.controller.DiscordController.sendToPm;
 import static util.database.Database.logger;
 
@@ -77,7 +76,6 @@ public class DiscordListener extends ListenerAdapter {
             String cntMsg = event.getMessage().getContent();
             String authorID = event.getMessage().getAuthor().getId();
 
-            //if (!event.getChannel().getId().equals("250045505659207699")) {
             // Pre-check all core.commands to ignore JDA written messages.
             if (cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND) &&
                     !authorID.equals(event.getJDA().getSelfUser().getId()) &&
@@ -110,14 +108,7 @@ public class DiscordListener extends ListenerAdapter {
                     e.printStackTrace();
                 }
             }
-            //}
         }
-    }
-
-    @Override
-    public void onReady(ReadyEvent event) {
-        super.onReady(event);
-        //updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
     }
 
     @Override
@@ -152,7 +143,16 @@ public class DiscordListener extends ListenerAdapter {
 
     @Override
     public final void onGuildMemberJoin(GuildMemberJoinEvent event) {
-        new DiscordLogger(null, event);
+        if (event.getGuild().getId().equals("250045505659207699")) {
+            new DiscordLogger(null, event);
+        }
+    }
+
+    @Override
+    public final void onGuildMemberLeave(GuildMemberLeaveEvent event) {
+        if (event.getGuild().getId().equals("250045505659207699")) {
+            new DiscordLogger(null, event);
+        }
     }
 
     @Override
@@ -178,13 +178,8 @@ public class DiscordListener extends ListenerAdapter {
     private void commandFilter(String cntMsg, GuildMessageReceivedEvent event)
             throws PropertyVetoException, IOException, SQLException {
         if (cntMsg.startsWith(Const.COMMAND_PREFIX + "ping") || cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND)) {
-            // Do a check to make sure that -nl add channel|team is not being used directly
-            if (!cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND + " add channel") &&
-                    !cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND + " remove channel")) {
-                CommandParser.handleCommand(Main.parser.parse(cntMsg, event));
-            } else {
-                sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "usePlatform"));
-            }
+            CommandParser.handleCommand(Main.parser.parse(cntMsg, event));
+
         }
     }
 

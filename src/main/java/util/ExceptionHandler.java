@@ -16,36 +16,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package util.database.calls;
+package util;
 
-import util.database.Database;
+import platform.generic.PlatformListener;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
-import static util.database.Database.cleanUp;
-
-public class TwitchData {
-
-    private Connection connection = Database.getInstance().getConnection();
-
-    public synchronized Boolean action(String query) {
-        PreparedStatement pStatement = null;
-
-        try {
-            if (connection == null || connection.isClosed()) {
-                this.connection = Database.getInstance().getConnection();
-            }
-            pStatement = connection.prepareStatement(query);
-            if (pStatement.executeUpdate() > 0) {
-                return true;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(pStatement, connection);
-        }
-        return false;
+public class ExceptionHandler implements Thread.UncaughtExceptionHandler {
+    /**
+     * Method invoked when the given thread terminates due to the
+     * given uncaught exception.
+     * <p>Any exception thrown by this method will be ignored by the
+     * Java Virtual Machine.
+     *
+     * @param t the thread
+     * @param e the exception
+     */
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+        System.out.printf("An exception has been captured\n");
+        System.out.printf("Thread: %s\n", t.getId());
+        System.out.printf("Exception: %s: %s\n", e.getClass().getName(), e.getMessage());
+        System.out.printf("Stack Trace: \n");
+        e.printStackTrace(System.out);
+        System.out.printf("Thread status: %s\n", t.getState());
+        new Thread(new PlatformListener()).start();
     }
 }

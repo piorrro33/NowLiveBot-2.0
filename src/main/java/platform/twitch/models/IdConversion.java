@@ -87,7 +87,7 @@ public class IdConversion {
         if (!(other instanceof IdConversion)) {
             return false;
         }
-        IdConversion rhs = ((IdConversion) other);
+        IdConversion rhs = (IdConversion) other;
         return new EqualsBuilder().append(total, rhs.total).append(users, rhs.users).append(additionalProperties, rhs.additionalProperties).isEquals();
     }
 

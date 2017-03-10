@@ -170,7 +170,7 @@ public class LanguageBundle extends ListResourceBundle {
                     + "\n\ttitlefilter     - Lists all title filters you have set up"
                     + "\n\ttwitchTeam      - Lists the Twitch teams you follow"
                     + "\n\tsetting         - Lists common bot settings"
-                    + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " list channel" + "```"},
+                    + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " list twitchChannel" + "```"},
             {"listSettings", "```Markdown\n" +
                     "# Bot Settings on Your Server" +
                     "\n* Compact mode is %s." +
@@ -293,10 +293,10 @@ public class LanguageBundle extends ListResourceBundle {
                     + "* Format: " + Const.COMMAND_PREFIX + Const.COMMAND + " twitch team teamName #announcementChannel\n\n"
                     + "## Twitch Game Filters (Global)\n"
                     + "* NOTE: This affects all stream announcements for Twitch\n"
-                    + "* Format: " + Const.COMMAND_PREFIX + Const.COMMAND + " twitch gamefilter {gameName|gameName} #announcementChannel\n\n"
+                    + "* Format: " + Const.COMMAND_PREFIX + Const.COMMAND + " twitch gfilter {gameName|gameName} #announcementChannel\n\n"
                     + "## Twitch Title Filters (Global)\n"
                     + "* NOTE: This affects all stream announcements for Twitch\n"
-                    + "* Format: " + Const.COMMAND_PREFIX + Const.COMMAND + " twitch titlefilter gameName #announcementChannel\n\n"
+                    + "* Format: " + Const.COMMAND_PREFIX + Const.COMMAND + " twitch tfilter gameName #announcementChannel\n\n"
                     + "* Examples:\n\t"
                     + Const.COMMAND_PREFIX + Const.COMMAND + " twitch channel AgueMort #live-streams {Overwatch|World of "
                     + "Warcraft} (adds a channel to announce in a certain channel and game filters)\n\t"

@@ -18,67 +18,46 @@
 
 package util.database.calls;
 
-import platform.twitch.models.Stream;
 import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-public class GetGlobalFilters {
+public class CheckNotificationExists {
 
-    private Connection connection = Database.getInstance().getConnection();
-
-    public final synchronized List<String> fetch(Stream stream, String type) {
+    public synchronized void check() {
+        Connection connection = Database.getInstance().getConnection();
         PreparedStatement pStatement = null;
         ResultSet result = null;
 
-        String guildId = stream.getAdditionalProperties().get("guildId").toString();
+        String query = "SELECT `guildId` FROM `guild` WHERE NOT EXISTS (" +
+                "SELECT `guildId` FROM `notification` WHERE `guild`.`guildId` = `notification`.`guildId`) " +
+                "ORDER BY `guild`.`guildId` ASC";
 
         try {
-            String query;
-            switch (type) {
-                case "game":
-                    query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? AND `gameFilter` IS NOT NULL";
-                    break;
-                default:// Title filters
-                    query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` IS NOT NULL";
-                    break;
-            }
-
-
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            result = pStatement.executeQuery();
-
-            List<String> filters = new CopyOnWriteArrayList<>();
-
-            if (result.isBeforeFirst()) {
-                while (result.next()) {
-                    switch (type) {
-                        case "game":
-                            filters.add(result.getString("gameFilter").replaceAll("''", "'"));
-                            break;
-                        default:
-                            filters.add(result.getString("titleFilter").replaceAll("''", "'"));
-                            break;
+            if (connection != null) {
+                pStatement = connection.prepareStatement(query);
+                result = pStatement.executeQuery();
+                if (result.isBeforeFirst()) {
+                    while (result.next()) {
+                        query = "INSERT INTO `notification` (`guildId`, `level`) VALUES (?,0)";
+                        pStatement = connection.prepareStatement(query);
+                        pStatement.setString(1, result.getString("guildId"));
+                        pStatement.executeUpdate();
                     }
                 }
-                return filters;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        return null;
     }
 }

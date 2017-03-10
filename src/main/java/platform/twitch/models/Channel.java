@@ -310,7 +310,7 @@ public class Channel {
         if (!(other instanceof Channel)) {
             return false;
         }
-        Channel rhs = ((Channel) other);
+        Channel rhs = (Channel) other;
         return new EqualsBuilder().append(mature, rhs.mature).append(status, rhs.status).append(broadcasterLanguage, rhs.broadcasterLanguage).append(displayName, rhs.displayName).append(game, rhs.game).append(language, rhs.language).append(id, rhs.id).append(name, rhs.name).append(createdAt, rhs.createdAt).append(updatedAt, rhs.updatedAt).append(partner, rhs.partner).append(logo, rhs.logo).append(videoBanner, rhs.videoBanner).append(profileBanner, rhs.profileBanner).append(profileBannerBackgroundColor, rhs.profileBannerBackgroundColor).append(url, rhs.url).append(views, rhs.views).append(followers, rhs.followers).append(additionalProperties, rhs.additionalProperties).isEquals();
     }
 

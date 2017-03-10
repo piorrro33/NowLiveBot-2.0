@@ -36,6 +36,7 @@ import net.dv8tion.jda.core.exceptions.PermissionException;
 import net.dv8tion.jda.core.requests.ErrorResponse;
 import util.Const;
 import util.DiscordLogger;
+import util.ExceptionHandlerNoRestart;
 import util.database.Database;
 import util.database.calls.*;
 
@@ -54,12 +55,9 @@ import static util.database.Database.cleanUp;
  */
 public class DiscordController {
 
-    private static Connection nlConnection;
     private static Connection ccConnection;
-    private static PreparedStatement nlStatement;
     private static PreparedStatement pStatement;
     private static String query;
-    private static ResultSet nlResult;
     private static ResultSet result;
     private String mentionedUsersId;
     private StringBuilder announced = new StringBuilder();
@@ -72,11 +70,12 @@ public class DiscordController {
     private StringBuilder permsEveryone = new StringBuilder();
 
     public DiscordController(GuildMessageReceivedEvent event) {
+        Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandlerNoRestart());
         mentionedUsersID(event);
     }
 
     public DiscordController() {
-
+        Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandlerNoRestart());
     }
 
     public static void sendToChannel(GuildMessageReceivedEvent event, String message) {
@@ -113,12 +112,11 @@ public class DiscordController {
         event.getAuthor().openPrivateChannel().queue(
                 success ->
                         event.getAuthor().getPrivateChannel().sendMessage(message).queue(
-                                sentMessage -> System.out.printf("[BOT -> PM] [%s:%s] [%s:%s]: %s%n",
+                                sentMessage -> System.out.printf("[BOT -> PM] [%s:%s] [%s:%s]%n",
                                         event.getGuild().getName(),
                                         event.getGuild().getId(),
                                         event.getAuthor().getName(),
-                                        event.getAuthor().getId(),
-                                        sentMessage.getContent())
+                                        event.getAuthor().getId())
                         ),
                 failure ->
                         System.out.printf("[~ERROR~] Unable to send PM to %s:%s, Author: %s:%s.%n",
@@ -134,10 +132,9 @@ public class DiscordController {
             event.getAuthor().openPrivateChannel().queue(
                     success ->
                             event.getAuthor().getPrivateChannel().sendMessage(message).queue(
-                                    sentPM -> System.out.printf("[BOT -> PM] [%s:%s]: %s%n",
+                                    sentPM -> System.out.printf("[BOT -> PM] [%s:%s]%n",
                                             event.getAuthor().getName(),
-                                            event.getAuthor().getId(),
-                                            sentPM.getContent())
+                                            event.getAuthor().getId())
                             ),
                     failure ->
                             System.out.printf("[~ERROR~] Unable to send PM to author: %s:%s.%n",
@@ -166,64 +163,6 @@ public class DiscordController {
             cleanUp(result, pStatement, ccConnection);
         }
         return -1;
-    }
-
-    private synchronized MessageBuilder notifyLevel(String textChannel, Map<String, String> data, MessageBuilder message) {
-        try {
-            query = "SELECT `level`, `userId` FROM `notification` WHERE `guildId` = ?";
-            if (nlConnection == null || nlConnection.isClosed()) {
-                nlConnection = Database.getInstance().getConnection();
-            }
-            nlStatement = nlConnection.prepareStatement(query);
-
-            nlStatement.setString(1, data.get("guildId"));
-            nlResult = nlStatement.executeQuery();
-
-            // Not going to add these to the Lang files because they will eventually be tokenized for customization
-            while (nlResult.next()) {
-                switch (nlResult.getInt("level")) {
-                    case 1: // User wants a @User mention
-                        String userId = nlResult.getString("userId");
-                        User user = Main.getJDA().getUserById(userId);
-                        message.append(user.getAsMention());
-                        message.append(String.format(" " + LocaleString.getString(data.get("guildId"), "announcementMessageText"),
-                                data.get("channelDisplayName"),
-                                data.get("channelUrl")));
-                        break;
-                    case 2: // User wants @here mention
-                        if (Main.getJDA().getGuildById(data.get("guildId")).getSelfMember().hasPermission(Main.getJDA().getTextChannelById(textChannel), Permission.MESSAGE_MENTION_EVERYONE)) {
-                            message.append(MessageBuilder.HERE_MENTION);
-                            message.append(String.format(" " + LocaleString.getString(data.get("guildId"), "announcementMessageText"),
-                                    data.get("channelDisplayName"),
-                                    data.get("channelUrl")));
-                        } else {
-                            permsEveryoneBuilder(data, Main.getJDA());
-                        }
-                        break;
-                    case 3: // User wants @everyone mention
-                        if (Main.getJDA().getGuildById(data.get("guildId")).getSelfMember().hasPermission(Main.getJDA().getTextChannelById(textChannel), Permission.MESSAGE_MENTION_EVERYONE)) {
-                            message.append(MessageBuilder.EVERYONE_MENTION);
-                            message.append(String.format(" " + LocaleString.getString(data.get("guildId"), "announcementMessageText"),
-                                    data.get("channelDisplayName"),
-                                    data.get("channelUrl")));
-                        } else {
-                            permsEveryoneBuilder(data, Main.getJDA());
-                        }
-                        break;
-                    default:
-                        message.append(String.format(LocaleString.getString(data.get("guildId"), "announcementMessageText"),
-                                data.get("channelDisplayName"),
-                                data.get("channelUrl")));
-                        break;
-                }
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(nlResult, nlStatement, nlConnection);
-        }
-        return message;
     }
 
     public StringBuilder getPermsEveryone() {
@@ -333,6 +272,9 @@ public class DiscordController {
 
         eBuilder.setTitle(url, url);
 
+        if (streamTitle.length() > 300) {
+            streamTitle = streamTitle.substring(0, 299);
+        }
         eBuilder.addField(LocaleString.getString(guildId, "nowPlayingEmbed"), game, false);
         eBuilder.addField(LocaleString.getString(guildId, "streamTitleEmbed"), streamTitle, false);
 
@@ -351,7 +293,14 @@ public class DiscordController {
         MessageEmbed embed = eBuilder.build();
         MessageBuilder mBuilder = new MessageBuilder();
 
-        notifyLevel(textChannel, streamData, mBuilder);
+        NotifyLevel notify = new NotifyLevel();
+        MessageBuilder messageBuilder = notify.getLevel(textChannel, streamData, mBuilder);
+
+        if (messageBuilder == null) {
+            permsEveryoneBuilder(streamData, Main.getJDA());
+        } else {
+            mBuilder = messageBuilder;
+        }
 
         mBuilder.setEmbed(embed);
 
@@ -598,74 +547,80 @@ public class DiscordController {
 
                 String announceChannel = streamData.get("textChannelId");
 
-                Message message = buildEmbed(announceChannel, streamData, platform, "new");
-
                 if (announceChannel != null && !announceChannel.isEmpty() && !"".equals(announceChannel)) {
+
+
                     // Check to ensure the bot is connected to the websocket
                     if (jda.getStatus() == JDA.Status.CONNECTED) {
-                        if (jda.getTextChannelById(announceChannel) != null && message != null) {
-
+                        if (jda.getTextChannelById(announceChannel) != null) {
                             if (jda.getGuildById(streamData.get("guildId")).getSelfMember().hasPermission(jda.getTextChannelById(announceChannel), Permission.MESSAGE_READ)) {
                                 if (jda.getGuildById(streamData.get("guildId")).getSelfMember().hasPermission(jda.getTextChannelById(announceChannel), Permission.MESSAGE_WRITE)) {
                                     if (jda.getGuildById(streamData.get("guildId")).getSelfMember().hasPermission(jda.getTextChannelById(announceChannel), Permission.MESSAGE_EMBED_LINKS)) {
-
                                         if (streamData.get("messageId") == null && streamData.get("online").equals("1")) {
+                                            CheckTwitchStreams cts = new CheckTwitchStreams();
 
-                                            // Send the message with blocking to ensure completion before moving on
-                                            String messageId = null;
+                                            if (!cts.checkMessageId(streamData.get("channelId"), streamData.get("guildId"))) {
+                                                Message message = buildEmbed(announceChannel, streamData, platform, "new");
 
-                                            try {
-                                                messageId = jda.getTextChannelById(announceChannel).sendMessage(message).complete().getId();
-                                            } catch (PermissionException pe) {
-                                                System.out.println("Permissions Exception");
-                                                pe.printStackTrace();
-                                            } catch (VerificationLevelException vle) {
-                                                System.out.println("Verification Level Exception Exception");
-                                                vle.printStackTrace();
-                                            } catch (IllegalArgumentException iae) {
-                                                System.out.println("Runtime Exception");
-                                                iae.printStackTrace();
-                                            } catch (RuntimeException re) {
-                                                System.out.println("Illegal Arguement Exception");
-                                                re.printStackTrace();
-                                            }
+                                                String messageId = null;
 
-                                            if (messageId != null) {
-
-                                                UpdateMessageId updateMessageId = new UpdateMessageId();
-                                                updateMessageId.executeUpdate(streamData.get("guildId"), streamData.get("channelId"), messageId);
-
-                                                StringBuilder currentStream = new StringBuilder();
-                                                currentStream.append(jda.getGuildById(streamData.get("guildId")).getName()).append(":");
-                                                currentStream.append(streamData.get("channelName")).append(":");
-                                                currentStream.append(streamData.get("streamsGame"));
-
-                                                if (announced.indexOf(currentStream.toString()) == -1) {
-                                                    if (announced.length() > 0) {
-                                                        announced.append(", ");
-                                                    }
-                                                    announced.append(currentStream);
-
-                                                    if (announced.length() > 1800) {
-                                                        String loggerBuilder = "```Markdown\n# Streams Announced\n " + announced.toString() + "```";
-                                                        new DiscordLogger(loggerBuilder, null);
-                                                        announced = new StringBuilder();
-                                                    }
+                                                try {
+                                                    messageId = jda.getTextChannelById(announceChannel).sendMessage(message).complete().getId();
+                                                } catch (PermissionException pe) {
+                                                    System.out.println("Permissions Exception");
+                                                    pe.printStackTrace();
+                                                } catch (VerificationLevelException vle) {
+                                                    System.out.println("Verification Level Exception Exception");
+                                                    vle.printStackTrace();
+                                                } catch (IllegalArgumentException iae) {
+                                                    System.out.println("Runtime Exception");
+                                                    iae.printStackTrace();
+                                                } catch (RuntimeException re) {
+                                                    System.out.println("Illegal Arguement Exception");
+                                                    re.printStackTrace();
                                                 }
 
-                                                System.out.printf("[STREAM ANNOUNCE] [%s:%s] [%s:%s] [%s]: %s%n",
-                                                        jda.getGuildById(streamData.get("guildId")).getName(),
-                                                        jda.getGuildById(streamData.get("guildId")).getId(),
-                                                        jda.getTextChannelById(announceChannel).getName(),
-                                                        jda.getTextChannelById(announceChannel).getId(),
-                                                        messageId,
-                                                        streamData.get("channelName") + " is streaming " + streamData.get("streamsGame"));
+                                                if (messageId != null) {
 
-                                                switch (platform) {
-                                                    case "twitch":
-                                                        new Tracker("Twitch Streams");
-                                                        break;
+                                                    UpdateMessageId updateMessageId = new UpdateMessageId();
+                                                    updateMessageId.executeUpdate(streamData.get("guildId"), streamData.get("channelId"), messageId);
+
+                                                    StringBuilder currentStream = new StringBuilder();
+                                                    currentStream.append(jda.getGuildById(streamData.get("guildId")).getName()).append(":");
+                                                    currentStream.append(streamData.get("channelName")).append(":");
+                                                    currentStream.append(streamData.get("streamsGame"));
+
+                                                    if (announced.indexOf(currentStream.toString()) == -1) {
+                                                        if (announced.length() > 0) {
+                                                            announced.append(", ");
+                                                        }
+                                                        announced.append(currentStream);
+
+                                                        if (announced.length() > 1800) {
+                                                            String loggerBuilder = "```Markdown\n# Streams Announced\n " + announced.toString() + "```";
+                                                            new DiscordLogger(loggerBuilder, null);
+                                                            announced = new StringBuilder();
+                                                        }
+                                                    }
+
+                                                    System.out.printf("[STREAM ANNOUNCE] [%s:%s] [%s:%s] [%s]: %s%n",
+                                                            jda.getGuildById(streamData.get("guildId")).getName(),
+                                                            jda.getGuildById(streamData.get("guildId")).getId(),
+                                                            jda.getTextChannelById(announceChannel).getName(),
+                                                            jda.getTextChannelById(announceChannel).getId(),
+                                                            messageId,
+                                                            streamData.get("channelName") + " is streaming " + streamData.get("streamsGame"));
+
+                                                    switch (platform) {
+                                                        case "twitch":
+                                                            new Tracker("Twitch Streams");
+                                                            break;
+                                                    }
                                                 }
+                                            } else {
+                                                System.out.println("[~ERROR~] Stream was already announced.  Skipping and deleting!");
+                                                DeleteTwitchStream deleteStream = new DeleteTwitchStream();
+                                                deleteStream.process(streamData.get("guildId"), streamData.get("channelId"));
                                             }
                                         } else {
                                             DeleteTwitchStream deleteStream = new DeleteTwitchStream();

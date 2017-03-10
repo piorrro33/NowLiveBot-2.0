@@ -22,8 +22,6 @@ import core.Command;
 import langs.LocaleString;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import util.database.Database;
 import util.database.calls.Tracker;
 
@@ -41,11 +39,7 @@ import static util.database.Database.cleanUp;
  */
 public class Streams implements Command {
 
-    private static Logger logger = LoggerFactory.getLogger(Streams.class);
     private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
-    private Integer rowCount = -1;
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
@@ -55,6 +49,10 @@ public class Streams implements Command {
 
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
+        PreparedStatement pStatement = null;
+        ResultSet result = null;
+        Integer rowCount = -1;
+
         try {
             String query = "SELECT COUNT(streamsId) AS `rowCount` FROM `twitchstreams` WHERE `guildId` = ?";
 
@@ -62,16 +60,17 @@ public class Streams implements Command {
                 this.connection = Database.getInstance().getConnection();
             }
 
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
 
             pStatement.setString(1, event.getGuild().getId());
-            this.result = pStatement.executeQuery();
+            result = pStatement.executeQuery();
 
             while (result.next()) {
                 rowCount = result.getInt("rowCount");
             }
         } catch (SQLException e) {
-            logger.error("There was a problem fetching live streams for an on demand request.", e);
+            System.out.println("[~ERROR~] There was a problem fetching live streams for an on demand request.");
+            e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
@@ -92,10 +91,10 @@ public class Streams implements Command {
                 if (connection == null || connection.isClosed()) {
                     this.connection = Database.getInstance().getConnection();
                 }
-                this.pStatement = connection.prepareStatement(query);
+                pStatement = connection.prepareStatement(query);
 
                 pStatement.setString(1, event.getGuild().getId());
-                this.result = pStatement.executeQuery();
+                result = pStatement.executeQuery();
 
                 MessageBuilder message = new MessageBuilder();
                 message.append(LocaleString.getString(event.getMessage().getGuild().getId(), "onlineStreamPm1"));

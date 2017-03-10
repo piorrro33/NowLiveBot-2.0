@@ -40,10 +40,6 @@ public class SchemaCheck extends Database {
     private static PreparedStatement pStatement;
     private static ResultSet resultSet;
 
-    public SchemaCheck() {
-        super();
-    }
-
     public static void checkDb() {
         System.out.println("Checking database schema.");
 

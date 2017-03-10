@@ -40,7 +40,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
@@ -57,7 +56,6 @@ public class Main {
     private static Connection connection;
     private static PreparedStatement pStatement;
     private static ResultSet result;
-    private static List<String> tableList = new CopyOnWriteArrayList<>();
 
     public static void setJda(JDA jda) {
         Main.jda = jda;
@@ -94,6 +92,7 @@ public class Main {
         }
 
         guildCheck();
+
         new PlatformListener();
     }
 
@@ -125,10 +124,14 @@ public class Main {
 
                     String guildId = result.getString("guildId");
 
-                    jda.getGuildById(guildId).leave().complete();
+                    if (jda.getGuildById(guildId) != null) {
+                        jda.getGuildById(guildId).leave().complete();
 
-                    System.out.printf("[SYSTEM] All data removed for G:%s.%n",
-                            guildId);
+                        System.out.printf("[SYSTEM] All data removed for G:%s.%n",
+                                guildId);
+                    } else {
+                        System.out.println(result.getString("guildId"));
+                    }
                 }
             }
         } catch (SQLException e) {

@@ -29,15 +29,16 @@ import static util.database.Database.cleanUp;
 public class UpdateMessageId {
 
     private Connection connection;
-    private PreparedStatement pStatement;
 
     public synchronized void executeUpdate(String guildId, String channelId, String messageId) {
+        PreparedStatement pStatement = null;
+
         try {
             String query = "UPDATE `twitchstreams` SET `messageId` = ? WHERE `guildId` = ? AND `channelId` = ?";
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             pStatement.setString(1, messageId);
             pStatement.setString(2, guildId);
             pStatement.setString(3, channelId);

@@ -57,7 +57,7 @@ public class DiscordLogger {
                 }
             }
             if (event instanceof GuildMemberJoinEvent) {
-                //discordLogGMJE((GuildMemberJoinEvent) event);
+                discordLogGMJE((GuildMemberJoinEvent) event);
             }
             if (event instanceof GuildMemberLeaveEvent) {
                 discordLogGMLE((GuildMemberLeaveEvent) event);

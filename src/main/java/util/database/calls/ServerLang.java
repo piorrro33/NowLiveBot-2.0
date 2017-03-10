@@ -27,24 +27,22 @@ import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
 
-/**
- * Created by keesh on 1/30/2017.
- */
 public class ServerLang {
 
     private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
 
     public synchronized String getLangCode(String guildId) {
+        PreparedStatement pStatement = null;
+        ResultSet result = null;
+
         try {
             String query = "SELECT `serverLang` FROM `guild` WHERE `guildId` = ?";
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
-            this.result = pStatement.executeQuery();
+            result = pStatement.executeQuery();
 
             String lang = "";
             if (result.next()) {

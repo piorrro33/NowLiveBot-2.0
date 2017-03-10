@@ -29,10 +29,10 @@ import static util.database.Database.cleanUp;
 
 public class GetAnnounceChannel {
     private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
 
     public synchronized String action(String guildId, String column, String value) {
+        PreparedStatement pStatement = null;
+        ResultSet result = null;
 
         String query;
         switch (column) {
@@ -54,10 +54,10 @@ public class GetAnnounceChannel {
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
             pStatement.setString(2, value);
-            this.result = pStatement.executeQuery();
+            result = pStatement.executeQuery();
 
             String announceChannel = null;
             if (result.next()) {

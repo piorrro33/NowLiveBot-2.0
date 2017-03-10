@@ -678,7 +678,7 @@ public class BeamChannel {
             if (!(other instanceof User)) {
                 return false;
             }
-            User rhs = ((User) other);
+            User rhs = (User) other;
             return new EqualsBuilder().append(level, rhs.level).append(social, rhs.social).append(id, rhs.id)
                     .append(username, rhs.username).append(verified, rhs.verified).append(experience, rhs.experience)
                     .append(sparks, rhs.sparks).append(avatarUrl, rhs.avatarUrl).append(bio, rhs.bio)

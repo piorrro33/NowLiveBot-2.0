@@ -30,10 +30,11 @@ import static util.database.Database.cleanUp;
 public class GetGlobalAnnounceChannel {
 
     private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
 
     public synchronized String fetch(String guildId) {
+        PreparedStatement pStatement = null;
+        ResultSet result = null;
+
         String query = "SELECT `channelId` FROM `guild` WHERE `guildId` = ?";
         try {
             if (connection == null || connection.isClosed()) {

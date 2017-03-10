@@ -212,7 +212,7 @@ public class Stream {
         if (!(other instanceof Stream)) {
             return false;
         }
-        Stream rhs = ((Stream) other);
+        Stream rhs = (Stream) other;
         return new EqualsBuilder().append(id, rhs.id).append(game, rhs.game).append(communityId, rhs.communityId).append(viewers, rhs.viewers).append(videoHeight, rhs.videoHeight).append(averageFps, rhs.averageFps).append(delay, rhs.delay).append(createdAt, rhs.createdAt).append(isPlaylist, rhs.isPlaylist).append(preview, rhs.preview).append(channel, rhs.channel).append(additionalProperties, rhs.additionalProperties).isEquals();
     }
 

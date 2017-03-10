@@ -32,18 +32,19 @@ import static util.database.Database.cleanUp;
 public class GetTwitchGames {
 
     private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
 
     public synchronized List<String> fetch() {
+        PreparedStatement pStatement = null;
+        ResultSet result = null;
+
         String query = "SELECT DISTINCT `gameName` FROM `twitch` WHERE `gameName` IS NOT NULL ORDER BY `gameName` ASC";
 
         try {
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
-            this.result = pStatement.executeQuery();
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
 
             List<String> games = new CopyOnWriteArrayList<>();
 

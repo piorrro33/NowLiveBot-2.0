@@ -609,7 +609,7 @@ public class Twitch implements Command {
     }
 
     private synchronized void channelHandler(GuildMessageReceivedEvent event, String args) {
-        findTwitchChannels(args);
+        findTwitchChannels(event, args);
         findDiscordChannel(args, event);
         findGameFilters(args);
         findTitleFilters(args);
@@ -963,7 +963,7 @@ public class Twitch implements Command {
         }
     }
 
-    private synchronized void findTwitchChannels(String args) {
+    private synchronized void findTwitchChannels(GuildMessageReceivedEvent event, String args) {
         // Extract the channel name from the args
         TwitchController twitch = new TwitchController();
         channel = new ConcurrentHashMap<>();
@@ -1007,7 +1007,7 @@ public class Twitch implements Command {
         if (notFoundChannel != null && notFoundChannel.size() > 0) {
             String flattened = notFoundChannel.toString();
             String stripped = flattened.replaceAll("[\\[\\]]", "");
-            message.append(String.format("\n# Channel(s) not found: %s.",
+            message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "twitchChannelNotFound"),
                     stripped));
             notFoundChannel = new CopyOnWriteArrayList<>();
         }

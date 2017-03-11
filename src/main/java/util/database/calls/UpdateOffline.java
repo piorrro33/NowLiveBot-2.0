@@ -23,7 +23,7 @@ import util.database.Database;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
@@ -32,7 +32,7 @@ public class UpdateOffline {
     private Connection connection;
     private PreparedStatement pStatement;
 
-    public synchronized void executeUpdate(List<String> channelIds) {
+    public synchronized void executeUpdate(CopyOnWriteArrayList<String> channelIds) {
 
         if (channelIds.size() > 0) {
             String query = "UPDATE `twitchstreams` SET `online` = ? WHERE `channelId` = ?";

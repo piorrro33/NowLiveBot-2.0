@@ -257,6 +257,7 @@ public class LanguageBundle extends ListResourceBundle {
             {"twitchChannelAddFail", "\n# Failed to add channels: %s."},
             {"twitchChannelAnnounce", "\n# They will be announced in: #%s."},
             {"twitchChannelGameFilter", "\n# They will only be announced when they are playing: %s."},
+            {"twitchChannelNotFound", "\n# Channel(s) not found: %s"},
             {"twitchChannelRemove", "\n# Removed channels: %s."},
             {"twitchChannelRemoveFail", "\n! Failed to delete channels: %s."},
             {"twitchChannelTitleFilter", "\n# They will only be announced when these words are in the title: %s."},

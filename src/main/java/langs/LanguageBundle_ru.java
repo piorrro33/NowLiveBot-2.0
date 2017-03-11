@@ -45,7 +45,7 @@ public class LanguageBundle_ru extends ListResourceBundle {
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
                     + " announce <content>\n\tЭта команда доступна только для разработчиков.```"},
-            {"announcementMessageText", "Привет!  %s начал трансляцию! Смотри стрим здесь: %s"},
+            {"announcementMessageText", "Привет!  %s начал(а) трансляцию! Смотрите стрим здесь: %s"},
             {"beamHelp", "```Markdown\n# BEAM\n* Добавление и удаление данных связанных с Beam.pro.\n\n## USAGE:  "
                     + Const.COMMAND_PREFIX + Const.COMMAND + " beam <sub-command> <option> <argument>\n"
                     + "\t<sub-command> <option> <argument>\n"
@@ -77,8 +77,8 @@ public class LanguageBundle_ru extends ListResourceBundle {
                     + "\n\tedit   - Я отредактирую свои объявления, чтобы сказать \"OFFLINE\" , когда стрим окончен"
                     + "\n\tdelete - Я просто удалю объявление, когда стрим окончен"
                     + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " cleanup edit" + "```"},
-            {"cleanupSuccessDelete", "Как скажете!  Теперь я удалю все мои объявления!"},
-            {"cleanupSuccessEdit", "Мои объявления будут отредактированы."},
+            {"cleanupSuccessDelete", "Как скажете!  Теперь я буду удалять все мои объявления, если трансляция окончена!"},
+            {"cleanupSuccessEdit", "Я буду редактировать мои объявления, если трансляция началась или окончена."},
             {"cleanupSuccessNone", " :ok_hand: Я ничего не буду делать с моими объявлениями."},
             {"compactFail", "Эм... что-то пошло не так. Мой компактный режим не изменился."},
             {"compactHelp", "```Markdown\n# COMPACT\n* Мои объявления изменены на более компактную версию.\n\n## USAGE:  "
@@ -96,12 +96,12 @@ public class LanguageBundle_ru extends ListResourceBundle {
             {"doesNotExist", "Это никогда не добавлялось в мою базу данных."},
             {"emptyArgs", "Кажется вы забыли какую-то команду.  Изучите команды помощи для получения дополнительной информации.."},
             {"emptyCommand", "В следующий раз, когда ты меня разбудишь, пожалуйста отправьте также команду."},
-            {"followersEmbed", "Подписчики"},
+            {"followersEmbed", "Подписчиков"},
             {"guildJoinSuccess", "Всем привет!  Я Now Live. Я объявлю если стримеры начинают трансляции!  Type `" +
                     Const.COMMAND_PREFIX + Const.COMMAND +
                     " help` для списка моих команд.\n\nIf вам нужна помощь в настройке, приходите " +
                     "присоединяйтесь к моему Discord на " + Const.DISCORD_URL + " и ознакомьтесь с инструкциями по настройке и списком команд " +
-                    "каналы для всей информации!\n\nНе забудь поздароваться!"},
+                    "каналы для всей информации!\n\nНе забудь поздороваться!"},
             {"helpPm", "Привет всем, %s! Итак, я слышал, ты ищешь помощи? Ниже приведен список моих команд.\n\n" +
                     "```Markdown\n" +
                     "# ADD\n" +
@@ -149,11 +149,11 @@ public class LanguageBundle_ru extends ListResourceBundle {
                     "# TWITCH\n" +
                     "* Добавmnе и удалите связанные с Twitch.tv вещи. Для получения дополнительной информации введите: " +
                     Const.COMMAND_PREFIX + Const.COMMAND + " twitch help\n\n```\n" +
-                    "Ague все еще упорно трудится, чтобы закончить мои новые функции и предаставить вам!\n\n~~" + Const.BOT_NAME + "\n\n" +
-                    "Если вам нужна дополнительная помощь, присоединяйтесь к мему серверу в Discord.  Там много пользователей, которые будут полезеы вам:  " + Const.DISCORD_URL + "\n\n" +
+                    "Ague все еще упорно трудится, чтобы закончить мои новые функции и предоставить вам!\n\n~~" + Const.BOT_NAME + "\n\n" +
+                    "Если вам нужна дополнительная помощь, присоединяйтесь к моему серверу в Discord.  Там много пользователей, которые будут полезны вам:  " + Const.DISCORD_URL + "\n\n" +
                     "***P.S. Я не проверяю личных сообщений, поэтому не отправляйте их***"},
             {"incorrectArgs", "Вы передали мне неверные или отсутствующие значения.  Проверьте команду help для получения дополнительной информации.."},
-            {"invite", "Hey %s! Пригласите меня на свой сервер!\n\n\t"
+            {"invite", "Привет %s! Пригласите меня на свой сервер!\n\n\t"
                     + "**Кликабельно:** https://discordapp.com/oauth2/authorize?&client_id="
                     + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=8"},
             {"inviteHelp", "```Markdown\n# INVITE\n* Используется для показа моей ссылки приглашения.\n\n## USAGE:  "
@@ -173,10 +173,10 @@ public class LanguageBundle_ru extends ListResourceBundle {
                     + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " list twitchChannel" + "```"},
             {"listSettings", "```Markdown\n" +
                     "# Параметры бота на вашем сервере" +
-                    "\n* Компактный режим %s." +
-                    "\n* Уведомление настроено на %s." +
+                    "\n* Компактный режим %s:" +
+                    "\n* Уведомление настроено на %s:" +
                     "\n* Очистка установлена на %s." +
-                    "\n* Язык объявлений остриме: %s." +
+                    "\n* Язык объявлений о стриме: %s." +
                     "\n* Язык бота: %s.```"},
             {"moveDoNotOwnChannel", " :no_entry: Теперь, я не объявляю в канале которого нет на " +
                     "сервере!"},
@@ -207,16 +207,16 @@ public class LanguageBundle_ru extends ListResourceBundle {
                     + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " notify everyone" + "```"},
             {"notifyHere", " :bellhop_bell: Все, кто онлайн, получат упоминание, когда я анонсирую трансляции."},
             {"notifyNone", " :ok_hand: Я не буду упоминать никого в моих объявлениях."},
-            {"nowLive", "НАЧАЛ ТРАНСЛЯЦИЮ!\n"},
-            {"nowPlayingEmbed", "Сейчас Играет"},
-            {"nowPlayingLower", " сейчас играет "},
-            {"nowStreamingEmbed", " сейчас стримит!"},
+            {"nowLive", "НАЧАЛ(А) ТРАНСЛЯЦИЮ!\\\n"},
+            {"nowPlayingEmbed", "Сейчас Играет в"},
+            {"nowPlayingLower", " сейчас играет в "},
+            {"nowStreamingEmbed", " сейчас в сети!"},
             {"numUniqueMembers", "Количество Уникальных Участников"},
             {"offline", "НЕ В СЕТИ!\n"},
             {"offlineEmbed", " отключился!"},
             {"on", " on "},
-            {"onlineStreamPm1", "Всем привет!  Кто сейчас есть "},
-            {"onlineStreamPm2", " трансляции онлайн, которые могут вас заинтересовать!  Переходите по данным ссылкам, что бы проверить " +
+            {"onlineStreamPm1", "Всем привет!  Сейчас есть "},
+            {"onlineStreamPm2", " трансляция(и) онлайн, которая(ые) могут вас заинтересовать!  Переходите по ссылке(ам), чтобы проверить " +
                     "их: \n\n"},
             {"oops", "Проблемка!  Что-то пошло не так. Ничего не изменилось! Попробуем снова."},
             {"ping", "Когда я был в Китае от Американской сборной по пинг-понгу ,  я очень любил играть моей " +
@@ -242,7 +242,7 @@ public class LanguageBundle_ru extends ListResourceBundle {
                     " streamlang <language>\n" +
                     "* Вы можете использовать написание либо на родном, либо на Английском."
                     + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " streamlang german```"},
-            {"streamTitleEmbed", "Stream Title"},
+            {"streamTitleEmbed", "Описание"},
             {"streamsHelp", "```Markdown\n# STREAMS\n* Я вышлю вам список активных трансляций в личные сообщения.\n* (ПРИМЕЧАНИЕ: вы скорее всего " +
                     "получите несколько личных сообщений, используя эту команду, в зависимости от того, сколько трансляций " +
                     "отслеживается!)\n\n## USAGE:  "
@@ -251,12 +251,13 @@ public class LanguageBundle_ru extends ListResourceBundle {
                     + " streams```"},
             {"totalViewsEmbed", "Всего просмотров"},
             {"twitchCommunities", "Twitch Сообщества"},
-            {"twitchAnnounceUpdate", "\n# Обновлен канал объявлений Twitch с %s на: %s."},
+            {"twitchAnnounceUpdate", "\n# Обновлен канал объявлений Twitch %s на: %s."},
             {"twitchAnnounceUpdateFail", "\n! Не удалось изменить канал объявления Twitch с %s на: %s."},
             {"twitchChannelAdd", "\n# Добавлен(ы) канал(ы): %s."},
             {"twitchChannelAddFail", "\n# Не удалось добавить канал(ы): %s."},
-            {"twitchChannelAnnounce", "\n# Они будут объявлен(ы) в: #%s."},
+            {"twitchChannelAnnounce", "\n# Он(и) будут объявлен(ы) в: #%s."},
             {"twitchChannelGameFilter", "\n# Он(и) будут объявлен(ы) только тогда, когда они играют: %s."},
+            {"twitchChannelNotFound", "\n# Канал(ы) не найден(ы): %s"},
             {"twitchChannelRemove", "\n# Удален(ы) канал(ы): %s."},
             {"twitchChannelRemoveFail", "\n! Не удалось удалить канал(ы): %s."},
             {"twitchChannelTitleFilter", "\n# Он(и) будут объявлен(ы) только тогда, когда в названии есть слово(а): %s."},
@@ -320,7 +321,7 @@ public class LanguageBundle_ru extends ListResourceBundle {
             {"uniqueGames", "Уникальные игры %s"},
             {"usePlatform", "Ой! Это старый способ! Используйте команду для конкретной платформы!  Введите `" +
                     Const.COMMAND_PREFIX + Const.COMMAND + " help` для получения дополнительной информации."},
-            {"watchThemHere", "Смотрите их здесь: "},
+            {"watchThemHere", "Подробнее: "},
             {"wrongCommand", " :thinking: Я не знаю эту команду."}
     };
 

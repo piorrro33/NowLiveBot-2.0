@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
@@ -261,11 +262,12 @@ public class TwitchController {
             GetAnnounceChannel getAnnounceChannel = new GetAnnounceChannel();
 
             gameList.forEach(gameName -> {
+                System.out.println(gameName.replaceAll(Pattern.quote("''"), "'"));
                 StreamsGames games = null;
 
                 URIBuilder uriBuilder = setBaseUrl("/streams");
                 try {
-                    uriBuilder.setParameter("game", gameName.replaceAll("''", "'"));
+                    uriBuilder.setParameter("game", gameName.replaceAll(Pattern.quote("''"), "'"));
                 } catch (PatternSyntaxException pse) {
                     System.out.println("[~ERROR~] Invalid Regex syntax");
                     pse.printStackTrace();
@@ -278,6 +280,13 @@ public class TwitchController {
                     uri = uriBuilder.build();
                 } catch (URISyntaxException e) {
                     System.out.println("[~ERROR~] Malformed URI found.");
+                    e.printStackTrace();
+                }
+
+                // Little snooze to regulate usage
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
 
@@ -310,7 +319,8 @@ public class TwitchController {
                         e.printStackTrace();
                     }
 
-                    if (games != null && games.getTotal() != null && games.getTotal() > 0) {
+                    if (games != null && games.getTotal() > 0) {
+                        System.out.println(games.getTotal());
                         List<String> guilds = guildsByGame.fetch(gameName);
                         CopyOnWriteArrayList<String> gameChannelIds = getGameStreams.gameStreams(gameName);
 
@@ -334,11 +344,13 @@ public class TwitchController {
                                     onLiveTwitchStream(stream, "game", null);
                                 }
                             }));
+                            guilds.clear();
                         }
                         // Set streams offline
                         if (gameChannelIds != null && !gameChannelIds.isEmpty() && gameChannelIds.size() > 0) {
                             UpdateOffline offline = new UpdateOffline();
                             offline.executeUpdate(gameChannelIds);
+                            gameChannelIds.clear();
                         }
                     }
                 }
@@ -421,8 +433,8 @@ public class TwitchController {
                         }
 
                         if (streams != null && streams.getTotal() > 0) {
-
                             CopyOnWriteArrayList<String> streamChannelIds = new CopyOnWriteArrayList<>();
+
                             GetAnnounceChannel getAnnounceChannel = new GetAnnounceChannel();
 
                             streams.getStreams().forEach(stream -> {
@@ -449,19 +461,23 @@ public class TwitchController {
                             GetTwitchCommunityStreams tcs = new GetTwitchCommunityStreams();
                             CopyOnWriteArrayList<String> databaseCommunityStreams = tcs.fetch(communityId);
 
-                            databaseCommunityStreams.forEach((String databaseChannelId) ->
+                            databaseCommunityStreams.forEach((String databaseChannelId) -> {
+                                if (streamChannelIds.size() > 0) {
                                     streamChannelIds.forEach((String onlineChannelId) -> {
                                         if (databaseChannelId.equals(onlineChannelId)) {
                                             streamChannelIds.remove(onlineChannelId);//Remainder will be the offline peeps
                                         }
-                                    }));
-
-                            // Set streams offline
-                            if (streamChannelIds.size() > 0) {
-                                UpdateOffline offline = new UpdateOffline();
-                                offline.executeUpdate(streamChannelIds);
-                            }
-                            streamChannelIds.clear();
+                                    });
+                                    if (streamChannelIds.size() > 0) {
+                                        UpdateOffline offline = new UpdateOffline();
+                                        offline.executeUpdate(streamChannelIds);
+                                    }
+                                    streamChannelIds.clear();
+                                } else if (streamChannelIds.size() == 0 && databaseCommunityStreams.size() > 0) {
+                                    UpdateOffline offline = new UpdateOffline();
+                                    offline.executeUpdate(databaseCommunityStreams);
+                                }
+                            });
                         }
                     } else if (response.getStatusLine().getStatusCode() == 404) {
                         System.out.printf("Community %s not found.", communityName);

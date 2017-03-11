@@ -21,7 +21,6 @@ package util.database.calls;
 import core.Main;
 import langs.LocaleString;
 import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.User;
 import util.database.Database;
 
@@ -76,25 +75,18 @@ public class NotifyLevel {
                                         data.get("channelUrl")));
                                 break;
                             case 2: // User wants @here mention
-                                if (Main.getJDA().getGuildById(data.get("guildId")).getSelfMember().hasPermission(Main.getJDA().getTextChannelById(textChannel), Permission.MESSAGE_MENTION_EVERYONE)) {
-                                    message.append(MessageBuilder.HERE_MENTION);
-                                    message.append(" ");
-                                    message.append(String.format(LocaleString.getString(data.get("guildId"), "announcementMessageText"),
-                                            data.get("channelDisplayName"),
-                                            data.get("channelUrl")));
-                                } else {
-                                    return null;
-                                }
+                                message.append(MessageBuilder.HERE_MENTION);
+                                message.append(" ");
+                                message.append(String.format(LocaleString.getString(data.get("guildId"), "announcementMessageText"),
+                                        data.get("channelDisplayName"),
+                                        data.get("channelUrl")));
                                 break;
                             case 3: // User wants @everyone mention
-                                if (Main.getJDA().getGuildById(data.get("guildId")).getSelfMember().hasPermission(Main.getJDA().getTextChannelById(textChannel), Permission.MESSAGE_MENTION_EVERYONE)) {
-                                    message.append(MessageBuilder.EVERYONE_MENTION);
-                                    message.append(String.format(" " + LocaleString.getString(data.get("guildId"), "announcementMessageText"),
-                                            data.get("channelDisplayName"),
-                                            data.get("channelUrl")));
-                                } else {
-                                    return null;
-                                }
+
+                                message.append(MessageBuilder.EVERYONE_MENTION);
+                                message.append(String.format(" " + LocaleString.getString(data.get("guildId"), "announcementMessageText"),
+                                        data.get("channelDisplayName"),
+                                        data.get("channelUrl")));
                                 break;
                             default:
                                 message.append(String.format(LocaleString.getString(data.get("guildId"), "announcementMessageText"),

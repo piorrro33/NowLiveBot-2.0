@@ -62,6 +62,31 @@ public class GetTwitchStreams {
         return null;
     }
 
+    public synchronized CopyOnWriteArrayList<String> allOnlineChannelIds() {
+        try {
+            String query = "SELECT `channelId` FROM `twitchstreams` WHERE `online` = 1 ORDER BY `channelId` ASC";
+
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
+            pStatement = connection.prepareStatement(query);
+            result = pStatement.executeQuery();
+
+            CopyOnWriteArrayList<String> onlineStreams = new CopyOnWriteArrayList<>();
+
+            while (result.next()) {
+                onlineStreams.addIfAbsent(result.getString(1));
+            }
+            return onlineStreams;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(result, pStatement, connection);
+        }
+        return null;
+    }
+
     public synchronized CopyOnWriteArrayList<String> gameStreams(String game) {
         try {
             String query = "SELECT `channelId` FROM `twitchstreams` WHERE `streamsGame` = ? ORDER BY `channelId` DESC";

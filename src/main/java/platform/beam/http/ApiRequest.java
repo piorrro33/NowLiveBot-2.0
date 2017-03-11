@@ -42,7 +42,6 @@ public class ApiRequest {
     private final String ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
     private final String ACCEPT_ENCODING = "gzip, deflate, sdch, br";
     private final String CACHE_CONTROL = "no-cache";
-    private final String DO_NOT_TRACK = "1";
     private final String PRAGMA = "no-cache";
     private final String UPGRADE_INSECURE_REQUESTS = "1";
     private final String USER_AGENT = "Mozilla/5.0";
@@ -95,7 +94,6 @@ public class ApiRequest {
         request.addHeader("accept", ACCEPT);
         request.addHeader("accept-encoding", ACCEPT_ENCODING);
         request.addHeader("cache-control", CACHE_CONTROL);
-        request.addHeader("dnt", DO_NOT_TRACK);
         request.addHeader("pragma", PRAGMA);
         request.addHeader("upgrade-insecure-requests", UPGRADE_INSECURE_REQUESTS);
         request.addHeader("user-agent", USER_AGENT);

@@ -48,7 +48,6 @@ import java.util.stream.Collectors;
  */
 public class TwitchController {
 
-    protected Integer count = 0;
     private HttpClient client = HttpClientBuilder.create().build();
     private HttpGet get;
     private HttpResponse response;
@@ -110,9 +109,14 @@ public class TwitchController {
                     channelString.append(",");
                 }
                 channelString.append(channel);
-                streamChannelIds.add(channel);
+                streamChannelIds.addIfAbsent(channel);
 
                 if (streamChannelIds.size() == 100 || channels.size() == streamChannelIds.size()) {
+
+                    if (flag.equals("community")) {
+                        System.out.println(streamChannelIds);
+                    }
+
                     GetAnnounceChannel getAnnounceChannel = new GetAnnounceChannel();
 
                     URIBuilder uriBuilder = setBaseUrl("/streams");
@@ -176,30 +180,21 @@ public class TwitchController {
                         // Checks to make sure that some streams are returned
                         if (streams != null && streams.getTotal() != null && streams.getTotal() > 0) {// Make sure the returned object is not null
 
-                            List<Stream> onlineStreams = streams.getStreams();
-
-                            onlineStreams.forEach((Stream stream) -> {
+                            streams.getStreams().forEach((Stream stream) -> {
                                 streamChannelIds.forEach((String streamChannelId) -> {
                                     if (streamChannelId.equals(stream.getChannel().getId())) {
                                         streamChannelIds.remove(stream.getChannel().getId());//Leftovers are offline
                                     }
                                 });
 
-
                                 CopyOnWriteArrayList<String> guildIds;
-                                switch (flag) {
-                                    case "channel":
-                                        GetGuildsByStream guildsByStream = new GetGuildsByStream();
-                                        guildIds = guildsByStream.fetch(stream.getChannel().getId());
-                                        break;
-                                    case "community":
-                                        GetGuildsByTeamCommunity guildsByCommunity = new GetGuildsByTeamCommunity();
-                                        guildIds = guildsByCommunity.fetch("community", value);
-                                        break;
-                                    default:
-                                        GetGuildsByTeamCommunity guildsByTeam = new GetGuildsByTeamCommunity();
-                                        guildIds = guildsByTeam.fetch("team", value);
-                                        break;
+                                if (flag.equals("channel")) {
+                                    GetGuildsByStream guildsByStream = new GetGuildsByStream();
+                                    guildIds = guildsByStream.fetch(stream.getChannel().getId());
+                                } else {
+                                    GetGuildsByTeamCommunity guildsByTeam = new GetGuildsByTeamCommunity();
+                                    guildIds = guildsByTeam.fetch("team", value);
+
                                 }
 
                                 if (guildIds != null && guildIds.size() > 0) {
@@ -244,15 +239,11 @@ public class TwitchController {
                     case "channel":
                         new AddTwitchStream(online, "channel");
                         break;
-                    case "community":
-                        new AddTwitchStream(online, "community");
-                        break;
                     default:
                         new AddTwitchStream(online, "team");
                         break;
                 }
                 online.clear();
-                this.count = 0;
             }
         }
     }
@@ -355,7 +346,6 @@ public class TwitchController {
             if (online.size() > 0) {
                 new AddTwitchStream(online, "game");
                 online.clear();
-                this.count = 0;
             }
         }
     }
@@ -431,22 +421,57 @@ public class TwitchController {
                         }
 
                         if (streams != null && streams.getTotal() > 0) {
-                            CopyOnWriteArrayList<String> communityList = new CopyOnWriteArrayList<>();
+
+                            CopyOnWriteArrayList<String> streamChannelIds = new CopyOnWriteArrayList<>();
+                            GetAnnounceChannel getAnnounceChannel = new GetAnnounceChannel();
+
                             streams.getStreams().forEach(stream -> {
-                                communityList.add(stream.getChannel().getId());
-                                if (communityList.size() == 100) {
-                                    channels(communityList, "community", communityName);
-                                    communityList.clear();
+                                streamChannelIds.add(stream.getChannel().getId());
+
+                                GetGuildsByTeamCommunity guildsByCommunity = new GetGuildsByTeamCommunity();
+                                CopyOnWriteArrayList<String> guildIds = guildsByCommunity.fetch("community", communityName);
+
+                                CheckTwitchStreams checkTwitchStreams = new CheckTwitchStreams();
+
+                                if (guildIds != null && guildIds.size() > 0) {
+                                    guildIds.forEach(guildId -> {
+                                        if (!checkTwitchStreams.check(stream.getChannel().getId(), guildId)) {
+                                            stream.setAdditionalProperty("guildId", guildId);
+                                            stream.setAdditionalProperty("announceChannel",
+                                                    getAnnounceChannel.action(guildId, "community", communityName));
+
+                                            onLiveTwitchStream(stream, "community", communityName);
+                                        }
+                                    });
                                 }
                             });
-                            channels(communityList, "community", communityName);
-                        }
 
+                            GetTwitchCommunityStreams tcs = new GetTwitchCommunityStreams();
+                            CopyOnWriteArrayList<String> databaseCommunityStreams = tcs.fetch(communityId);
+
+                            databaseCommunityStreams.forEach((String databaseChannelId) ->
+                                    streamChannelIds.forEach((String onlineChannelId) -> {
+                                        if (databaseChannelId.equals(onlineChannelId)) {
+                                            streamChannelIds.remove(onlineChannelId);//Remainder will be the offline peeps
+                                        }
+                                    }));
+
+                            // Set streams offline
+                            if (streamChannelIds.size() > 0) {
+                                UpdateOffline offline = new UpdateOffline();
+                                offline.executeUpdate(streamChannelIds);
+                            }
+                            streamChannelIds.clear();
+                        }
                     } else if (response.getStatusLine().getStatusCode() == 404) {
                         System.out.printf("Community %s not found.", communityName);
                     }
                 }
             });
+            if (online.size() > 0) {
+                new AddTwitchStream(online, "community");
+                online.clear();
+            }
         }
     }
 
@@ -665,7 +690,6 @@ public class TwitchController {
                     && !stream.getChannel().getGame().isEmpty()) {
                 if (gameFilterCheck(stream, flag, name) && titleFilterCheck(stream, flag, name)) {
                     online.addIfAbsent(stream);
-                    count++;
                 }
             }
         }
@@ -710,7 +734,7 @@ public class TwitchController {
         Boolean specificTitleFilter = false;
         Boolean globalTitleFilter = false;
 
-        // Check channel specific game filters
+        // Check channel specific title filters
         GetSpecificTitleFilters specificTitleFilters = new GetSpecificTitleFilters();
         List<String> titleFilters = specificTitleFilters.fetch(stream, flag, name);
 
@@ -731,7 +755,7 @@ public class TwitchController {
                 specificTitleFilter = true;
             }
 
-            // Check global game filters
+            // Check global title filters
             GetGlobalFilters globalFilters = new GetGlobalFilters();
             List<String> filters = globalFilters.fetch(stream, "title");
 

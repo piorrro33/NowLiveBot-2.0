@@ -83,8 +83,8 @@ public class BotLanguage implements Command {
                     //case "ελληνικά":
                     //case "bulgarian": // Bulgarian
                     //case "български":
-                    //case "russian": // Russian
-                    //case "русский":
+                case "russian": // Russian
+                case "русский":
                     //case "arabic": // Arabic
                     //case "العربية":
                     //case "thai": // Thai language
@@ -189,12 +189,12 @@ public class BotLanguage implements Command {
                 case "bulgarian": // Bulgarian
                 case "български":
                     langCode = "bg";
-                    break;
+                    break;*/
                 case "russian": // Russian
                 case "русский":
                     langCode = "ru";
                     break;
-                case "arabic": // Arabic
+                /*case "arabic": // Arabic
                 case "العربية":
                     langCode = "ar";
                     break;

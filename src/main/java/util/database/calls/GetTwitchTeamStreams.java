@@ -18,73 +18,47 @@
 
 package util.database.calls;
 
-import platform.twitch.models.Stream;
 import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.regex.Pattern;
 
 import static util.database.Database.cleanUp;
 
-public class GetSpecificGameFilters {
+public class GetTwitchTeamStreams {
+    private Connection connection;
 
-    private Connection connection = Database.getInstance().getConnection();
-
-
-    public final synchronized List<String> fetch(Stream stream, String flag, String name) {
+    public synchronized CopyOnWriteArrayList<String> fetch(String teamName) {
         PreparedStatement pStatement = null;
         ResultSet result = null;
 
-        String guildId = stream.getAdditionalProperties().get("guildId").toString();
-
-        String query;
-        String value;
-        switch (flag) {
-            case "game":
-                value = stream.getGame();
-                query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? AND `gameFilter` IS NOT NULL AND `gameName` = ?";
-                break;
-            case "channel":
-                value = stream.getChannel().getId();
-                query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? AND `gameFilter` IS NOT NULL AND `channelId` = ?";
-                break;
-            case "community":
-                value = name;
-                query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? AND `gameFilter` IS NOT NULL AND `communityName` = ?";
-                break;
-            default:// Team name is passed
-                value = name;
-                query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? AND `gameFilter` IS NOT NULL AND `teamName` = ?";
-                break;
-        }
+        String query = "SELECT * FROM `twitchstreams` WHERE `teamName` = ? ORDER BY `channelId` ASC";
+        CopyOnWriteArrayList<String> teamIds = new CopyOnWriteArrayList<>();
 
         try {
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            pStatement.setString(2, value);
+            pStatement.setString(1, teamName);
             result = pStatement.executeQuery();
 
-            List<String> gameFilters = new CopyOnWriteArrayList<>();
 
-            if (result.isBeforeFirst()) {
-                while (result.next()) {
-                    gameFilters.add(result.getString("gameFilter").replaceAll(Pattern.quote("''"), "'"));
+            while (result.next()) {
+                if (!teamIds.contains(result.getString("channelId"))) {
+                    teamIds.addIfAbsent(result.getString("channelId"));
                 }
-                return gameFilters;
             }
+            return teamIds;
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        return null;
+        return new CopyOnWriteArrayList<>();
     }
 }

@@ -90,7 +90,6 @@ public class Main {
         } catch (RateLimitedException e) {
             logger.error("Uh, oh...  We got rate limited.", e);
         }
-
         guildCheck();
 
         new PlatformListener();

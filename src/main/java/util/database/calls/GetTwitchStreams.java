@@ -39,7 +39,7 @@ public class GetTwitchStreams {
 
     public synchronized ConcurrentHashMap<String, Map<String, String>> onlineStreams() {
         try {
-            String query = "SELECT * FROM `twitchstreams` WHERE `messageId` IS NULL AND `online` = 1 ORDER BY `channelId` ASC";
+            String query = "SELECT * FROM `twitchstreams` WHERE `messageId` IS NULL AND `online` = 1 ORDER BY `streamsId` ASC";
 
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();

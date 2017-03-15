@@ -103,7 +103,7 @@ public class LanguageBundle_es extends ListResourceBundle {
                     "Aquí! Solo haz click aquí para unirte:  " + Const.DISCORD_URL + "\n\n" +
                     "*P.S. No monitorizo los mensajes privados, por lo que no envíes privados al bot*"},
             {"incorrectArgs", "Has escrito algo mal.  Revisa la ayuda para más información" +
-                    "."},
+                    '.'},
             {"invite", "Hola amigo! Invitame a tu server!\n\n\t"
                     + "**Click aquí:** https://discordapp.com/oauth2/authorize?&client_id="
                     + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=8"},

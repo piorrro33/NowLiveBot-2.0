@@ -70,7 +70,7 @@ public class NotifyLevel {
                                 String userId = result.getString("userId");
                                 User user = Main.getJDA().getUserById(userId);
                                 message.append(user.getAsMention());
-                                message.append(String.format(" " + LocaleString.getString(data.get("guildId"), "announcementMessageText"),
+                                message.append(String.format(' ' + LocaleString.getString(data.get("guildId"), "announcementMessageText"),
                                         data.get("channelDisplayName"),
                                         data.get("channelUrl")));
                                 break;
@@ -84,7 +84,7 @@ public class NotifyLevel {
                             case 3: // User wants @everyone mention
 
                                 message.append(MessageBuilder.EVERYONE_MENTION);
-                                message.append(String.format(" " + LocaleString.getString(data.get("guildId"), "announcementMessageText"),
+                                message.append(String.format(' ' + LocaleString.getString(data.get("guildId"), "announcementMessageText"),
                                         data.get("channelDisplayName"),
                                         data.get("channelUrl")));
                                 break;

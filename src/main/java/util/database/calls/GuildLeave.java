@@ -70,10 +70,40 @@ public final class GuildLeave {
             }
 
         } catch (Exception e) {
-            logger.error("Failed to remove info from Guild " + gEvent.getGuild().getId() + ".");
+            logger.error("Failed to remove info from Guild " + gEvent.getGuild().getId() + '.');
         } finally {
             cleanUp(pStatement, connection);
         }
+    }
 
+    public static void deleteGuild(String guildId) {
+        tableList.add("guild");
+        tableList.add("manager");
+        tableList.add("notification");
+        tableList.add("permission");
+        tableList.add("twitch");
+        tableList.add("twitchstreams");
+
+        try {
+            for (String s : tableList) {
+                String query = "DELETE FROM `" + s + "` WHERE `guildId` = ?";
+                if (connection == null || connection.isClosed()) {
+                    connection = Database.getInstance().getConnection();
+                }
+                pStatement = connection.prepareStatement(query);
+                pStatement.setString(1, guildId);
+                Integer result = pStatement.executeUpdate();
+                if (!result.equals(0)) {
+                    if (Main.debugMode()) {
+                        logger.info("Successfully deleted all data for Guild " + guildId + " from the " + s.toUpperCase() + " table.");
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            logger.error("Failed to remove info from Guild " + guildId + '.');
+        } finally {
+            cleanUp(pStatement, connection);
+        }
     }
 }

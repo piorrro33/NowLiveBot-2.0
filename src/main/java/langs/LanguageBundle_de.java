@@ -110,7 +110,7 @@ public class LanguageBundle_de extends ListResourceBundle {
                     "solltest du Probleme haben! Hier ist ein Einladelink:  " + Const.DISCORD_URL + "\n\n" +
                     "*P.S. Ich schaue nicht in diese privaten Nachrichten, also schreibe mir hier bitte keine Nachrichten*"},
             {"incorrectArgs", "Argument(e) fehlen oder sind fehlerhaft.  Benutze die *help* Option für mehr Details" +
-                    "."},
+                    '.'},
             {"invite", "Hey Kumpel! Lade mich zu deinem Server ein!\n\n\t"
                     + "**Klicke hier:** https://discordapp.com/oauth2/authorize?&client_id="
                     + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=8"},

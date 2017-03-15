@@ -44,7 +44,7 @@ public class Move implements Command {
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
-        if (args != null && !args.isEmpty()) {
+        if ((args != null) && !args.isEmpty()) {
             if (args.substring(0, 1).equals("#") && !args.contains(" ")) {
                 return true;
             } else if (!"help".equals(args)) {

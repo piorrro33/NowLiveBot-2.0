@@ -59,4 +59,4 @@ start.sh
 *.json
 *.jar
 *.gc
-*.php
+/php

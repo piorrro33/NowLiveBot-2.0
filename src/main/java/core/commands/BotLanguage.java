@@ -45,7 +45,7 @@ public class BotLanguage implements Command {
      */
     @Override
     public boolean called(String args, GuildMessageReceivedEvent event) {
-        if (args != null && !"".equals(args)) {
+        if (args != null && !args.isEmpty()) {
             switch (args.toLowerCase()) {
                 case "english":
                     //case "danish": // Danish
@@ -116,7 +116,7 @@ public class BotLanguage implements Command {
     @Override
     public void action(String args, GuildMessageReceivedEvent event) {
         String langCode = null;
-        if (args != null && !"".equals(args)) {
+        if (args != null && !args.isEmpty()) {
             switch (args.toLowerCase()) {
                 case "english":
                     langCode = "en";

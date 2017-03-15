@@ -90,7 +90,7 @@ public class Compact implements Command {
         new Tracker("Command");
     }
 
-    private boolean optionCheck(String args, String option) {
+    private static boolean optionCheck(String args, String option) {
         return args.toLowerCase().substring(0, option.length()).equals(option);
     }
 }

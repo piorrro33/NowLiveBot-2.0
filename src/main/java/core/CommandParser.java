@@ -74,7 +74,7 @@ public class CommandParser {
      */
     public static void handleCommand(CommandContainer cmd) {
 
-        if (getCommands().containsKey(cmd.invoke)) {
+        if (commands.containsKey(cmd.invoke)) {
 
             // Check and see if the command requires elevated permissions and how to handle that
             Boolean adminCheck = perms.checkAdmins(cmd.event);
@@ -120,19 +120,23 @@ public class CommandParser {
     }
 
     private static void runCommand(CommandContainer cmd) {
-        boolean safe = getCommands().get(cmd.invoke).called(cmd.args, cmd.event);
+
+        boolean safe = commands.get(cmd.invoke).called(cmd.args, cmd.event);
 
         if (safe) {
             if (cmd.args != null && cmd.args.equals("help")) {
-                getCommands().get(cmd.invoke).help(cmd.event);
+
+                commands.get(cmd.invoke).help(cmd.event);
             } else {
-                getCommands().get(cmd.invoke).action(cmd.args, cmd.event);
+
+                commands.get(cmd.invoke).action(cmd.args, cmd.event);
             }
         }
-        getCommands().get(cmd.invoke).executed(safe, cmd.event);
+
+        commands.get(cmd.invoke).executed(safe, cmd.event);
     }
 
-    public final CommandContainer parse(String raw, GuildMessageReceivedEvent event) {
+    public static CommandContainer parse(String raw, GuildMessageReceivedEvent event) {
         String beheaded = raw.replaceFirst(Const.COMMAND_PREFIX, "");  // Remove COMMAND_PREFIX
 
         String removeCommand;

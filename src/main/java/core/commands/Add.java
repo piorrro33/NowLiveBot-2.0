@@ -115,10 +115,10 @@ public class Add implements Command {
     private void returnStatement(Boolean success, GuildMessageReceivedEvent event) {
         if (success) {
             sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "added") +
-                    "`" + this.option + "` " + this.argument.replaceAll("''", "'"));
+                    '`' + this.option + "` " + this.argument.replaceAll("''", "'"));
         } else {
             sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "addFail") +
-                    "`" + this.option + "` " + this.argument.replaceAll("''", "'"));
+                    '`' + this.option + "` " + this.argument.replaceAll("''", "'"));
         }
     }
 

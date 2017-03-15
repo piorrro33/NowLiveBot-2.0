@@ -151,7 +151,7 @@ public class LanguageBundle_cs extends ListResourceBundle {
                     "If you need additional help, join my Discord.  Lots of helpful people there:  " + Const.DISCORD_URL + "\n\n" +
                     "***P.S. Nesleduji tuto schránku, tak mi prosím neposílejte žádné zprávy skrze PM***"},
             {"incorrectArgs", "Předal jsi mi nesprávné argumenty.  Zkoukni help pro více informací." +
-                    "."},
+                    '.'},
             {"invite", "Hej kamaráde! Pozvy mě na svůj server!\n\n\t"
                     + "**Klikni zde:** https://discordapp.com/oauth2/authorize?&client_id="
                     + PropReader.getInstance().getProp().getProperty("discord.client.id") + "&scope=bot&permissions=8"},

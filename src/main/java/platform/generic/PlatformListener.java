@@ -19,7 +19,6 @@
 package platform.generic;
 
 import platform.discord.controller.DiscordController;
-import platform.twitch.controller.TwitchController;
 import util.DiscordLogger;
 import util.ExceptionHandler;
 
@@ -38,7 +37,7 @@ public class PlatformListener implements Runnable {
 
     public PlatformListener() {
         try {
-            executor.scheduleWithFixedDelay(this, 0, 60, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(this, 0, 30, TimeUnit.SECONDS);
         } catch (Exception e) {
             System.out.println("[~ERROR~] Caught an exception while keeping the executors active");
         } catch (Throwable t) {
@@ -50,7 +49,6 @@ public class PlatformListener implements Runnable {
     public synchronized void run() {
 
         Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandler());
-        checkStreams();
         editDeleteAnnouncements();
         announceStreams();
 
@@ -104,15 +102,6 @@ public class PlatformListener implements Runnable {
         }
 
         System.out.println("[SYSTEM] Cycle Complete. Waiting...");
-    }
-
-    private synchronized void checkStreams() {
-        LocalDateTime timeNow = LocalDateTime.now();
-        new DiscordLogger(" :poop: **Checking streams...**", null);
-        System.out.println("[SYSTEM] Checking streams... " + timeNow);
-
-        TwitchController twitch = new TwitchController();
-        twitch.checkLiveStreams();
     }
 
     private synchronized void editDeleteAnnouncements() {

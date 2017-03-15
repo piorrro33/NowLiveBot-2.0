@@ -47,7 +47,7 @@ public class GetBroadcasterLang {
             result = pStatement.executeQuery();
 
             if (result.next()) {
-                if (result.getString("broadcasterLang").isEmpty() || "".equals(result.getString("broadcasterLang"))) {
+                if (result.getString("broadcasterLang").isEmpty()) {
                     return "en";
                 }
                 return result.getString("broadcasterLang");

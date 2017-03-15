@@ -19,7 +19,6 @@
 package platform.discord.listener;
 
 import core.CommandParser;
-import core.Main;
 import langs.LocaleString;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.events.DisconnectEvent;
@@ -175,10 +174,10 @@ public class DiscordListener extends ListenerAdapter {
         updateDiscordBotsServerCount(event.getJDA().getGuilds().size());
     }
 
-    private void commandFilter(String cntMsg, GuildMessageReceivedEvent event)
+    private static void commandFilter(String cntMsg, GuildMessageReceivedEvent event)
             throws PropertyVetoException, IOException, SQLException {
         if (cntMsg.startsWith(Const.COMMAND_PREFIX + "ping") || cntMsg.startsWith(Const.COMMAND_PREFIX + Const.COMMAND)) {
-            CommandParser.handleCommand(Main.parser.parse(cntMsg, event));
+            CommandParser.handleCommand(CommandParser.parse(cntMsg, event));
 
         }
     }
@@ -197,7 +196,7 @@ public class DiscordListener extends ListenerAdapter {
         if (post != null) {
             post.addHeader("Authorization", PropReader.getInstance().getProp().getProperty("discord.bots.auth"));
             post.addHeader("Content-Type", "application/json");
-            String json = "{ \"server_count\": " + count + "}";
+            String json = "{ \"server_count\": " + count + '}';
             try {
                 StringEntity entity = new StringEntity(json);
                 post.setEntity(entity);

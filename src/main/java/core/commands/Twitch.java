@@ -186,14 +186,14 @@ public class Twitch implements Command {
         StringBuilder teamDeleteNameList = new StringBuilder();
         CopyOnWriteArrayList<String> updateTeamNames = new CopyOnWriteArrayList<>();
 
-        if (args.indexOf("|") > 0 && args.indexOf("#") > 0) {
-            List<String> teamList = Arrays.stream(args.substring(0, args.indexOf("#") - 1).split("\\|")).collect(Collectors.toList());
+        if (args.indexOf('|') > 0 && args.indexOf('#') > 0) {
+            List<String> teamList = Arrays.stream(args.substring(0, args.indexOf('#') - 1).split("\\|")).collect(Collectors.toList());
             teamList.forEach(team -> teams.addIfAbsent(team.trim()));
-        } else if (args.indexOf("|") > 0) {
+        } else if (args.indexOf('|') > 0) {
             List<String> teamList = Arrays.stream(args.split("\\|")).collect(Collectors.toList());
             teamList.forEach(team -> teams.addIfAbsent(team.trim()));
-        } else if (args.indexOf("#") > 0) {
-            teams.add(args.substring(0, args.indexOf("#") - 1).trim());
+        } else if (args.indexOf('#') > 0) {
+            teams.add(args.substring(0, args.indexOf('#') - 1).trim());
         } else {
             teams.add(args.trim());
         }
@@ -205,7 +205,7 @@ public class Twitch implements Command {
                     Integer teamId = twitch.getTeamId(teamName);
                     if (teamId > 0) {
                         if (teamAddList.length() > 0) {
-                            teamAddList.append(",");
+                            teamAddList.append(',');
                             teamAddNameList.append(", ");
                         }
                         if (discordChannelId != null) {
@@ -229,7 +229,7 @@ public class Twitch implements Command {
                 } else {
                     if (discordChannelId != null) {
                         if (updateTeamAnnounceChannel.length() > 0) {
-                            updateTeamAnnounceChannel.append(",");
+                            updateTeamAnnounceChannel.append(',');
                         }
                         updateTeamAnnounceChannel.append(String.format("('%s','%s')",
                                 event.getGuild().getId(),
@@ -238,7 +238,7 @@ public class Twitch implements Command {
                     } else {
                         if (teamDeleteList.length() > 0) {
                             teamDeleteNameList.append(", ");
-                            teamDeleteList.append(",");
+                            teamDeleteList.append(',');
                         }
                         teamDeleteList.append(String.format("('%s','%s')",
                                 event.getGuild().getId(),
@@ -338,14 +338,14 @@ public class Twitch implements Command {
         StringBuilder communityDeleteNameList = new StringBuilder();
         CopyOnWriteArrayList<String> updateCommunityNames = new CopyOnWriteArrayList<>();
 
-        if (args.indexOf("|") > 0 && args.indexOf("#") > 0) {
-            List<String> communityList = Arrays.stream(args.substring(0, args.indexOf("#") - 1).split("\\|")).collect(Collectors.toList());
+        if (args.indexOf('|') > 0 && args.indexOf('#') > 0) {
+            List<String> communityList = Arrays.stream(args.substring(0, args.indexOf('#') - 1).split("\\|")).collect(Collectors.toList());
             communityList.forEach(community -> communities.addIfAbsent(community.trim()));
-        } else if (args.indexOf("|") > 0) {
+        } else if (args.indexOf('|') > 0) {
             List<String> communityList = Arrays.stream(args.split("\\|")).collect(Collectors.toList());
             communityList.forEach(community -> communities.addIfAbsent(community.trim()));
-        } else if (args.indexOf("#") > 0) {
-            communities.add(args.substring(0, args.indexOf("#") - 1).trim());
+        } else if (args.indexOf('#') > 0) {
+            communities.add(args.substring(0, args.indexOf('#') - 1).trim());
         } else {
             communities.add(args.trim());
         }
@@ -357,7 +357,7 @@ public class Twitch implements Command {
                     String communityId = twitch.getCommunityId(communityName);
                     if (communityId != null) {
                         if (communityAddList.length() > 0) {
-                            communityAddList.append(",");
+                            communityAddList.append(',');
                             communityAddNameList.append(", ");
                         }
                         if (discordChannelId != null) {
@@ -381,7 +381,7 @@ public class Twitch implements Command {
                 } else {
                     if (discordChannelId != null) {
                         if (updateCommunityAnnounceChannel.length() > 0) {
-                            updateCommunityAnnounceChannel.append(",");
+                            updateCommunityAnnounceChannel.append(',');
                         }
                         updateCommunityAnnounceChannel.append(String.format("('%s','%s')",
                                 event.getGuild().getId(),
@@ -390,7 +390,7 @@ public class Twitch implements Command {
                     } else {
                         if (communityDeleteList.length() > 0) {
                             communityDeleteNameList.append(", ");
-                            communityDeleteList.append(",");
+                            communityDeleteList.append(',');
                         }
                         communityDeleteList.append(String.format("('%s','%s')",
                                 event.getGuild().getId(),
@@ -489,14 +489,14 @@ public class Twitch implements Command {
         StringBuilder gameDeleteNameList = new StringBuilder();
         CopyOnWriteArrayList<String> updateGameNames = new CopyOnWriteArrayList<>();
 
-        if (args.indexOf("#") > 0 && args.indexOf("|") > 0) {
-            List<String> gameList = Arrays.stream(args.substring(0, args.indexOf("#") - 1).split("\\|")).collect(Collectors.toList());
+        if (args.indexOf('#') > 0 && args.indexOf('|') > 0) {
+            List<String> gameList = Arrays.stream(args.substring(0, args.indexOf('#') - 1).split("\\|")).collect(Collectors.toList());
             gameList.forEach(game -> games.addIfAbsent(game.trim()));
-        } else if (args.indexOf("|") > 0) {
+        } else if (args.indexOf('|') > 0) {
             List<String> gameList = Arrays.stream(args.split("\\|")).collect(Collectors.toList());
             gameList.forEach(game -> games.addIfAbsent(game.trim()));
-        } else if (args.indexOf("#") > 0) {
-            games.addIfAbsent(args.substring(0, args.indexOf("#") - 1).trim());
+        } else if (args.indexOf('#') > 0) {
+            games.addIfAbsent(args.substring(0, args.indexOf('#') - 1).trim());
         } else {
             games.addIfAbsent(args.trim());
         }
@@ -505,7 +505,7 @@ public class Twitch implements Command {
             games.forEach(gameName -> {
                 if (!CheckTwitchData.action("game", event.getGuild().getId(), gameName)) {
                     if (gameAddList.length() > 0) {
-                        gameAddList.append(",");
+                        gameAddList.append(',');
                         gameAddNameList.append(", ");
                     }
                     if (discordChannelId != null) {
@@ -524,7 +524,7 @@ public class Twitch implements Command {
                 } else {
                     if (discordChannelId != null) {
                         if (updateGameAnnounceChannel.length() > 0) {
-                            updateGameAnnounceChannel.append(",");
+                            updateGameAnnounceChannel.append(',');
                         }
                         updateGameAnnounceChannel.append(String.format("('%s','%s')",
                                 event.getGuild().getId(),
@@ -532,7 +532,7 @@ public class Twitch implements Command {
                         updateGameNames.addIfAbsent(gameName);
                     } else {
                         if (gameDeleteList.length() > 0) {
-                            gameDeleteList.append(",");
+                            gameDeleteList.append(',');
                             gameDeleteNameList.append(", ");
                         }
                         gameDeleteList.append(String.format("('%s','%s')",
@@ -621,7 +621,7 @@ public class Twitch implements Command {
                         if (discordChannelId != null && gameFilter != null && titleFilter != null) {
                             gameFilter.forEach(gFilter -> titleFilter.forEach(tFilter -> {
                                 if (insertChannelData.length() > 0) {
-                                    insertChannelData.append(",");
+                                    insertChannelData.append(',');
                                 }
                                 insertChannelData.append(String.format("('%s','%s','%s','%s','%s','%s')",
                                         event.getGuild().getId(),
@@ -635,7 +635,7 @@ public class Twitch implements Command {
                         } else if (discordChannelId != null && gameFilter != null) {
                             gameFilter.forEach(gFilter -> {
                                 if (insertChannelData.length() > 0) {
-                                    insertChannelData.append(",");
+                                    insertChannelData.append(',');
                                 }
                                 insertChannelData.append(String.format("('%s','%s','%s','%s','%s')",
                                         event.getGuild().getId(),
@@ -647,7 +647,7 @@ public class Twitch implements Command {
                         } else if (discordChannelId != null && titleFilter != null) {
                             titleFilter.forEach(tFilter -> {
                                 if (insertChannelData.length() > 0) {
-                                    insertChannelData.append(",");
+                                    insertChannelData.append(',');
                                 }
                                 insertChannelData.append(String.format("('%s','%s','%s','%s','%s')",
                                         event.getGuild().getId(),
@@ -658,7 +658,7 @@ public class Twitch implements Command {
                             });
                         } else if (discordChannelId != null) {
                             if (insertChannelData.length() > 0) {
-                                insertChannelData.append(",");
+                                insertChannelData.append(',');
                             }
                             insertChannelData.append(String.format("('%s','%s','%s','%s')",
                                     event.getGuild().getId(),
@@ -669,7 +669,7 @@ public class Twitch implements Command {
                             gameFilter.forEach(gFilter ->
                                     titleFilter.forEach(tFilter -> {
                                         if (insertChannelData.length() > 0) {
-                                            insertChannelData.append(",");
+                                            insertChannelData.append(',');
                                         }
                                         insertChannelData.append(String.format("('%s','%s','%s','%s','%s','%s')",
                                                 event.getGuild().getId(),
@@ -682,7 +682,7 @@ public class Twitch implements Command {
                         } else if (gameFilter != null) {
                             gameFilter.forEach(gFilter -> {
                                 if (insertChannelData.length() > 0) {
-                                    insertChannelData.append(",");
+                                    insertChannelData.append(',');
                                 }
                                 insertChannelData.append(String.format("('%s','%s','%s','%s','%s')",
                                         event.getGuild().getId(),
@@ -694,7 +694,7 @@ public class Twitch implements Command {
                         } else if (titleFilter != null) {
                             titleFilter.forEach(tFilter -> {
                                 if (insertChannelData.length() > 0) {
-                                    insertChannelData.append(",");
+                                    insertChannelData.append(',');
                                 }
                                 insertChannelData.append(String.format("('%s','%s','%s','%s','%s')",
                                         event.getGuild().getId(),
@@ -705,7 +705,7 @@ public class Twitch implements Command {
                             });
                         } else {
                             if (insertChannelData.length() > 0) {
-                                insertChannelData.append(",");
+                                insertChannelData.append(',');
                             }
                             insertChannelData.append(String.format("('%s','%s','%s','%s')",
                                     event.getGuild().getId(),
@@ -718,14 +718,14 @@ public class Twitch implements Command {
                 } else {
                     if (discordChannelId != null) {
                         if (updateAnnounceChannel.length() > 0) {
-                            updateAnnounceChannel.append(",");
+                            updateAnnounceChannel.append(',');
                         }
                         updateAnnounceChannel.append(String.format("('%s','%s')",
                                 event.getGuild().getId(),
                                 chanId));
                     } else {
                         if (deleteChannelData.length() > 0) {
-                            deleteChannelData.append(",");
+                            deleteChannelData.append(',');
                         }
                         deleteChannelData.append(String.format("('%s','%s')",
                                 event.getGuild().getId(),
@@ -850,7 +850,7 @@ public class Twitch implements Command {
             gameFilter.forEach(gFilter -> {
                 if (!CheckTwitchData.action("gameFilter", event.getGuild().getId(), gFilter)) {
                     if (gFilterAddList.length() > 0) {
-                        gFilterAddList.append(",");
+                        gFilterAddList.append(',');
                         gFilterAddNameList.append(", ");
                     }
                     gFilterAddList.append(String.format("('%s','%s')",
@@ -859,7 +859,7 @@ public class Twitch implements Command {
                     gFilterAddNameList.append(gFilter);
                 } else {
                     if (gFilterDeleteList.length() > 0) {
-                        gFilterDeleteList.append(",");
+                        gFilterDeleteList.append(',');
                         gFilterDeleteNameList.append(", ");
                     }
                     gFilterDeleteList.append(String.format("('%s','%s')",
@@ -913,7 +913,7 @@ public class Twitch implements Command {
             titleFilter.forEach(tFilter -> {
                 if (!CheckTwitchData.action("titleFilter", event.getGuild().getId(), tFilter)) {
                     if (tFilterAddList.length() > 0) {
-                        tFilterAddList.append(",");
+                        tFilterAddList.append(',');
                         tFilterAddNameList.append(", ");
                     }
                     tFilterAddList.append(String.format("('%s','%s')",
@@ -922,7 +922,7 @@ public class Twitch implements Command {
                     tFilterAddNameList.append(tFilter);
                 } else {
                     if (tFilterDeleteList.length() > 0) {
-                        tFilterDeleteList.append(",");
+                        tFilterDeleteList.append(',');
                         tFilterDeleteNameList.append(", ");
                     }
                     tFilterDeleteList.append(String.format("('%s','%s')",
@@ -968,7 +968,7 @@ public class Twitch implements Command {
         TwitchController twitch = new TwitchController();
         channel = new ConcurrentHashMap<>();
 
-        if (args.indexOf(' ') > 0 && args.indexOf("|") > 0) {// Check for adding multiple channels at once with other options
+        if (args.indexOf(' ') > 0 && args.indexOf('|') > 0) {// Check for adding multiple channels at once with other options
             List<String> channelList = Arrays.stream(args.substring(0, args.indexOf(' ')).split("\\|")).collect(Collectors.toList());
             channelList.forEach(chan -> {
                 String chanId = twitch.convertNameToId(chan);
@@ -978,7 +978,7 @@ public class Twitch implements Command {
                     notFoundChannel.add(chan);
                 }
             });
-        } else if (args.indexOf("|") > 0) {
+        } else if (args.indexOf('|') > 0) {
             List<String> channelList = Arrays.stream(args.split("\\|")).collect(Collectors.toList());
             channelList.forEach(chann -> {
                 String chanId = twitch.convertNameToId(chann);
@@ -1016,11 +1016,11 @@ public class Twitch implements Command {
     private synchronized void findDiscordChannel(String args, GuildMessageReceivedEvent event) {
         // Check for specific channel to announce in
         String discordChannels;
-        if (args.indexOf("#") > 0) {
-            if (args.indexOf(' ', args.indexOf("#")) > 0) {// Check if there are more things after the channel
-                discordChannels = args.substring(args.indexOf("#") + 1, args.indexOf(' ', args.indexOf("#")));
+        if (args.indexOf('#') > 0) {
+            if (args.indexOf(' ', args.indexOf('#')) > 0) {// Check if there are more things after the channel
+                discordChannels = args.substring(args.indexOf('#') + 1, args.indexOf(' ', args.indexOf('#')));
             } else {// this is the last argument in the string
-                discordChannels = args.substring(args.indexOf("#") + 1);
+                discordChannels = args.substring(args.indexOf('#') + 1);
             }
             if (checkValidDiscordChannel(event, discordChannels)) {
                 event.getGuild().getTextChannelsByName(discordChannels, true).forEach(discordChannel -> {
@@ -1039,10 +1039,10 @@ public class Twitch implements Command {
 
     private synchronized void findGameFilters(String args) {
         // Check for specific channel filter(s)
-        if (args.indexOf("{") > 0 && args.indexOf("}") > args.indexOf("{")) {
-            String gameFilters = args.substring(args.indexOf("{") + 1, args.indexOf("}", args.indexOf("{")));
+        if (args.indexOf('{') > 0 && args.indexOf('}') > args.indexOf('{')) {
+            String gameFilters = args.substring(args.indexOf('{') + 1, args.indexOf('}', args.indexOf('{')));
 
-            if (gameFilters.indexOf("|") > 0) {
+            if (gameFilters.indexOf('|') > 0) {
                 this.gameFilter = Arrays.stream(gameFilters.split("\\|")).collect(Collectors.toList());
             } else {
                 gameFilter.add(gameFilters);
@@ -1054,9 +1054,9 @@ public class Twitch implements Command {
 
     private synchronized void findTitleFilters(String args) {
         // Check for specific title filters
-        if (args.indexOf("[") > 0 && args.indexOf("]") > args.indexOf("[")) {
-            String titleFilters = args.substring(args.indexOf("[") + 1, args.indexOf("]", args.indexOf("[")));
-            if (titleFilters.indexOf("|") > 0) {
+        if (args.indexOf('[') > 0 && args.indexOf(']') > args.indexOf('[')) {
+            String titleFilters = args.substring(args.indexOf('[') + 1, args.indexOf(']', args.indexOf('[')));
+            if (titleFilters.indexOf('|') > 0) {
                 this.titleFilter = Arrays.stream(titleFilters.split("\\|")).collect(Collectors.toList());
             } else {
                 this.titleFilter.add(titleFilters);

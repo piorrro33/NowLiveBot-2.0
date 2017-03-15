@@ -36,15 +36,15 @@ import java.time.Instant;
  */
 public class ApiRequest {
 
-    private final String AUTHORITY = "beam.pro";
-    private final String PATH = "/api/v1/channels/";
-    private final String SCHEME = "https://";
-    private final String ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
-    private final String ACCEPT_ENCODING = "gzip, deflate, sdch, br";
-    private final String CACHE_CONTROL = "no-cache";
-    private final String PRAGMA = "no-cache";
-    private final String UPGRADE_INSECURE_REQUESTS = "1";
-    private final String USER_AGENT = "Mozilla/5.0";
+    private static final String AUTHORITY = "beam.pro";
+    private static final String PATH = "/api/v1/channels/";
+    private static final String SCHEME = "https://";
+    private static final String ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
+    private static final String ACCEPT_ENCODING = "gzip, deflate, sdch, br";
+    private static final String CACHE_CONTROL = "no-cache";
+    private static final String PRAGMA = "no-cache";
+    private static final String UPGRADE_INSECURE_REQUESTS = "1";
+    private static final String USER_AGENT = "Mozilla/5.0";
     private Integer responseCode;
     private String xRateLimit;
     private String xRateLimitRemaining;

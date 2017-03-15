@@ -39,7 +39,7 @@ public class Beam implements Command {
      */
     @Override
     public boolean called(String args, GuildMessageReceivedEvent event) {
-        if (args != null && !"".equals(args)) {
+        if (args != null && !args.isEmpty()) {
             if ("help".equals(args)) {
                 return true;
             }

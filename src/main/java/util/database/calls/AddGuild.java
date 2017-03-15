@@ -151,7 +151,7 @@ public class AddGuild {
                                         if (Main.debugMode()) {
                                             if (resultInt > 0) {
                                                 logger.info("Successfully added manager " + users + " to G:" + event.getGuild
-                                                        ().getName() + ":" + event.getGuild().getId() + ".");
+                                                        ().getName() + ':' + event.getGuild().getId() + '.');
                                             } else {
                                                 logger.warn("Failed to add manager to my database~");
                                             }

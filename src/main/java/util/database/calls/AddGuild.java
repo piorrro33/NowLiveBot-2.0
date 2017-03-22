@@ -40,129 +40,147 @@ import static util.database.Database.cleanUp;
  * @author Veteran Software by Ague Mort
  */
 public class AddGuild {
-    private static final Logger logger = LoggerFactory.getLogger("AddGuild");
-    private static Connection connection;
-    private static PreparedStatement pStatement;
-    private static PreparedStatement pStmt;
-    private static PreparedStatement pSt;
-    private static ResultSet result;
-    private static Integer resultInt;
+    private final Logger logger = LoggerFactory.getLogger("AddGuild");
+    private Connection connection;
+    private PreparedStatement pStatement;
+    private PreparedStatement pStmt;
+    private PreparedStatement pSt;
+    private ResultSet result;
+    private Integer resultInt;
 
-    public synchronized static void action(GuildMessageReceivedEvent event) {
+    private synchronized String getQuery(String table) {
+        switch (table) {
+            case "guild":
+                return "SELECT COUNT(*) AS `count` FROM `guild` WHERE `guildId` = ?";
+            case "manager":
+                return "SELECT COUNT(*) AS `count` FROM `manager` WHERE `guildId` = ?";
+            case "notification":
+                return "SELECT COUNT(*) AS `count` FROM `notification` WHERE `guildId` = ?";
+            case "permission":
+                return "SELECT COUNT(*) AS `count` FROM `permission` WHERE `guildId` = ?";
+            case "twitch":
+                return "SELECT COUNT(*) AS `count` FROM `twitch` WHERE `guildId` = ?";
+            case "twitchstreams":
+                return "SELECT COUNT(*) AS `count` FROM `twitchstreams` WHERE `guildId` = ?";
+            default:
+                break;
+        }
+        return null;
+    }
+
+    public synchronized void action(GuildMessageReceivedEvent event) {
 
         List<String> tableList = new CopyOnWriteArrayList<>();
-        tableList.add("channel");
-        tableList.add("game");
         tableList.add("guild");
         tableList.add("manager");
         tableList.add("notification");
         tableList.add("permission");
-        tableList.add("stream");
-        tableList.add("tag");
-        tableList.add("team");
+        tableList.add("twitch");
+        tableList.add("twitchstreams");
 
-        for (String s : tableList) {
+        for (String table : tableList) {
             try {
-                String query = "SELECT COUNT(*) AS `count` FROM `" + s + "` WHERE `guildId` = ?";
+                String query = getQuery(table);
 
-                if (connection == null || connection.isClosed()) {
-                    connection = Database.getInstance().getConnection();
-                }
-                pStatement = connection.prepareStatement(query);
-                pStatement.setString(1, event.getGuild().getId());
-                result = pStatement.executeQuery();
+                if (query != null) {
+                    if (connection == null || connection.isClosed()) {
+                        connection = Database.getInstance().getConnection();
+                    }
+                    pStatement = connection.prepareStatement(query);
+                    pStatement.setString(1, event.getGuild().getId());
+                    result = pStatement.executeQuery();
 
-                while (result.next()) {
-                    if (result.getInt("count") == 0) {
-                        switch (s) {
-                            case "guild":
-                                try {
-                                    if (connection == null || connection.isClosed()) {
-                                        connection = Database.getInstance().getConnection();
+                    while (result.next()) {
+                        if (result.getInt("count") == 0) {
+                            switch (table) {
+                                case "guild":
+                                    try {
+                                        if (connection == null || connection.isClosed()) {
+                                            connection = Database.getInstance().getConnection();
+                                        }
+                                        String guildQuery = "INSERT INTO `guild` (`guildId`, `channelId`, `isCompact`, `cleanup`," +
+                                                " `emoji`) VALUES (?, ?, 0, 0, ?)";
+                                        pStmt = connection.prepareStatement(guildQuery);
+                                        pStmt.setString(1, event.getGuild().getId());
+                                        pStmt.setString(2, event.getGuild().getId());
+                                        pStmt.setString(3, ":heart_eyes_cat:");
+                                        resultInt = pStmt.executeUpdate();
+                                    } catch (SQLException e) {
+                                        e.printStackTrace();
+                                    } finally {
+                                        cleanUp(pStmt, connection);
                                     }
-                                    String guildQuery = "INSERT INTO `guild` (`guildId`, `channelId`, `isCompact`, `cleanup`," +
-                                            " `emoji`) VALUES (?, ?, 0, 0, ?)";
-                                    pStmt = connection.prepareStatement(guildQuery);
-                                    pStmt.setString(1, event.getGuild().getId());
-                                    pStmt.setString(2, event.getGuild().getId());
-                                    pStmt.setString(3, ":heart_eyes_cat:");
-                                    resultInt = pStmt.executeUpdate();
-                                } catch (SQLException e) {
-                                    e.printStackTrace();
-                                } finally {
-                                    cleanUp(pStmt, connection);
-                                }
-                                break;
-                            case "manager":
-                                List<String> userIds = new CopyOnWriteArrayList<>();
-                                // Auto add the guild owner as a manager
-                                userIds.add(Main.getJDA().getGuildById(event.getGuild().getId()).getOwner().getUser().getId());
-                                // Pull the roles from the guild
-                                for (Role role : Main.getJDA().getGuildById(event.getGuild().getId()).getRoles()) {
-                                    // Check permissions of each role
-                                    if (role.hasPermission(Permission.MANAGE_SERVER) || role.hasPermission(Permission.ADMINISTRATOR)) {
-                                        // See if the user in question has the correct role
-                                        for (Member member : Main.getJDA().getGuildById(event.getGuild().getId())
-                                                .getMembersWithRoles(role)) {
-                                            // Add them to the list of authorized managers
-                                            if (!userIds.contains(member.getUser().getId())) {
-                                                userIds.add(member.getUser().getId());
+                                    break;
+                                case "manager":
+                                    List<String> userIds = new CopyOnWriteArrayList<>();
+                                    // Auto add the guild owner as a manager
+                                    userIds.add(Main.getJDA().getGuildById(event.getGuild().getId()).getOwner().getUser().getId());
+                                    // Pull the roles from the guild
+                                    for (Role role : Main.getJDA().getGuildById(event.getGuild().getId()).getRoles()) {
+                                        // Check permissions of each role
+                                        if (role.hasPermission(Permission.MANAGE_SERVER) || role.hasPermission(Permission.ADMINISTRATOR)) {
+                                            // See if the user in question has the correct role
+                                            for (Member member : Main.getJDA().getGuildById(event.getGuild().getId())
+                                                    .getMembersWithRoles(role)) {
+                                                // Add them to the list of authorized managers
+                                                if (!userIds.contains(member.getUser().getId())) {
+                                                    userIds.add(member.getUser().getId());
+                                                }
                                             }
                                         }
                                     }
-                                }
 
-                                for (String users : userIds) {
+                                    for (String users : userIds) {
+                                        try {
+                                            query = "INSERT INTO `manager` (`guildId`, `userId`) VALUES (?, ?)";
+
+                                            if (connection == null || connection.isClosed()) {
+                                                connection = Database.getInstance().getConnection();
+                                            }
+                                            pSt = connection.prepareStatement(query);
+
+                                            pSt.setString(1, event.getGuild().getId());
+                                            pSt.setString(2, users);
+                                            resultInt = pSt.executeUpdate();
+                                        } catch (SQLException e) {
+                                            e.printStackTrace();
+                                        } finally {
+                                            cleanUp(pSt, connection);
+                                        }
+
+                                        if (Main.debugMode()) {
+                                            if (resultInt > 0) {
+                                                logger.info("Successfully added manager " + users + " to G:" + event.getGuild
+                                                        ().getName() + ':' + event.getGuild().getId() + '.');
+                                            } else {
+                                                logger.warn("Failed to add manager to my database~");
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case "notification":
                                     try {
-                                        query = "INSERT INTO `manager` (`guildId`, `userId`) VALUES (?, ?)";
+                                        query = "INSERT INTO `notification` (`guildId`, `level`) VALUES (?, 0)";
 
                                         if (connection == null || connection.isClosed()) {
                                             connection = Database.getInstance().getConnection();
                                         }
-                                        pSt = connection.prepareStatement(query);
+                                        pStatement = connection.prepareStatement(query);
 
-                                        pSt.setString(1, event.getGuild().getId());
-                                        pSt.setString(2, users);
-                                        resultInt = pSt.executeUpdate();
+                                        pStatement.setString(1, event.getGuild().getId());
+                                        pStatement.executeUpdate();
                                     } catch (SQLException e) {
                                         e.printStackTrace();
                                     } finally {
-                                        cleanUp(pSt, connection);
+                                        cleanUp(pStatement, connection);
                                     }
-
+                                    break;
+                                default:
                                     if (Main.debugMode()) {
-                                        if (resultInt > 0) {
-                                            logger.info("Successfully added manager " + users + " to G:" + event.getGuild
-                                                    ().getName() + ":" + event.getGuild().getId() + ".");
-                                        } else {
-                                            logger.warn("Failed to add manager to my database~");
-                                        }
+                                        logger.info("No data to add to this table");
                                     }
-                                }
-                                break;
-                            case "notification":
-                                try {
-                                    query = "INSERT INTO `notification` (`guildId`, `level`) VALUES (?, ?)";
-
-                                    if (connection == null || connection.isClosed()) {
-                                        connection = Database.getInstance().getConnection();
-                                    }
-                                    pStatement = connection.prepareStatement(query);
-
-                                    pStatement.setString(1, event.getGuild().getId());
-                                    pStatement.setInt(2, 0);
-                                    pStatement.executeUpdate();
-                                } catch (SQLException e) {
-                                    e.printStackTrace();
-                                } finally {
-                                    cleanUp(pStatement, connection);
-                                }
-                                break;
-                            default:
-                                if (Main.debugMode()) {
-                                    logger.info("No data to add to this table");
-                                }
-                                break;
+                                    break;
+                            }
                         }
                     }
                 }

@@ -31,24 +31,25 @@ import static util.database.Database.cleanUp;
 public class GetGuildsByStream {
 
     private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
-    private CopyOnWriteArrayList<String> guildIds = new CopyOnWriteArrayList<>();
 
-    public synchronized final CopyOnWriteArrayList<String> fetch(String channelName) {
+    public synchronized final CopyOnWriteArrayList<String> fetch(String channelId) {
+        PreparedStatement pStatement = null;
+        ResultSet result = null;
+        CopyOnWriteArrayList<String> guildIds = new CopyOnWriteArrayList<>();
+
         try {
-            String query = "SELECT `guildId` FROM `channel` WHERE `name` = ?";
+            String query = "SELECT `guildId` FROM `twitch` WHERE `channelId` = ?";
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, channelName);
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, channelId);
             result = pStatement.executeQuery();
 
             guildIds.clear();
 
             while (result.next()) {
-                guildIds.add(result.getString("guildId"));
+                guildIds.addIfAbsent(result.getString("guildId"));
             }
 
             return guildIds;
@@ -59,6 +60,6 @@ public class GetGuildsByStream {
             cleanUp(result, pStatement, connection);
         }
 
-        return guildIds;
+        return null;
     }
 }

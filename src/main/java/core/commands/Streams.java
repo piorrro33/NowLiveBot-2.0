@@ -22,8 +22,6 @@ import core.Command;
 import langs.LocaleString;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import util.database.Database;
 import util.database.calls.Tracker;
 
@@ -41,11 +39,7 @@ import static util.database.Database.cleanUp;
  */
 public class Streams implements Command {
 
-    private static Logger logger = LoggerFactory.getLogger(Streams.class);
     private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
-    private Integer rowCount = -1;
 
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
@@ -55,73 +49,84 @@ public class Streams implements Command {
 
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
+        PreparedStatement pStatement = null;
+        ResultSet result = null;
+        Integer rowCount = -1;
+
         try {
-            String query = "SELECT COUNT(*) AS `rowCount` FROM `stream` WHERE `guildId` = ?";
+            String query = "SELECT COUNT(streamsId) AS `rowCount` FROM `twitchstreams` WHERE `guildId` = ?";
 
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
 
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
 
             pStatement.setString(1, event.getGuild().getId());
-            this.result = pStatement.executeQuery();
+            result = pStatement.executeQuery();
 
             while (result.next()) {
                 rowCount = result.getInt("rowCount");
             }
         } catch (SQLException e) {
-            logger.error("There was a problem fetching live streams for an on demand request.", e);
+            System.out.println("[~ERROR~] There was a problem fetching live streams for an on demand request.");
+            e.printStackTrace();
         } finally {
             cleanUp(result, pStatement, connection);
         }
-        try {
-            // Grab the actual results to iterate through
-            String query = "SELECT `platform`.`baseLink` AS `link`, `stream`.`channelName` AS `channel`, `platform`.`name` " +
-                    "AS `platform`, `stream`.`streamsGame` AS `game` " +
-                    "FROM `stream` " +
-                    "INNER JOIN `platform` " +
-                    "ON `stream`.`platformId` = `platform`.`id` " +
-                    "WHERE `stream`.`guildId` = ? ORDER BY `stream`.`channelName`";
+        if (rowCount.equals(0)) {
+            MessageBuilder noneOnline = new MessageBuilder();
+            noneOnline.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "noneOnline"),
+                    event.getAuthor().getName()));
+            sendToPm(event, noneOnline.build());
+        } else {
+            try {
+                // Grab the actual results to iterate through
+                String query = "SELECT `channelName`, `streamsGame`, `channelUrl` " +
+                        "FROM `twitchstreams` " +
+                        "WHERE `guildId` = ? " +
+                        "AND `messageId` IS NOT NULL " +
+                        "ORDER BY `channelName` ASC";
 
-            if (connection == null || connection.isClosed()) {
-                this.connection = Database.getInstance().getConnection();
-            }
-            this.pStatement = connection.prepareStatement(query);
+                if (connection == null || connection.isClosed()) {
+                    this.connection = Database.getInstance().getConnection();
+                }
+                pStatement = connection.prepareStatement(query);
 
-            pStatement.setString(1, event.getGuild().getId());
-            this.result = pStatement.executeQuery();
+                pStatement.setString(1, event.getGuild().getId());
+                result = pStatement.executeQuery();
 
-            if (rowCount < 1) { // If no streams are online
-                MessageBuilder noneOnline = new MessageBuilder();
-                noneOnline.append(LocaleString.getString(event.getMessage().getGuild().getId(), "noneOnline"));
-                sendToPm(event, noneOnline.build());
-            } else { // If there's at least one stream online
                 MessageBuilder message = new MessageBuilder();
                 message.append(LocaleString.getString(event.getMessage().getGuild().getId(), "onlineStreamPm1"));
                 message.append(String.valueOf(rowCount));
                 message.append(LocaleString.getString(event.getMessage().getGuild().getId(), "onlineStreamPm2"));
+                message.append("\n___Twitch Streams__\n");
                 while (result.next()) {
-                    message.append("**" + result.getString("channel") + "**"); // Channel Name
+                    message.append("**");
+                    message.append(result.getString("channelName")); // Channel Name
+                    message.append("**");
                     message.append(LocaleString.getString(event.getMessage().getGuild().getId(), "nowPlayingLower")); // " is now playing"
-                    message.append("**" + result.getString("game") + "**"); // name of the game
-                    message.append(LocaleString.getString(event.getMessage().getGuild().getId(), "on")); // " on "
-                    message.append("**" + result.getString("platform") + "**!\n\t");
+                    message.append("**"); // name of the game
+                    message.append(result.getString("streamsGame"));
+                    message.append("**. ");
                     message.append(LocaleString.getString(event.getMessage().getGuild().getId(), "watchThemHere"));
-                    message.append("__*" + result.getString("link") + result.getString("channel") + "*__\n\n");
+                    message.append("__*");
+                    message.append(result.getString("channelUrl"));
+                    message.append("*__\n\n");
                     if (message.length() >= 1800) {
                         sendToPm(event, message.build());
                         message = new MessageBuilder();
+                        message.append("__*Here's some more streams!*__\n");
                     }
                 }
-                // TODO: Add DB value to offer preference to user to send pm vs send to channel
                 sendToPm(event, message.build());
-            }
 
-        } catch (SQLException e) {
-            logger.error("There was a problem fetching live streams for an on demand request.", e);
-        } finally {
-            cleanUp(result, pStatement, connection);
+            } catch (SQLException e) {
+                System.out.println("[~ERROR~] There was a problem fetching live streams for an on demand request.");
+                e.printStackTrace();
+            } finally {
+                cleanUp(result, pStatement, connection);
+            }
         }
     }
 
@@ -132,6 +137,6 @@ public class Streams implements Command {
 
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Streams");
+        new Tracker("Command");
     }
 }

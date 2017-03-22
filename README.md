@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.org/VeteranSoftware/NowLiveBot-2.0.svg?branch=master)](https://travis-ci.org/VeteranSoftware/NowLiveBot-2.0)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/af8f87629fd84849a8789530683231e7)](https://www.codacy.com/app/VeteranSoftware/NowLiveBot-2-0?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=VeteranSoftware/NowLiveBot-2.0&amp;utm_campaign=Badge_Grade)
 [![Dependency Status](https://www.versioneye.com/user/projects/58324817eaa74b0049b51498/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/58324817eaa74b0049b51498)
+![Discord Badge](https://discordapp.com/api/guilds/250045505659207699/widget.png?style=shield)
 
 > A Discord bot that announces streamers as they go live!
 
@@ -108,6 +109,32 @@ Example:
 
 `-nl add tag <tag>` *tags coming soon!*
 
+### Bot Language (Managers only)
+> **IMPORTANT:**  This will affect all of the bot's responses.  Native spelling is allowed!  
+If you don't know how to type the non-English characters, use the English version
+
+> **Currently supported languages:**  English, French, German, & Spanish
+
+> Change the language of the bots responses to a language other than English.
+
+
+`-nl botlang <language>`
+
+#### Examples
+`-nl botlang english` (default)
+
+> French
+
+`-nl botlang french` or `-nl botlang français` 
+
+> German
+
+`-nl botlang german` or `-nl botlang deutsch`
+
+> Spanish
+
+`-nl botlang spanish` or `-nl botlang español`
+
 ### Cleanup (Managers only)
 > Changes what happens when the streamer goes offline
 
@@ -164,7 +191,7 @@ Example:
 
 `-nl remove tag <tag>` *tags coming soon!*
 
-### Stream Language (managers only)
+### Stream Language (Managers only)
 > **IMPORTANT:**  This only affects Twitch streams.
 
 > Allows you to filter streams by the language it is being broadcast in.  This supports the English spelling of the 

@@ -22,43 +22,34 @@ import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-public class GetDbChannels {
+public class DefaultNotification {
 
-    private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
+    public synchronized Integer defaultData(String guildId) {
+        Connection connection = Database.getInstance().getConnection();
+        PreparedStatement pStatement = null;
 
-    public synchronized List<String> fetch(Integer start) {
-        String query = "SELECT `name` FROM `channel` ORDER BY `timeAdded` ASC LIMIT " + start + ",100";
         try {
+            String query = "INSERT INTO `notification` (`guildId`, `level`) VALUES (?, ?)";
             if (connection == null || connection.isClosed()) {
-                this.connection = Database.getInstance().getConnection();
+                connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
-            this.result = pStatement.executeQuery();
+            if (connection != null) {
+                pStatement = connection.prepareStatement(query);
 
-            List<String> channels = new CopyOnWriteArrayList<>();
 
-            while (result.next()) {
-                if (!channels.contains(result.getString("name"))) {
-                    channels.add(result.getString("name"));
-                }
+                pStatement.setString(1, guildId);
+                pStatement.setInt(2, 0);
+                return pStatement.executeUpdate();
             }
-            return channels;
-
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(result, pStatement, connection);
+            cleanUp(pStatement, connection);
         }
-        return null;
+        return -1;
     }
-
 }

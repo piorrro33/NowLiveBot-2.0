@@ -270,6 +270,6 @@ public class Language implements Command {
      */
     @Override
     public void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("StreamLang");
+        new Tracker("Command");
     }
 }

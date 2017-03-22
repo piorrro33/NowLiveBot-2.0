@@ -16,25 +16,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package platform.generic.controller;
+package util;
 
-/**
- * @author Veteran Software by Ague Mort
- */
-public class PlatformController {
+import platform.generic.PlatformListener;
 
-    public static int getPlatformId(String args) {
-        if (args.contains("~")) {
-            String platform = args.substring(0, args.indexOf("~"));
-            switch (platform) {
-                case "twitch":
-                    return 1;
-                case "beam":
-                    return 2;
-                default:
-                    break;
-            }
-        }
-        return 0;
+public class ExceptionHandler implements Thread.UncaughtExceptionHandler {
+    /**
+     * Method invoked when the given thread terminates due to the
+     * given uncaught exception.
+     * <p>Any exception thrown by this method will be ignored by the
+     * Java Virtual Machine.
+     *
+     * @param t the thread
+     * @param e the exception
+     */
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+        System.out.printf("An exception has been captured\n");
+        System.out.printf("Thread: %s\n", t.getId());
+        System.out.printf("Exception: %s: %s\n", e.getClass().getName(), e.getMessage());
+        System.out.printf("Stack Trace: \n");
+        e.printStackTrace(System.out);
+        System.out.printf("Thread status: %s\n", t.getState());
+        new Thread(new PlatformListener()).start();
     }
 }

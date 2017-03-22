@@ -1,11 +1,4 @@
 # NetBeans
-nbproject/private/
-nbbuild/
-dist/
-nbdist/
-.nb-gradle/
-.nb-gradle-properties
-
 # Gradle files
 .gradle/
 build/
@@ -52,20 +45,18 @@ Thumbs.db
 .flooignore
 
 .settings/
-config.properties
-nowlive_schema.sql
+*.properties
+*.sql
 out/
 src/resources/
 src/test/
 gradle/
 gradlew
 gradlew.bat
-libs/
 *.txt
 restart.sh
 start.sh
-OFFLINEconfig.properties
-ONLINEconfig.properties
 *.json
 *.jar
-*.sql
+*.gc
+/php

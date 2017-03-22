@@ -44,7 +44,6 @@ public class Notify implements Command {
     private Logger logger = LoggerFactory.getLogger(Notify.class);
 
     private Connection connection;
-    private PreparedStatement pStatement;
 
     /**
      * Used to determine if appropriate arguments exist
@@ -126,10 +125,12 @@ public class Notify implements Command {
      */
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Notify");
+        new Tracker("Command");
     }
 
     private boolean update(GuildMessageReceivedEvent event, Integer level) {
+        PreparedStatement pStatement = null;
+
         try {
             String query = "INSERT INTO `notification` (`guildId`, `level`, `userId`) VALUES (?, ?, ?) " +
                     "ON DUPLICATE KEY UPDATE `level` = ?";

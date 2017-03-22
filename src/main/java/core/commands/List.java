@@ -24,7 +24,6 @@ import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import platform.discord.controller.DiscordController;
 import util.database.Database;
 import util.database.calls.Tracker;
 
@@ -46,54 +45,8 @@ public class List implements Command {
     private static PreparedStatement pStatement;
     private static ResultSet resultSet;
     private String option;
-    private String query;
     private String guildId;
-    private String[] options = new String[]{"channel", "filter", "game", "manager", "streamLang", "tag", "team", "help", "setting"};
-
-    private Message createNotificationMessage(MessageBuilder message, GuildMessageReceivedEvent event) {
-        try {
-            if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
-            }
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            resultSet = pStatement.executeQuery();
-
-            if (resultSet.isBeforeFirst()) {
-                while (resultSet.next()) {
-                    message.append("\n\t");
-                    if (!"manager".equals(option)) {
-                        message.append(resultSet.getString(1).replaceAll("''", "'"));
-                        switch (resultSet.getInt(2)) {
-                            case 1:
-                                message.append(" on Twitch.tv");
-                                break;
-                            default:
-                                break;
-                        }
-                    } else {
-                        String userId = resultSet.getString("userId");
-                        User user = event.getJDA().getUserById(userId);
-                        String userName = user.getName();
-                        message.append(userName);
-                    }
-
-                    // Large message handler
-                    if (message.length() > 1850) {
-                        sendToPm(event, message.build());
-                        message = new MessageBuilder();
-                    }
-                }
-            } else {
-                message.append("\n\tRuh Roh!  I can't seem to find anything here...");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            cleanUp(resultSet, pStatement, connection);
-        }
-        return message.build();
-    }
+    private String[] options = new String[]{"twitchchannel", "gamefilter", "twitchgame", "manager", "titlefilter", "twitchteam", "help", "setting", "twitchcommunity"};
 
     /**
      * Used to determine if appropriate arguments exist
@@ -105,14 +58,16 @@ public class List implements Command {
     @Override
     public final boolean called(String args, GuildMessageReceivedEvent event) {
         for (String s : this.options) { // Iterate through the available options for this command
-            if(args.endsWith("s")) args = args.substring(0,args.length()-1);
             if (args != null && !args.isEmpty()) {
-                if (args.endsWith("s")) args = args.substring(0, args.length() - 1);
-                if (args.equals(s)) {
+                String arg = args;
+                if (arg.toLowerCase().endsWith("s")) {
+                    arg = args.substring(0, args.length() - 1);
+                }
+                if (arg.equalsIgnoreCase(s)) {
                     // Sets the class scope variables that will be used by action()
-                    option = s;
+                    this.option = s;
                     return true;
-                } else if ("help".equals(args)) {
+                } else if ("help".equalsIgnoreCase(arg)) {
                     // If the help argument is the only argument that is passed
                     return true;
                 }
@@ -130,45 +85,90 @@ public class List implements Command {
      */
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
-        DiscordController dController = new DiscordController(event);
+        String query = "";
 
-        guildId = dController.getGuildId();
+        this.guildId = event.getGuild().getId();
 
         MessageBuilder message = new MessageBuilder();
-        message.append("Heya!  Here's a list of " + option + "s that this Discord server is keeping tabs on:\n");
+        message.append("Hey ");
+        message.append(event.getAuthor().getName());
+        message.append("!  Here's the info you asked for:\n\n");
 
-        switch (option) {
-            case "channel":
-                query = "SELECT `name`, `platformId` FROM `channel` WHERE `guildId` = ? " +
-                        "ORDER BY `platformId` ASC, `name` ASC";
+        switch (option.toLowerCase()) {
+            case "twitchchannel":
+                query = "SELECT `channelName` FROM `twitch` WHERE `guildId` = ? AND `channelId` IS NOT NULL ORDER BY `channelName` ASC";
+                message.append("__Twitch Channels__\n\t");
                 break;
-            case "game":
-                query = "SELECT `name`, `platformId` FROM `game` WHERE `guildId` = ? " +
-                        "ORDER BY `platformId` ASC, `name` ASC";
+            case "twitchgame":
+                query = "SELECT `gameName` FROM `twitch` WHERE `guildId` = ? AND `gameName` IS NOT NULL ORDER BY `gameName` ASC";
+                message.append("__Twitch Games__\n\t");
                 break;
-            case "filter":
-                query = "SELECT `name`, `platformId` FROM `filter` WHERE `guildId` = ? " +
-                        "ORDER BY `platformId` ASC, `name` ASC";
+            case "gamefilter":
+                query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? AND `gameFilter` IS NOT NULL ORDER BY `gameFilter` ASC";
+                message.append("__Game Filters__\n\t");
                 break;
             case "manager":
-                query = "SELECT `userId` FROM `manager` WHERE `guildId` = ? ORDER BY `userId` ASC";
+                query = "SELECT `userId` FROM `manager` WHERE `guildId` = ? AND `userId` IS NOT NULL ORDER BY `userId` ASC";
+                message.append("__Bot Managers__\n\t");
                 break;
-            case "tag":
-                query = "SELECT `name`, `platformId` FROM `tag` WHERE `guildId` = ? " +
-                        "ORDER BY `platformId` ASC, `name` ASC";
+            case "titlefilter":
+                query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` IS NOT NULL ORDER BY `titleFilter` ASC";
+                message.append("__Title Filters__\n\t");
                 break;
-            case "team":
-                query = "SELECT `name`, `platformId` FROM `team` WHERE `guildId` = ? " +
-                        "ORDER BY `platformId` ASC, `name` ASC";
+            case "twitchteam":
+                query = "SELECT `teamName` FROM `twitch` WHERE `guildId` = ? AND `teamName` IS NOT NULL ORDER BY `teamName` ASC";
+                message.append("__Twitch Teams__\n\t");
+                break;
+            case "twitchcommunity":
+                query = "SELECT `communityName` FROM `twitch` WHERE `guildId` = ? AND `communityName` IS NOT NULL ORDER BY `communityName` ASC";
+                message.append("__Twitch Teams__\n\t");
                 break;
             case "setting":
-                sendToPm(event,getSettings(message));
+                message.append("__Bot Settings__\n\t");
+                sendToPm(event, getSettings(event, message));
                 return;
             default:
                 break;
         }
 
-        sendToPm(event, createNotificationMessage(message, event));
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = Database.getInstance().getConnection();
+            }
+            pStatement = connection.prepareStatement(query);
+            pStatement.setString(1, guildId);
+            resultSet = pStatement.executeQuery();
+
+            if (resultSet.isBeforeFirst()) {
+                while (resultSet.next()) {
+                    if (!"manager".equals(option)) {
+                        message.append("> ");
+                        message.append(resultSet.getString(1).replaceAll("''", "'"));
+                    } else {
+                        String userId = resultSet.getString("userId");
+                        User user = event.getJDA().getUserById(userId);
+                        String userName = user.getName();
+                        message.append(userName);
+                    }
+                    message.append("\n\t");
+
+                    // Large message handler
+                    if (message.length() > 1850) {
+                        sendToPm(event, message.build());
+                        message = new MessageBuilder();
+                        message.append("***Here's some more!***\n");
+                    }
+                }
+            } else {
+                message.append("\nRuh Roh!  I can't seem to find anything here...");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp(resultSet, pStatement, connection);
+        }
+
+        sendToPm(event, message.build());
     }
 
     private String getLanguage(String name) {
@@ -221,47 +221,50 @@ public class List implements Command {
                 return "Japanese/日本語";
             case "ko":
                 return "Korean/한국어";
-            case "all":
+            default:
                 return "all";
         }
-        return "";
     }
 
 
-
-    private Message getSettings(MessageBuilder message) {
+    private Message getSettings(GuildMessageReceivedEvent event, MessageBuilder message) {
+        Integer compact = 0;
+        Integer cleanup = 0;
+        String broadLang = "";
+        String serverLang = "";
+        Integer notify = 0;
 
         try {
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
 
-            PreparedStatement pStatement = connection.prepareStatement("SELECT `isCompact`, `notification`, `cleanup`, `broadcasterLang`, `serverLang` FROM `guild` WHERE `guildId` =?");
+            PreparedStatement pStatement = connection.prepareStatement(
+                    "SELECT `isCompact`, `cleanup`, `broadcasterLang`, `serverLang` FROM `guild` WHERE `guildId` = ?");
             pStatement.setString(1, guildId);
             resultSet = pStatement.executeQuery();
 
-            int compact = resultSet.getInt(1);
-            int cleanup = resultSet.getInt(2);
-            String broadLang = resultSet.getString(3);
-            String serverLang = resultSet.getString(4);
+            if (resultSet.next()) {
+                compact = resultSet.getInt(1);
+                cleanup = resultSet.getInt(2);
+                broadLang = resultSet.getString(3);
+                serverLang = resultSet.getString(4);
+            }
 
-            PreparedStatement pStatement2 = connection.prepareStatement("SELECT `level` FROM `notification` WHERE `guildId` =?");
-            pStatement2.setString(1, guildId);
-            ResultSet resultSet2 = pStatement2.executeQuery();
+            pStatement = connection.prepareStatement("SELECT `level` FROM `notification` WHERE `guildId` = ?");
+            pStatement.setString(1, guildId);
+            resultSet = pStatement.executeQuery();
 
-            int notify = resultSet2.getInt(1);
+            if (resultSet.next()) {
+                notify = resultSet.getInt(1);
+            }
 
-            String changingMessage = "```Ruby"+
-            "/n/t" + "Compact mode is " + "compactSetting"+ "." +
-            "/n/t" + "Notification is set to " + "notificationSetting" + "."+
-            "/n/t" + "Cleanup is set to " + "cleanupSetting" + "."+
-            "/n/t" + "Broadcaster language is set to " + "broadLang"  + "." +
-            "n/t" + "Server language is set to " + "serverLang"+ "." +
-            "```";
-
-            message.append(util.Const.LIST_SETTINGS.replace("compactSetting", (compact==0?"On":"Off")).replace("notificationSetting",(notify==0?"no one":notify==2?"here":"everyone"))
-                    .replace("cleanupSetting",(cleanup==0?"do nothing":cleanup==1?"edit":"delete")).replace("broadLang", getLanguage(broadLang))
-                    .replace("serverLang", getLanguage(serverLang)));
+            message.append(String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "listSettings"),
+                    compact == 0 ? "On" : "Off",
+                    notify == 0 ? "no one" : notify == 2 ? "here" : "everyone",
+                    cleanup == 0 ? "do nothing" : cleanup == 1 ? "edit" : "delete",
+                    getLanguage(broadLang),
+                    getLanguage(serverLang)));
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -289,6 +292,6 @@ public class List implements Command {
      */
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("List");
+        new Tracker("Command");
     }
 }

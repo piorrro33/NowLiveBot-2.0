@@ -22,40 +22,32 @@ import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static util.database.Database.cleanUp;
 
-public class CheckStreamTable {
+public class DeleteTwitchStream {
 
     private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
 
-    public synchronized boolean check(String guildId, Integer platformId, String channelName) {
+    public synchronized void process(String guildId, String channelId) {
+        PreparedStatement pStatement = null;
         try {
-            String query = "SELECT COUNT(*) AS `count` FROM `stream` WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
+            String query = "DELETE FROM `twitchstreams` WHERE `guildId` = ? AND `channelId` = ?";
 
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
-            pStatement.setInt(2, platformId);
-            pStatement.setString(3, channelName);
-            this.result = pStatement.executeQuery();
-            while (result.next()) {
-                Integer count = result.getInt("count");
-                if (count.equals(0)) {
-                    return false; // Not in the stream table
-                }
-            }
+            pStatement.setString(2, channelId);
+
+            pStatement.executeUpdate();
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(result, pStatement, connection);
+            cleanUp(pStatement, connection);
         }
-        return true; // Found in the stream table
     }
 }

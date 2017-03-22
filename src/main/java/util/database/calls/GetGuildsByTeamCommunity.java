@@ -22,55 +22,49 @@ import util.database.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static util.database.Database.cleanUp;
 
-/**
- * @author Veteran Software by Ague Mort
- */
-public class AddOther {
+public class GetGuildsByTeamCommunity {
 
-    private static Connection connection;
-    private static PreparedStatement pStatement;
-    private static String query;
+    private Connection connection;
 
-    public synchronized static Boolean action(String tableName, String guildId, int platformId, String name) {
-
-        switch (tableName) {
-            case "channel":
-                query = "INSERT INTO `channel` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
-                break;
-            case "filter":
-                query = "INSERT INTO `filter` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
-                break;
-            case "game":
-                query = "INSERT INTO `game` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
-                break;
-            case "tag":
-                query = "INSERT INTO `tag` (`id`, `guildId`, `platformId`, `name`) VALUES (null,?,?,?)";
-                break;
-            default:
-                break;
-        }
+    public synchronized final CopyOnWriteArrayList<String> fetch(String flag, String name) {
+        PreparedStatement pStatement = null;
+        ResultSet result = null;
+        CopyOnWriteArrayList<String> guildIds = new CopyOnWriteArrayList<>();
 
         try {
+            String query;
+            if ("team".equals(flag)) {
+                query = "SELECT `guildId` FROM `twitch` WHERE `teamName` = ?";
+            } else {
+                query = "SELECT `guildId` FROM `twitch` WHERE `communityName` = ?";
+            }
             if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+                this.connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            pStatement.setInt(2, platformId);
-            pStatement.setString(3, name);
-            if (pStatement.executeUpdate() == 1) {
-                return true;
+            pStatement.setString(1, name);
+            result = pStatement.executeQuery();
+
+            guildIds.clear();
+
+            while (result.next()) {
+                guildIds.addIfAbsent(result.getString("guildId"));
             }
+
+            return guildIds;
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            cleanUp(pStatement, connection);
+            cleanUp(result, pStatement, connection);
         }
-        return false;
-    }
 
+        return null;
+    }
 }

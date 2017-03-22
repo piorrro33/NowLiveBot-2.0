@@ -34,7 +34,6 @@ public class GetCleanUp {
 
     private Connection connection;
     private PreparedStatement pStatement;
-    private ResultSet result;
 
     public synchronized Boolean action(String guildId, String query) {
         try {
@@ -55,6 +54,7 @@ public class GetCleanUp {
     }
 
     public synchronized Integer doStuff(String guildId) {
+        ResultSet result = null;
         String query = "SELECT `cleanup` FROM `guild` WHERE `guildId` = ?";
         try {
             if (connection == null || connection.isClosed()) {

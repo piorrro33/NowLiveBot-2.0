@@ -32,19 +32,24 @@ import static util.database.Database.cleanUp;
  */
 public class GetBroadcasterLang {
     private Connection connection;
-    private PreparedStatement pStatement;
-    private ResultSet result;
 
     public synchronized String action(String guildId) {
+        PreparedStatement pStatement = null;
+        ResultSet result = null;
+
         try {
             String query = "SELECT `broadcasterLang` FROM `guild` WHERE `guildId` = ?";
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
-            this.result = pStatement.executeQuery();
+            result = pStatement.executeQuery();
+
             if (result.next()) {
+                if (result.getString("broadcasterLang").isEmpty()) {
+                    return "en";
+                }
                 return result.getString("broadcasterLang");
             }
         } catch (SQLException e) {

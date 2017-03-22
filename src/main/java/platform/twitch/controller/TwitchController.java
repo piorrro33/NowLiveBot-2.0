@@ -18,246 +18,185 @@
 
 package platform.twitch.controller;
 
-import com.mb3364.http.RequestParams;
-import com.mb3364.twitch.api.Twitch;
-import com.mb3364.twitch.api.handlers.ChannelResponseHandler;
-import com.mb3364.twitch.api.handlers.StreamResponseHandler;
-import com.mb3364.twitch.api.handlers.StreamsResponseHandler;
-import com.mb3364.twitch.api.models.Channel;
-import com.mb3364.twitch.api.models.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import platform.discord.controller.DiscordController;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.HttpClientBuilder;
+import platform.twitch.models.CommunityByName;
+import platform.twitch.models.IdConversion;
+import platform.twitch.models.Team;
+import util.ExceptionHandlerNoRestart;
 import util.PropReader;
-import util.database.Database;
-import util.database.calls.CountDbChannels;
-import util.database.calls.GetBroadcasterLang;
-import util.database.calls.GetDbChannels;
-import util.database.calls.GetGuildsByStream;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.locks.ReentrantLock;
-
-import static platform.discord.controller.DiscordController.getChannelId;
-import static util.database.Database.cleanUp;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * @author keesh
  */
-public class TwitchController extends Twitch {
+public class TwitchController {
 
-    private static Connection connection;
-    private static PreparedStatement pStatement;
-    private static ResultSet result;
-    private Logger logger = LoggerFactory.getLogger("Twitch Controller");
-    private ReentrantLock lock = new ReentrantLock();
+    private HttpClient client = HttpClientBuilder.create().build();
+    private HttpGet get;
+    private HttpResponse response;
 
     public TwitchController() {
-        this.setClientId(PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+        Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandlerNoRestart());
     }
 
-    private static synchronized List<String> checkFilters(String guildId) {
+    private synchronized URIBuilder setBaseUrl(String endpoint) {
+        URIBuilder builder = new URIBuilder();
+        builder.setScheme("https").setHost("api.twitch.tv").setPath("/kraken" + endpoint);
+        return builder;
+    }
+
+    public synchronized String convertNameToId(String name) {
+        URIBuilder uriBuilder = setBaseUrl("/users");
+        uriBuilder.setParameter("login", name);
+
         try {
-            String query = "SELECT * FROM `filter` WHERE `guildId` = ?";
+            URI uri = uriBuilder.build();
+            get = new HttpGet(uri);
+            get.addHeader("Cache-Control", "no-cache");
+            get.addHeader("Accept", "application/vnd.twitchtv.v5+json");
+            get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+            response = client.execute(get);
 
-            if (connection == null || connection.isClosed()) {
-                connection = Database.getInstance().getConnection();
+            ObjectMapper objectMapper = new ObjectMapper();
+            IdConversion idConversion = objectMapper.readValue(
+                    new InputStreamReader(response.getEntity().getContent()), IdConversion.class);
+
+            if (idConversion.getTotal() != null && idConversion.getTotal().equals(1)) {
+                return idConversion.getUsers().get(0).getId();
             }
-            pStatement = connection.prepareStatement(query);
-            pStatement.setString(1, guildId);
-            result = pStatement.executeQuery();
 
-            List<String> filters = new CopyOnWriteArrayList<>();
-
-            if (result.isBeforeFirst()) {
-                while (result.next()) {
-                    filters.add(result.getString("name").replaceAll("''", "'"));
-                }
-                return filters;
-            }
-        } catch (SQLException e) {
+        } catch (URISyntaxException | IOException e) {
             e.printStackTrace();
-        } finally {
-            cleanUp(result, pStatement, connection);
         }
-
         return null;
     }
 
-    public final synchronized Boolean checkExists(String channelName) {
-        final Boolean[] exists = {false};
+    public final synchronized Integer getTeamId(String teamName) {
+        if (teamName != null) {
+            URIBuilder uriBuilder = setBaseUrl("/teams/" + teamName);
 
-        this.channels().get(channelName, new ChannelResponseHandler() {
-            @Override
-            public void onSuccess(Channel channel) {
-                logger.info("Channel exists!");
-                exists[0] = true;
+            URI uri = null;
+            try {
+                uri = uriBuilder.build();
+            } catch (URISyntaxException e) {
+                System.out.println("[~ERROR~] Malformed URI found.");
+                e.printStackTrace();
             }
 
-            @Override
-            public void onFailure(int i, String s, String s1) {
-                exists[0] = false;
+            get = new HttpGet(uri);
+            get.addHeader("Cache-Control", "no-cache");
+            get.addHeader("Accept", "application/vnd.twitchtv.v5+json");
+            get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+
+            try {
+                response = client.execute(get);
+            } catch (ClientProtocolException cpe) {
+                System.out.println("[~ERROR~] HTTP Protocol Error when checking Team ID");
+                cpe.printStackTrace();
+            } catch (IOException e) {
+                System.out.println("[~ERROR~] Input/Output Exception when getting HTTP Response");
+                e.printStackTrace();
             }
 
-            @Override
-            public void onFailure(Throwable throwable) {
-                exists[0] = false;
-            }
-        });
-        return exists[0].equals(true);
-    }
+            if (response.getStatusLine().getStatusCode() == 200) {
+                ObjectMapper objectMapper = new ObjectMapper();
 
-    public final synchronized void checkOffline(HashMap<String, Map<String, String>> streams, Integer platformId) {
-
-        streams.forEach((String messageId, Map<String, String> streamData) ->
-                this.streams().get(streamData.get("channelName"), new StreamResponseHandler() {
-                    @Override
-                    public void onSuccess(Stream stream) {
-                        if (stream == null) {
-                            DiscordController discord = new DiscordController();
-                            discord.offlineStream(streamData);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(int i, String s, String s1) {
-
-                    }
-
-                    @Override
-                    public void onFailure(Throwable throwable) {
-
-                    }
-                }));
-    }
-
-    public final synchronized void checkChannel(Integer platformId) {
-
-        CountDbChannels countDbChannels = new CountDbChannels();
-        Integer amount = countDbChannels.fetch();
-
-        for (Integer c = 0; c <= amount; c += 100) {
-
-            GetDbChannels dbChannels = new GetDbChannels();
-            List<String> channels = dbChannels.fetch(c);
-
-            StringBuilder channelString = new StringBuilder();
-
-            channels.forEach(channel -> {
-                if (channelString.length() > 0) {
-                    channelString.append(",");
-                }
-                channelString.append(channel);
-            });
-
-            RequestParams params = new RequestParams();
-            params.put("channel", channelString.toString());
-
-            this.streams().get(params, new StreamsResponseHandler() {
-                @Override
-                public void onSuccess(int i, List<Stream> list) {
-                    DiscordController discord = new DiscordController();
-                    list.forEach(stream -> {
-                        GetGuildsByStream guildsByStream = new GetGuildsByStream();
-                        CopyOnWriteArrayList<String> guildIds = guildsByStream.fetch(stream.getChannel().getName());
-
-                        guildIds.forEach(guildId -> onLiveStream(stream, guildId, platformId, discord));
-                    });
+                Team team = null;
+                try {
+                    team = objectMapper.readValue(new InputStreamReader(response.getEntity().getContent()), Team.class);
+                } catch (JsonMappingException jme) {
+                    System.out.println("[~ERROR~] The input JSON structure (Teams ID) does not match structure expected");
+                    System.out.println(uri);
+                    jme.printStackTrace();
+                } catch (JsonParseException jpe) {
+                    System.out.println("[~ERROR~] The underlying input contains invalid content");
+                    System.out.println(uri);
+                    jpe.printStackTrace();
+                } catch (IOException e) {
+                    System.out.println("[~ERROR~] Input/Output Exception when reading HTTP Response");
+                    e.printStackTrace();
                 }
 
-                @Override
-                public void onFailure(int i, String s, String s1) {
-
+                if (team != null) {
+                    return team.getId();
                 }
 
-                @Override
-                public void onFailure(Throwable throwable) {
-
-                }
-            });
-        }
-    }
-
-    public final synchronized void checkGame(String gameName, String guildId, Integer platformId) {
-
-        int[] values = new int[]{0, 0};
-
-        RequestParams params = new RequestParams();
-        params.put("game", gameName);
-        params.put("limit", 100);
-
-        //for (int count = 0; count < values[1]; count += 100) {
-        params.put("offset", 0);
-
-        this.streams().get(params, new StreamsResponseHandler() {
-            @Override
-            public void onSuccess(int i, List<Stream> list) {
-                if (values[1] == 0) {
-                    values[1] = i;
-                }
-                DiscordController discord = new DiscordController();
-                list.forEach(stream -> onLiveStream(stream, guildId, platformId, discord));
-            }
-
-            @Override
-            public void onFailure(int i, String s, String s1) {
-
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-
-            }
-        });
-        // }
-    }
-
-    /**
-     * Method by Hopewell
-     *
-     * @param guildId Guild Id
-     * @param stream  Stream object
-     * @return boolean
-     */
-    private synchronized boolean filterCheck(String guildId, Stream stream) {
-        List<String> filters = checkFilters(guildId);
-        if (filters == null) {
-            return true;
-        }
-        for (String filter : filters) {
-            if (stream.getGame().equalsIgnoreCase(filter)) {
-                return true;
+            } else if (response.getStatusLine().getStatusCode() == 404) {
+                System.out.printf("Team %s not found.%n", teamName);
+                return -1;
             }
         }
-        return false;
+        return -1;
     }
 
-    /**
-     * Method by Hopewell
-     *
-     * @param stream     Stream object
-     * @param guildId    Guild Id
-     * @param platformId Platform Id
-     * @param discord    Discord Controller object
-     */
-    private synchronized void onLiveStream(Stream stream, String guildId, Integer platformId, DiscordController discord) {
-        GetBroadcasterLang getBroadcasterLang = new GetBroadcasterLang();
-        String lang = getBroadcasterLang.action(guildId);
+    public final synchronized String getCommunityId(String communityName) {
+        if (communityName != null) {
+            URIBuilder uriBuilder = setBaseUrl("/communities");
+            uriBuilder.setParameter("name", communityName);
 
-        if (lang != null &&
-                (lang.equalsIgnoreCase(stream.getChannel().getBroadcasterLanguage()) || "all".equals(lang))) {
-            if (stream.getChannel().getStatus() != null && stream.getGame() != null) {
-                if (filterCheck(guildId, stream)) {
-                    discord.announceStream(guildId, getChannelId(guildId), platformId, stream);
+            URI uri = null;
+            try {
+                uri = uriBuilder.build();
+            } catch (URISyntaxException e) {
+                System.out.println("[~ERROR~] Malformed URI found.");
+                e.printStackTrace();
+            }
+
+            get = new HttpGet(uri);
+            get.addHeader("Cache-Control", "no-cache");
+            get.addHeader("Accept", "application/vnd.twitchtv.v5+json");
+            get.addHeader("Client-ID", PropReader.getInstance().getProp().getProperty("twitch.client.id"));
+
+            try {
+                response = client.execute(get);
+            } catch (ClientProtocolException cpe) {
+                System.out.println("[~ERROR~] HTTP Protocol Error when checking Community ID");
+                cpe.printStackTrace();
+            } catch (IOException e) {
+                System.out.println("[~ERROR~] Input/Output Exception when getting HTTP Response");
+                e.printStackTrace();
+            }
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                ObjectMapper objectMapper = new ObjectMapper();
+
+                CommunityByName community = null;
+                try {
+                    community = objectMapper.readValue(new InputStreamReader(response.getEntity().getContent()), CommunityByName.class);
+                } catch (JsonMappingException jme) {
+                    System.out.println("[~ERROR~] The input JSON structure (Community By Name) does not match structure expected");
+                    System.out.println(uri);
+                    jme.printStackTrace();
+                } catch (JsonParseException jpe) {
+                    System.out.println("[~ERROR~] The underlying input contains invalid content");
+                    System.out.println(uri);
+                    jpe.printStackTrace();
+                } catch (IOException e) {
+                    System.out.println("[~ERROR~] Input/Output Exception when reading HTTP Response");
+                    e.printStackTrace();
                 }
+
+                if (community != null) {
+                    return community.getId();
+                }
+
+            } else if (response.getStatusLine().getStatusCode() == 404) {
+                System.out.printf("Team %s not found.%n", communityName);
+                return null;
             }
         }
+        return null;
     }
 }

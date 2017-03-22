@@ -44,7 +44,8 @@ public class Invite implements Command {
 
     @Override
     public final void action(String args, GuildMessageReceivedEvent event) {
-        sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "invite"));
+        sendToChannel(event, String.format(LocaleString.getString(event.getMessage().getGuild().getId(), "invite"),
+                event.getAuthor().getName()));
     }
 
     @Override
@@ -54,6 +55,6 @@ public class Invite implements Command {
 
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Invite");
+        new Tracker("Command");
     }
 }

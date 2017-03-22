@@ -22,21 +22,15 @@ import core.Command;
 import langs.LocaleString;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import platform.beam.controller.BeamController;
-import util.database.calls.*;
+import util.database.calls.AddManager;
+import util.database.calls.CountManagers;
+import util.database.calls.Tracker;
 
 import static platform.discord.controller.DiscordController.sendToChannel;
-import static platform.generic.controller.PlatformController.getPlatformId;
 
-/**
- * Add Command.
- * TODO: Move SQL calls to separate class.
- *
- * @author keesh
- */
 public class Add implements Command {
 
-    private final String[] options = new String[]{"channel", "filter", "game", "manager", "tag", "help"};
+    private final String[] options = new String[]{"manager", "help"};
     private String option;
     private String argument;
 
@@ -84,13 +78,6 @@ public class Add implements Command {
     public final void action(String args, GuildMessageReceivedEvent event) {
 
         String guildId = event.getGuild().getId();
-        Integer platformId;
-
-        if (getPlatformId(args) > 0) {
-            platformId = getPlatformId(args);
-        } else {
-            platformId = 1;
-        }
 
         for (String s : this.options) {
             if (this.option.equals(s) && !this.option.equals("help")) {
@@ -104,7 +91,7 @@ public class Add implements Command {
                                 String userId = u.getId();
                                 // Check to make sure the user is not a bot
                                 if (!event.getJDA().getUserById(userId).isBot()) {
-                                    if (!CountManagers.action(this.option, guildId, userId)) {
+                                    if (!CountManagers.action(guildId, userId)) {
 
                                         returnStatement(AddManager.action(guildId, userId), event);
                                     } else {
@@ -118,37 +105,7 @@ public class Add implements Command {
                             sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "discordUserNoExist"));
                         }
                         break;
-                    case "channel":
-                        switch (platformId) {
-                            case 1:
-                                if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
-                                    sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
-                                } else {
-                                    returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
-                                }
-                                break;
-                            case 2:
-                                if (BeamController.channelExists(this.argument)) {
-                                    if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
-                                        sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
-                                    } else {
-                                        returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
-                                    }
-                                } else {
-                                    sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "beamUserNoExist"));
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
                     default:
-
-                        if (CheckTableData.action(this.option, guildId, platformId, this.argument)) {
-                            sendToChannel(event, LocaleString.getString(guildId, "alreadyExists"));
-                        } else {
-                            returnStatement(AddOther.action(this.option, guildId, platformId, this.argument), event);
-                        }
                         break;
                 }
             }
@@ -158,10 +115,10 @@ public class Add implements Command {
     private void returnStatement(Boolean success, GuildMessageReceivedEvent event) {
         if (success) {
             sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "added") +
-                    "`" + this.option + "` " + this.argument.replaceAll("''", "'"));
+                    '`' + this.option + "` " + this.argument.replaceAll("''", "'"));
         } else {
             sendToChannel(event, LocaleString.getString(event.getMessage().getGuild().getId(), "addFail") +
-                    "`" + this.option + "` " + this.argument.replaceAll("''", "'"));
+                    '`' + this.option + "` " + this.argument.replaceAll("''", "'"));
         }
     }
 
@@ -172,7 +129,7 @@ public class Add implements Command {
 
     @Override
     public final void executed(boolean success, GuildMessageReceivedEvent event) {
-        new Tracker("Add");
+        new Tracker("Command");
 
     }
 

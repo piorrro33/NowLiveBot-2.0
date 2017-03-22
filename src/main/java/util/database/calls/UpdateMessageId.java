@@ -29,22 +29,23 @@ import static util.database.Database.cleanUp;
 public class UpdateMessageId {
 
     private Connection connection;
-    private PreparedStatement pStatement;
 
-    public synchronized void executeUpdate(String guildId, Integer platformId, String channelName, String messageId) {
+    public synchronized void executeUpdate(String guildId, String channelId, String messageId) {
+        PreparedStatement pStatement = null;
+
         try {
-            String query = "UPDATE `stream` SET `messageId` = ? WHERE `guildId` = ? AND `platformId` = ? AND `channelName` = ?";
+            String query = "UPDATE `twitchstreams` SET `messageId` = ? WHERE `guildId` = ? AND `channelId` = ?";
             if (connection == null || connection.isClosed()) {
                 this.connection = Database.getInstance().getConnection();
             }
-            this.pStatement = connection.prepareStatement(query);
+            pStatement = connection.prepareStatement(query);
             pStatement.setString(1, messageId);
             pStatement.setString(2, guildId);
-            pStatement.setInt(3, platformId);
-            pStatement.setString(4, channelName);
+            pStatement.setString(3, channelId);
             pStatement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            UpdateOffline updateOffline = new UpdateOffline();
+            updateOffline.executeUpdate(channelId, guildId);
         } finally {
             cleanUp(pStatement, connection);
         }

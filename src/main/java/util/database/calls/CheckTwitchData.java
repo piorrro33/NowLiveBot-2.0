@@ -30,25 +30,47 @@ import static util.database.Database.cleanUp;
 /**
  * @author Veteran Software by Ague Mort
  */
-public class CheckTableData {
+public class CheckTwitchData {
 
     private static Connection connection;
     private static PreparedStatement pStatement;
     private static ResultSet result;
 
-    public synchronized static Boolean action(String tableName, String guildId, Integer platformId, String name) {
-        final String query = "SELECT `name` FROM `" + tableName + "` WHERE `guildId` = ? AND `platformId` = ? AND " +
-                "`name` = ?";
+    public synchronized static Boolean action(String tableName, String guildId, String name) {
+        String query = "";
+        switch (tableName) {
+            case "channel":
+                query = "SELECT `channelName` FROM `twitch` WHERE `guildId` = ? AND `channelName` LIKE ?";
+                break;
+            case "community":
+                query = "SELECT `communityName` FROM `twitch` WHERE `guildId` = ? AND `communityName` LIKE ?";
+                break;
+            case "gameFilter":
+                query = "SELECT `gameFilter` FROM `twitch` WHERE `guildId` = ? AND `gameFilter` LIKE ?";
+                break;
+            case "game":
+                query = "SELECT `gameName` FROM `twitch` WHERE `guildId` = ? AND `gameName` LIKE ?";
+                break;
+            case "team":
+                query = "SELECT `teamName` FROM `twitch` WHERE `guildId` = ? AND `teamName` LIKE ?";
+                break;
+            case "titleFilter":
+                query = "SELECT `titleFilter` FROM `twitch` WHERE `guildId` = ? AND `titleFilter` LIKE ?";
+                break;
+            default:
+                break;
+        }
+
         try {
             if (connection == null || connection.isClosed()) {
                 connection = Database.getInstance().getConnection();
             }
             pStatement = connection.prepareStatement(query);
             pStatement.setString(1, guildId);
-            pStatement.setInt(2, platformId);
-            pStatement.setString(3, name);
+            pStatement.setString(2, name);
             result = pStatement.executeQuery();
             if (result.isBeforeFirst()) {
+                System.out.println("Found channel: " + name);
                 return true;
             }
         } catch (SQLException e) {

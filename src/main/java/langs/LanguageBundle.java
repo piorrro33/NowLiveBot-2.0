@@ -149,6 +149,12 @@ public class LanguageBundle extends ListResourceBundle {
                     "# TWITCH\n" +
                     "* Add and remove things that are Twitch.tv related. For more information, type: " +
                     Const.COMMAND_PREFIX + Const.COMMAND + " twitch help\n\n```\n" +
+                    "# PATREON/DONATE\n" +
+                    "Gives the link to the bot's patreon. Commands are :\n"+
+                    Const.COMMAND_PREFIX + Const.COMMAND + " patreon\n" + Const.COMMAND_PREFIX + Const.COMMAND + " donate\n\n" +
+                    "#TRELLO/BUG/REQUEST\n" +
+                    "Gives the link to our Trello which is used for bug reports and feature requests. Commands are :\n" +
+                    Const.COMMAND_PREFIX + Const.COMMAND + " trello\n" + Const.COMMAND_PREFIX + Const.COMMAND + " bug\n" + Const.COMMAND_PREFIX + Const.COMMAND + " request\n\n```\n"+
                     "Ague is still working hard to finish up new things for me to do for you!\n\n~~" + Const.BOT_NAME + "\n\n" +
                     "If you need additional help, join my Discord.  Lots of helpful people there:  " + Const.DISCORD_URL + "\n\n" +
                     "***P.S. I don't monitor this mailbox, so please don't send me any messages through PM***"},
@@ -219,6 +225,8 @@ public class LanguageBundle extends ListResourceBundle {
             {"onlineStreamPm2", " streamers online that you may be interested in!  Follow their links to check them " +
                     "out: \n\n"},
             {"oops", "Oops!  Something went wrong and nothing was changed!  Let's try that again."},
+            {"patreon", "If you wish to donate to the bot consider using our Patreon. https://www.patreon.com/nowlive"},
+            {"patreonHelp" , "Gives the link to our patreon page."},
             {"ping", "When I was in China on the All-American Ping Pong team, I just loved playing ping-pong with my " +
                     "Flexolite ping pong paddle."},
             {"pingHelp", "```Markdown\n# PING\n* Used to ping me. If I am working correctly, I'll send you a pong.\n\n## USAGE: "
@@ -249,6 +257,8 @@ public class LanguageBundle extends ListResourceBundle {
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
                     + " streams```"},
+            {"trello", "To report bugs or to request features to be added to the bot please use our Trello. https://trello.com/b/kcWshbIU"},
+            {"trelloHelp", "Returns the link to the Trello for the bot"},
             {"totalViewsEmbed", "Total Views"},
             {"twitchCommunities", "Twitch Communities"},
             {"twitchAnnounceUpdate", "\n# Updated the Twitch announcement channel for %s to: %s."},
@@ -257,7 +267,6 @@ public class LanguageBundle extends ListResourceBundle {
             {"twitchChannelAddFail", "\n# Failed to add channels: %s."},
             {"twitchChannelAnnounce", "\n# They will be announced in: #%s."},
             {"twitchChannelGameFilter", "\n# They will only be announced when they are playing: %s."},
-            {"twitchChannelNotFound", "\n# Channel(s) not found: %s"},
             {"twitchChannelRemove", "\n# Removed channels: %s."},
             {"twitchChannelRemoveFail", "\n! Failed to delete channels: %s."},
             {"twitchChannelTitleFilter", "\n# They will only be announced when these words are in the title: %s."},

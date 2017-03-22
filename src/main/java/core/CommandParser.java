@@ -44,8 +44,10 @@ public class CommandParser {
         commands.put("announce", new Announce());
         commands.put("beam", new Beam());
         commands.put("botlang", new BotLanguage());
+        commands.put("bug", new Trello());
         commands.put("cleanup", new CleanUp());
         commands.put("compact", new Compact());
+        commands.put("donate", new Patreon());
         commands.put("help", new Help());
         commands.put("list", new List());
         commands.put("invite", new Invite());
@@ -53,11 +55,14 @@ public class CommandParser {
         commands.put("leave", new Leave());
         commands.put("move", new Move());
         commands.put("notify", new Notify());
+        commands.put("patreon", new Patreon());
         commands.put("ping", new Ping());
+        commands.put("request", new Trello());
         commands.put("remove", new Remove());
         commands.put("status", new Status());
         commands.put("streamlang", new Language());
         commands.put("streams", new Streams());
+        commands.put("trello", new Trello());
         commands.put("twitch", new Twitch());
     }
 
@@ -74,7 +79,7 @@ public class CommandParser {
      */
     public static void handleCommand(CommandContainer cmd) {
 
-        if (commands.containsKey(cmd.invoke)) {
+        if (getCommands().containsKey(cmd.invoke)) {
 
             // Check and see if the command requires elevated permissions and how to handle that
             Boolean adminCheck = perms.checkAdmins(cmd.event);
@@ -120,23 +125,19 @@ public class CommandParser {
     }
 
     private static void runCommand(CommandContainer cmd) {
-
-        boolean safe = commands.get(cmd.invoke).called(cmd.args, cmd.event);
+        boolean safe = getCommands().get(cmd.invoke).called(cmd.args, cmd.event);
 
         if (safe) {
             if (cmd.args != null && cmd.args.equals("help")) {
-
-                commands.get(cmd.invoke).help(cmd.event);
+                getCommands().get(cmd.invoke).help(cmd.event);
             } else {
-
-                commands.get(cmd.invoke).action(cmd.args, cmd.event);
+                getCommands().get(cmd.invoke).action(cmd.args, cmd.event);
             }
         }
-
-        commands.get(cmd.invoke).executed(safe, cmd.event);
+        getCommands().get(cmd.invoke).executed(safe, cmd.event);
     }
 
-    public static CommandContainer parse(String raw, GuildMessageReceivedEvent event) {
+    public final CommandContainer parse(String raw, GuildMessageReceivedEvent event) {
         String beheaded = raw.replaceFirst(Const.COMMAND_PREFIX, "");  // Remove COMMAND_PREFIX
 
         String removeCommand;

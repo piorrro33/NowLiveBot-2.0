@@ -59,7 +59,9 @@ public class LanguageBundle extends ListResourceBundle {
                     + Const.COMMAND
                     + " botlang language"
                     + "\n\tEnter either the English spelling or the native spelling of the language you wish to set."
-                    + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " botlang spanish" + "```"},
+                    + "\n\n## EXAMPLE:  " + Const.COMMAND_PREFIX + Const.COMMAND + " botlang spanish" + "```"
+                    + "\n\tIf you need further help with this command or others outside of what our help commands do and you wish to ask questions in a language currently associated "
+                    + "with the bot please feel free to reach out to our translators in our discord for assistance. Discord is at " + Const.COMMAND_PREFIX + Const.COMMAND + "discord"},
             {"botLangSuccess", "You've successfully changed my language."},
             {"botLangUnsupported", "That language is currently not supported."},
             {"botStatistics", "%s Statistics"},

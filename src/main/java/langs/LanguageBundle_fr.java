@@ -60,6 +60,9 @@ public class LanguageBundle_fr extends ListResourceBundle {
                     + " botlang <langue>"
                     + "\n\tEntrez soit l'écriture anglaise soit l'écriture native de la langue que vous souhaitez utiliser."
                     + "\n\n## EXEMPLE :  " + Const.COMMAND_PREFIX + Const.COMMAND + " botlang spanish" + "```"},
+                    + "\n\n## EXEMPLE :  " + Const.COMMAND_PREFIX + Const.COMMAND + " botlang spanish" + "```"
+                    + "\n\tSi vous avez besoin d'aide avec cette commande ou d'autres commandes et souhaitez poser des questions sur une langue déjà ajoutée au bot (comme le français), "
+                    + "n'hésitez pas à contacter nos traducteurs dans notre serveur. Le Discord est ici : " + Const.COMMAND_PREFIX + Const.COMMAND + "discord"},
             {"botLangSuccess", "Vous venez de changer ma langue avec succès."},
             {"botLangUnsupported", "Cette langue n'est pas encore supportée."},
             {"botStatistics", "%s Statistiques"},
@@ -149,6 +152,12 @@ public class LanguageBundle_fr extends ListResourceBundle {
                     "# TWITCH\n" +
                     "* Ajouter ou supprimer tout ce qui a à voir avec Twitch.tv. Pour plus d'informations, tape : " +
                     Const.COMMAND_PREFIX + Const.COMMAND + " twitch help\n\n```\n" +
+                    "# PATREON/DONATE\n" +
+                    "Retourne le lien menant au Patreon du bot. Les commandes sont :\n"+
+                    Const.COMMAND_PREFIX + Const.COMMAND + " patreon\n" + Const.COMMAND_PREFIX + Const.COMMAND + " donate\n\n" +
+                    "# TRELLO/BUG/REQUEST\n" +
+                    "Retourne le lien vers notre Trello qui est utilisé pour les rapports de bug et les suggestions de fonctionnalités. Les commandes sont :\n" +
+                    Const.COMMAND_PREFIX + Const.COMMAND + " trello\n" + Const.COMMAND_PREFIX + Const.COMMAND + " bug\n" + Const.COMMAND_PREFIX + Const.COMMAND + " request\n\n```\n"+
                     "Ague bosse dur pour finir de nouvelles choses que je pourrai faire pour toi !\n\n~~" + Const.BOT_NAME + "\n\n" +
                     "Si tu as encore besoin d'aide, rejoins mon serveur Discord.  Il y a plein de gens utiles là-bas :  " + Const.DISCORD_URL + "\n\n" +
                     "***P.S. Je ne regarde pas cette boîte de réception, alors merci de ne pas m'envoyer de messages ici.***"},
@@ -219,6 +228,8 @@ public class LanguageBundle_fr extends ListResourceBundle {
             {"onlineStreamPm2", " streamers en ligne qui pourraient t'intéresser ! Suis leur lien pour aller voir " +
                     "leur chaîne : \n\n"},
             {"oops", "Oups ! Quelque chose s'est mal passé et rien n'a été modifié ! Essayons encore."},
+            {"patreon", "Si vous souhaitez faire un don aux développeurs, utilisez notre Patreon. https://www.patreon.com/nowlive"},
+            {"patreonHelp" , "Retourne le lien vers notre Patreon."},
             {"ping", "Quand j'étais en Chine dans l'équipe d'Amérique de ping-pong, j'adorais jouer avec ma " +
                     "raquette de ping-pong Flexolite."},
             {"pingHelp", "```Markdown\n# PING\n* Utilisé pour m'envoyer un ping. Si je fonctionne bien, je vous renverrai un pong.\n\n## UTILISATION : "
@@ -249,6 +260,8 @@ public class LanguageBundle_fr extends ListResourceBundle {
                     + Const.COMMAND_PREFIX
                     + Const.COMMAND
                     + " streams```"},
+            {"trello", "Pour rapporter des bugs ou suggérer des fonctionnalités, veuillez utiliser notre Trello. https://trello.com/b/kcWshbIU"},
+            {"trelloHelp", "Retourne le lien vers le Trello du bot."},
             {"totalViewsEmbed", "Vues Totales"},
             {"twitchCommunities", "Communautés Twitch"},
             {"twitchAnnounceUpdate", "\n# Le canal des annonces Twitch passe de %s à : %s."},
